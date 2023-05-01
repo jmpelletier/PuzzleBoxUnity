@@ -1,4 +1,4 @@
-using System.Collections;
+    using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -45,6 +45,11 @@ namespace PuzzleBox
         // この値はこの処理を繰り返す最大の回数です。
         public int maxIterations = 1;
 
+        // 斜面に立っている時に微かに滑る事があります。これを止めるために、
+        // このしきい値より小さな動きを無視します。これを高く設定してしまうと、
+        // 完全に動けなくなるので微小の値にしましょう。
+        public float minSlideDistance = 0.002f;
+
        
         [Header("速度")]
         // 方向と関係なく、絶対に超えられない速度。
@@ -52,6 +57,9 @@ namespace PuzzleBox
 
         [HideInInspector] // インスペクターで隠す。
         public Vector2 velocity; // 移動の速度。基本的に他のコンポーネントがコードで変えます。
+
+        [HideInInspector] // インスペクターで隠す。
+        public Vector2 lastGroundVelocity; // 地面に最後に接触していた時の速度。
 
         // オブジェクトが地面に立っているかどうか。
         // この値はC#の便利な機能「アクセサ」を使って、クラスの外部から変えられないようにしています。
@@ -90,6 +98,12 @@ namespace PuzzleBox
             // まず、移動の方向と距離を抽出します。
             Vector2 direction = delta.normalized;
             float distance = delta.magnitude;
+
+            // 小さすぎる動きを無視します。
+            if (distance < minSlideDistance)
+            {
+                return;
+            }
 
             // 独自のメソッドで指定の場所まで移動したら何かに衝突するかを確かめます。
             RaycastHit2D hit; // 衝突があった場合、詳細がここで記憶されます。
@@ -182,14 +196,14 @@ namespace PuzzleBox
         }
 
         // このメソッドで渡された法線を持つ面が地面に該当するかどうかを返します。
-        bool IsGroundNormal(Vector2 normal)
+        public bool IsGroundNormal(Vector2 normal)
         {
             // 法線と真上を指すベクトルの角度を計算して、しきい値より低いか返します。
             return Vector2.Angle(Vector2.up, normal) < maxGroundAngleDegrees;
         }
 
         // このメソッドはスライドできる天井かどうかを返します。
-        bool IsCeilingNormal(Vector2 normal)
+        public bool IsCeilingNormal(Vector2 normal)
         {
             // 法線と真上を指すベクトルの角度を計算して、しきい値より低いか返します。
             return Vector2.Angle(Vector2.down, normal) < maxCeilingAngleDegrees;
@@ -221,7 +235,7 @@ namespace PuzzleBox
             {
                 // 重力の方向へ加速します。「Time.fixedDeltaTime」は
                 // 前回FixedUpdateが実行された時から経過した時間を記憶しています。
-                velocity += Physics2D.gravity * Time.fixedDeltaTime;
+                velocity += Physics2D.gravity * Time.fixedDeltaTime * gravityMultiplier;
             }
 
             // 最大速度を超えていないかを確認します。
@@ -242,7 +256,7 @@ namespace PuzzleBox
             Vector2 verticalMotion = groundNormal * Vector2.Dot(groundNormal, motion);
 
             // 移動する前の位置を記憶しておきます。
-            Vector2 startPosition = rb.position; 
+            Vector2 startPosition = rb.position;
 
             // 横、そして縦に移動します。
             Slide(horizontalMotion);
@@ -256,30 +270,51 @@ namespace PuzzleBox
 
             // 地面に立っているかどうかの状態を更新します。
             UpdateGroundedState();
+
+            if (isGrounded)
+            {
+                // 地面に立っている時の速度を記憶しておきます。プレーヤーの空中移動の計算に必要な値です。
+                lastGroundVelocity = velocity;
+            }
         }
 
-        // このメソッドはオブジェクトが地面に立っているかどうか、と地面の向きの状態を更新します。
-        void UpdateGroundedState()
+        // 地面を検出します。指定の方向と距離に地面に当たるコライダを見つければ、trueを返します。
+        // 衝突の詳細はhitに記憶されます。
+        public bool CheckForGround(Vector2 direction, float distance, out RaycastHit2D hit)
         {
-            // 真下へキャスト（衝突確認）する
-            int hitCount = rb.Cast(Vector2.down, contactFilter, hits, groundCheckDistance);
+            hit = new RaycastHit2D(); // デフォルトに初期化する
 
-            // キャストの結果を確認する前に、立っている状態を初期値に戻します。
-            // これが地面を検出したかった場合の値になります。
-            isGrounded = false;
-            groundNormal = Vector2.up; // 地面の法線は重力の反対方向へ向かいます。
-
-            // 衝突したオブジェクトを確認します。
+            // Rigidbody2Dにキャストしてもらいます。
+            int hitCount = rb.Cast(direction, contactFilter, hits, distance);
             for (int i = 0; i < hitCount; i++)
             {
                 // 重力の方向と衝突した面の法線を比較します。
                 if (IsGroundNormal(hits[i].normal))
                 {
-                    isGrounded = true; // 地面に接しています。
-                    groundNormal = hits[i].normal; // 衝突のあった面の法線を記憶します。
-
-                    break; // これ以上地面を探す必要がないので、ループを止めます。
+                    // 地面を見つけたので詳細を記憶します。
+                    hit = hits[i];
+                    return true; // これ以上地面を探す必要がありません。
                 }
+            }
+
+            // ここまできたら地面は検出できませんでした。
+            return false;
+        }
+
+        // このメソッドはオブジェクトが地面に立っているかどうか、と地面の向きの状態を更新します。
+        void UpdateGroundedState()
+        {
+            RaycastHit2D groundHit;
+            isGrounded = CheckForGround(Vector2.down, groundCheckDistance, out groundHit);
+            
+            if (isGrounded)
+            {
+                groundNormal = groundHit.normal;
+            }
+            else
+            {
+                groundNormal = Vector2.up;
+
             }
         }
     }
