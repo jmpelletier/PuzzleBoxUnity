@@ -1,0 +1,141 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace PuzzleBox
+{
+    /**
+     * このクラスはプレーヤーキャラクターなどの「ジャンプ」を実装します。
+     * UnityのInput Systemからの入力、または外部スクリプトから制御できます。
+     */
+    [RequireComponent(typeof(KinematicMotion2D))]
+    public class JumpBehavior : MonoBehaviour
+    {
+        public float jumpSpeed = 5f; // ジャンプの初期速度
+
+        // ジャンプの高さを調整する仕組みは色々あります。このスクリプトで
+        // 実装しているのは、有名なプラットフォームゲームで採用された
+        // アルゴリズムです。プレーヤーがジャンプボタンを押している間に
+        // 重力の力を弱める事によって、ボタンを長く押すほどジャンプが高く
+        // なります。
+        public float jumpGravityMultiplier = 0.7f;
+
+        // ゲームの何位度を調整するために、空中でも着地寸前ならジャンプを可能に
+        // する工夫があります。ここではその距離のしきい値を設定します。
+        public float groundCheckDistance = 0.2f;
+
+        // ダブルジャンプ・トリプルジャンプを許すならここで空中でできるジャンプの回数を
+        // 指定します。
+        public int maxAirJumps = 1;
+
+        // ジャンプをしているかどうか
+        public bool isJumping { get; private set; }
+        
+        // 連続ジャンプの回数
+        int airJumps = 0;
+
+        // 通常の重力の度合い
+        float normalGravityMultiplier = 1f;
+
+        // 必要なコンポーネントへの参照
+        KinematicMotion2D motion2D;
+
+        // Start is called before the first frame update
+        void Start()
+        {
+            // 必要な参照を取得
+            motion2D = GetComponent<KinematicMotion2D>();
+
+            // 初期の重力の設定を記憶
+            normalGravityMultiplier = motion2D.gravityMultiplier;
+        }
+
+        // ジャンプできるかを確認します。
+        bool CanJump()
+        {
+            if (motion2D.isGrounded)
+            {
+                // 地面に立っているならジャンプできます。
+                return true;
+            }
+
+            if (airJumps < maxAirJumps)
+            {
+                // 空中ジャンプの上限に達していないのでジャンプできます。
+                return true;
+            }
+
+            if (motion2D.velocity.y > 0)
+            {
+                // 空中で上昇しているのでジャンプできません。
+                return false;
+            }
+
+            // ここまで来たら空中で落下しています。もうすぐに着地するかも知れません。
+            // 指定の距離いないに地面を検出したらおまけのジャンプを許します。
+            RaycastHit2D groundHit;
+            return motion2D.CheckForGround(motion2D.velocity.normalized, groundCheckDistance, out groundHit);
+        }
+
+        // ジャンプを実行します。
+        public void Jump(bool state)
+        {
+            if (state) // ジャンプ開始
+            {
+                if (CanJump()) // ジャンプできるなら...
+                {
+                    // 空中のジャンプの一つの実装です。ゲームのルールによって、
+                    // ここの仕組みを変えることがあります。
+                    if (motion2D.velocity.y <= 0f)
+                    {
+                        // 落下しているなら、落下速度と関係なく、縦の速度をジャンプ速度にします。
+                        motion2D.velocity.y = jumpSpeed;
+                    }
+                    else
+                    {
+                        // 落下していなければ、ジャンプ速度を現在の縦の速度に足します。
+                        motion2D.velocity.y += jumpSpeed;
+                    }
+
+                    // 重力の力を弱めます。
+                    motion2D.gravityMultiplier = jumpGravityMultiplier * normalGravityMultiplier;
+                    airJumps++; // ジャンプの回数を増やします。
+                    isJumping = true; // ジャンプしている事を記憶します。
+                }
+            }
+            else // ジャンプ終了
+            {
+                // ジャンプが終了したので、通常の重力に戻します。
+                motion2D.gravityMultiplier = normalGravityMultiplier;
+                isJumping = false;
+            }
+        }
+
+        // これはUnityのInput Systemに呼び出されます。
+        void OnJump(InputValue val)
+        {
+            Jump(val.isPressed);
+        }
+
+        void FixedUpdate()
+        {
+            if (motion2D.isGrounded)
+            {
+                // 地面に立っているなら空中のジャンプ回数をリセットします。
+                airJumps = 0;
+            }
+            else
+            {
+                // プレーヤーがジャンプボタンを押し続けても、落下しているならジャンプを止めます。
+                if (motion2D.velocity.y < 0 && isJumping)
+                {
+                    Jump(false);
+                }
+            }
+        }
+
+
+    }
+} // namespace
+
