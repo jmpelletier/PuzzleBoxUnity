@@ -8,7 +8,7 @@ namespace PuzzleBox
     [RequireComponent(typeof(KinematicMotion2D))]
     public class MoveBehavior : MonoBehaviour
     {
-        [Header("ínè„")]
+        [Header("Âú∞‰∏ä")]
         public float walkSpeed = 3f;
         public float walkAcceleration = 10f;
         public float runSpeed = 10f;
@@ -16,12 +16,13 @@ namespace PuzzleBox
         public float breakingForce = 10f;
         public bool isRunning = false;
 
-        [Header("ãÛíÜ")]
+        [Header("Á©∫‰∏≠")]
         public float airSpeed = 2f;
         public float airAcceleration = 10f;
         public float airBreakingForce = 10f;
 
         KinematicMotion2D motion2D;
+        Animator animationController;
 
         Vector2 motionInput;
 
@@ -44,6 +45,7 @@ namespace PuzzleBox
         void Start()
         {
             motion2D = GetComponent<KinematicMotion2D>();
+            animationController = GetComponent<Animator>();
         }
 
         // Update is called once per frame
@@ -56,6 +58,14 @@ namespace PuzzleBox
             else
             {
                 ApplyAirMotion();
+            }
+        }
+        
+        void Update()
+        {
+            if (animationController != null)
+            {
+                animationController.SetBool("IsRunning", isRunning);
             }
         }
 

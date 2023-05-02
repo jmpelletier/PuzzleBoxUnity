@@ -82,6 +82,9 @@ namespace PuzzleBox
         // スクリプトで使うコンポーネントへの参照です。
         Rigidbody2D rb;
 
+        // このコンポーネントは必須ではないですが、あれば使います。
+        Animator animationController;
+
         // 衝突判定に必要な変数。
         // 効率をよくするために、メソッドの外で宣言しておきます。
         RaycastHit2D[] hits = new RaycastHit2D[8];
@@ -213,6 +216,7 @@ namespace PuzzleBox
         void Start()
         {
             rb = GetComponent<Rigidbody2D>(); // Rigidbody2Dコンポーネントへの参照を取得
+            animationController = GetComponent<Animator>();
 
             // Rigidbody2Dの種類を「キネマティック」にします。そうすると、物理エンジンではなく、
             // ここのスクリプトがオブジェクトを動かします。
@@ -275,6 +279,22 @@ namespace PuzzleBox
             {
                 // 地面に立っている時の速度を記憶しておきます。プレーヤーの空中移動の計算に必要な値です。
                 lastGroundVelocity = velocity;
+            }
+        }
+
+        // オブジェクトを動かす処理は物理演算に影響が出る可能性があるので、FixedUpdateで行います。
+        // しかし、アニメーションの更新はUpdateと同期しているので、アニメーター関連の処理はここで
+        // 行います。
+        void Update()
+        {
+            // アニメーターコンポーネントがなければ何もしません。
+            if (animationController != null)
+            {
+                // アニメーターに「IsGrounded」、「VelocityX」と「VelocityY」がなければ、
+                // 警告が出ます。必ず、アニメーターの設定で追加しましょう。
+                animationController.SetBool("IsGrounded", isGrounded);
+                animationController.SetFloat("VelocityX", velocity.x);
+                animationController.SetFloat("VelocityY", velocity.y);
             }
         }
 
