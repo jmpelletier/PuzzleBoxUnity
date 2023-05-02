@@ -24,11 +24,22 @@ namespace PuzzleBox
         KinematicMotion2D motion2D;
         Animator animationController;
 
+        float smallInputThreshold = 0.1f;
+
         public Vector2 motionInput { get; private set; }
 
         public void Move(Vector2 input)
         {
             motionInput = input;
+
+            if (animationController != null)
+            {
+                if (input.magnitude > smallInputThreshold)
+                {
+                    animationController.SetFloat("FacingDirectionX", input.normalized.x);
+                    animationController.SetFloat("FacingDirectionY", input.normalized.y);
+                }
+            }
         }
 
         void OnMove(InputValue val)

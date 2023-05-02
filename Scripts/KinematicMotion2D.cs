@@ -290,11 +290,12 @@ namespace PuzzleBox
             // アニメーターコンポーネントがなければ何もしません。
             if (animationController != null)
             {
-                // アニメーターに「IsGrounded」、「VelocityX」と「VelocityY」がなければ、
+                // アニメーターに「IsGrounded」、「VelocityX」、「VelocityY」と「Speed」がなければ、
                 // 警告が出ます。必ず、アニメーターの設定で追加しましょう。
                 animationController.SetBool("IsGrounded", isGrounded);
                 animationController.SetFloat("VelocityX", velocity.x);
                 animationController.SetFloat("VelocityY", velocity.y);
+                animationController.SetFloat("Speed", velocity.magnitude);
             }
         }
 
