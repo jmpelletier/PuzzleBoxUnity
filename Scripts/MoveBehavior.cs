@@ -24,7 +24,7 @@ namespace PuzzleBox
         KinematicMotion2D motion2D;
         Animator animationController;
 
-        Vector2 motionInput;
+        public Vector2 motionInput { get; private set; }
 
         public void Move(Vector2 input)
         {
