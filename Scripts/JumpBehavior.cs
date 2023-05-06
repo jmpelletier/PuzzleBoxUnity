@@ -22,7 +22,7 @@ namespace PuzzleBox
         public enum JumpMode
         {
             GravityMultiplier,
-            BreakForce
+            BreakingForce
         }
 
         public JumpMode mode = JumpMode.GravityMultiplier;
@@ -121,6 +121,9 @@ namespace PuzzleBox
                         motion2D.velocity.y += jumpSpeed;
                     }
 
+                    // 地面が動いていれば、その速度を自身の速度に足します。
+                    motion2D.velocity += motion2D.groundVelocity;
+
                     if (mode == JumpMode.GravityMultiplier)
                     {
                         // 重力の力を弱めます。
@@ -134,7 +137,6 @@ namespace PuzzleBox
                     // そうしないと、斜面の上でジャンプした時にジャンプ直後の移動方向が
                     // 横にそれてしまいます。
                     motion2D.UpdateGroundedState();
-
 
                     // アニメーターコンポーネントがあれば、ジャンプした事を通知します。
                     // 「Jump」パラメータがアニメーターに追加されていないと警告が出ます。
@@ -180,7 +182,7 @@ namespace PuzzleBox
                     Jump(false);
                 }
 
-                if (mode == JumpMode.BreakForce)
+                if (mode == JumpMode.BreakingForce)
                 {
                     // 上昇していて、プレーヤーがジャンプボタンを押していなければ、
                     // ジャンプを止める力を適用します。
