@@ -12,6 +12,21 @@ namespace PuzzleBox
     [RequireComponent(typeof(KinematicMotion2D))]
     public class JumpBehavior : MonoBehaviour
     {
+        // enumを定義するとインスペクターでドロップダウンメニューを表示させる事ができます。
+        // ここは、ジャンプのアルゴリズムを切り替えるようにしておきます。
+        // ジャンプの高さを調整する方法はいくつかありますが、ここでは２つを実装します。
+        // １つ目の方法（GravityMultiplier）では、プレーヤーがジャンプボタンを押している間に
+        // 重力の力を弱めます。2つ目の方法（BreakForce）では、ジャンプボタンを離すと上昇が止まるまで、
+        // 縦に減速させる力を適用します。BreakForce法では、力を強くする事によってより正確に
+        // ジャンプの高さを調整する事ができます。
+        public enum JumpMode
+        {
+            GravityMultiplier,
+            BreakForce
+        }
+
+        public JumpMode mode = JumpMode.GravityMultiplier;
+
         public float jumpSpeed = 5f; // ジャンプの初期速度
 
         // ジャンプの高さを調整する仕組みは色々あります。このスクリプトで
@@ -20,6 +35,9 @@ namespace PuzzleBox
         // 重力の力を弱める事によって、ボタンを長く押すほどジャンプが高く
         // なります。
         public float jumpGravityMultiplier = 0.7f;
+
+        // 「BreakForce」モードでジャンプを止める力の強さ
+        public float breakingForce = 200f;
 
         // ゲームの何位度を調整するために、空中でも着地寸前ならジャンプを可能に
         // する工夫があります。ここではその距離のしきい値を設定します。
@@ -103,8 +121,12 @@ namespace PuzzleBox
                         motion2D.velocity.y += jumpSpeed;
                     }
 
-                    // 重力の力を弱めます。
-                    motion2D.gravityMultiplier = jumpGravityMultiplier * normalGravityMultiplier;
+                    if (mode == JumpMode.GravityMultiplier)
+                    {
+                        // 重力の力を弱めます。
+                        motion2D.gravityMultiplier = jumpGravityMultiplier * normalGravityMultiplier;
+                    }
+                    
                     airJumps++; // ジャンプの回数を増やします。
                     isJumping = true; // ジャンプしている事を記憶します。
 
@@ -125,8 +147,12 @@ namespace PuzzleBox
             }
             else // ジャンプ終了
             {
-                // ジャンプが終了したので、通常の重力に戻します。
-                motion2D.gravityMultiplier = normalGravityMultiplier;
+                if (mode == JumpMode.GravityMultiplier)
+                {
+                    // ジャンプが終了したので、通常の重力に戻します。
+                    motion2D.gravityMultiplier = normalGravityMultiplier;
+                }
+                    
                 isJumping = false;
             }
         }
@@ -152,6 +178,20 @@ namespace PuzzleBox
                 if (motion2D.velocity.y < 0 && isJumping)
                 {
                     Jump(false);
+                }
+
+                if (mode == JumpMode.BreakForce)
+                {
+                    // 上昇していて、プレーヤーがジャンプボタンを押していなければ、
+                    // ジャンプを止める力を適用します。
+                    if (motion2D.velocity.y > 0 && !isJumping)
+                    {
+                        // 必要以上に強い力を加えません。
+                        float force = Mathf.Min(motion2D.velocity.y, breakingForce * Time.fixedDeltaTime);
+
+                        // 上昇を止める力を適用します。
+                        motion2D.velocity.y -= force;
+                    }
                 }
             }
         }
