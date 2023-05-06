@@ -29,33 +29,34 @@ namespace PuzzleBox
         // 天井の最大の角度。地面と同様に壁との識別に使います。
         public float maxCeilingAngleDegrees = 45;
 
-        // オブジェクトが地面に立っているかどうかを判定するために、
-        // 以下のパラメータで指定する距離まで、下に地面に該当する
-        // コライダがないかを確認します。この値がmarginより小さいと
-        // 地面が検出できなくなります。
-        public float groundCheckDistance = 0.03f;
-
         // 一部のオブジェクトと衝突したくない（すり抜けたい）場合、
         // ここで指定します。
         public LayerMask collisionMask = ~0; // 「~0」はここで「全て」に解釈されます。
+
+        // オブジェクトが地面に立っているかどうかを判定するために、
+        // 以下のパラメータで指定する距離まで、下に地面に該当する
+        // コライダがないかを確認します。
+        public float groundCheckDistance = 0.01f;
+
+
+
+        // 斜面に立っている時に微かに滑る事があります。これを止めるために、
+        // このしきい値より小さな動きを無視します。これを高く設定してしまうと、
+        // 完全に動けなくなるので微小の値にしましょう。
+        float minSlideDistance = 0.002f;
 
         // このパラメータは少し上級者向けで従来なら変える必要がありません。
         // 何かと衝突したら、移動方向を変えて移動を続けてみます。
         // （例えば、斜面に衝突したら、止まるのではなく、斜面の上に移動を続けます。）
         // この値はこの処理を繰り返す最大の回数です。
-        public int maxIterations = 1;
+        int maxIterations = 1;
 
-        // 斜面に立っている時に微かに滑る事があります。これを止めるために、
-        // このしきい値より小さな動きを無視します。これを高く設定してしまうと、
-        // 完全に動けなくなるので微小の値にしましょう。
-        public float minSlideDistance = 0.002f;
 
-       
         [Header("速度")]
         // 方向と関係なく、絶対に超えられない速度。
         public float maxSpeed = 100f;
 
-        [HideInInspector] // インスペクターで隠す。
+        //[HideInInspector] // インスペクターで隠す。
         public Vector2 velocity; // 移動の速度。基本的に他のコンポーネントがコードで変えます。
 
         [HideInInspector] // インスペクターで隠す。
@@ -229,17 +230,20 @@ namespace PuzzleBox
             {
                 Debug.LogError("重力が真下へ向かっていないとこのコンポーネントは正しく動作しません。プロジェクト設定を確認してください。");
             }
+
+            groundNormal = Vector2.up;
         }
 
-        // RigidbodyまたはRigidbody2Dを使うと移動をUpdateではなく、等間隔で実行される
-        // FixedUpdateで行わなければなりません。
-        void FixedUpdate()
+        public void PerformUpdate(float deltaSeconds)
         {
-            if (useGravity) // 重力の影響を受けるか？
+            // 地面に立っているかどうかの状態を更新します。
+            UpdateGroundedState();
+
+            if (useGravity && !isGrounded) // 重力の影響を受けるか？
             {
                 // 重力の方向へ加速します。「Time.fixedDeltaTime」は
                 // 前回FixedUpdateが実行された時から経過した時間を記憶しています。
-                velocity += Physics2D.gravity * Time.fixedDeltaTime * gravityMultiplier;
+                velocity += Physics2D.gravity * deltaSeconds * gravityMultiplier;
             }
 
             // 最大速度を超えていないかを確認します。
@@ -250,7 +254,11 @@ namespace PuzzleBox
             }
 
             // この１フレームで移動する距離を計算します。
-            Vector2 motion = velocity * Time.fixedDeltaTime;
+            Vector2 motion = velocity * deltaSeconds;
+
+
+            // 移動する前の位置を記憶しておきます。
+            Vector2 startPosition = rb.position;
 
             // 動きを滑らかにして、爽快な操作感を実現するための工夫として、横に移動してから
             // 縦に移動します。ここでいう「横」と「縦」は絶対の方向ではなく、地面の向きに
@@ -259,27 +267,28 @@ namespace PuzzleBox
             Vector2 horizontalMotion = groundRight * Vector2.Dot(groundRight, motion);
             Vector2 verticalMotion = groundNormal * Vector2.Dot(groundNormal, motion);
 
-            // 移動する前の位置を記憶しておきます。
-            Vector2 startPosition = rb.position;
-
             // 横、そして縦に移動します。
             Slide(horizontalMotion);
             Slide(verticalMotion);
 
             // 衝突とスライドをしたかも知れません。実際の移動を計算します。
             Vector2 actualMotion = rb.position - startPosition;
-            
-            // 実際の移動から実際の速度を計算します。
-            velocity = actualMotion / Time.fixedDeltaTime;
 
-            // 地面に立っているかどうかの状態を更新します。
-            UpdateGroundedState();
+            // 実際の移動から実際の速度を計算します。
+            velocity = actualMotion / deltaSeconds;
 
             if (isGrounded)
             {
                 // 地面に立っている時の速度を記憶しておきます。プレーヤーの空中移動の計算に必要な値です。
                 lastGroundVelocity = velocity;
             }
+        }
+
+        // RigidbodyまたはRigidbody2Dを使うと移動をUpdateではなく、等間隔で実行される
+        // FixedUpdateで行わなければなりません。
+        void FixedUpdate()
+        {
+            PerformUpdate(Time.fixedDeltaTime);
         }
 
         // オブジェクトを動かす処理は物理演算に影響が出る可能性があるので、FixedUpdateで行います。
@@ -323,19 +332,34 @@ namespace PuzzleBox
         }
 
         // このメソッドはオブジェクトが地面に立っているかどうか、と地面の向きの状態を更新します。
-        void UpdateGroundedState()
+        public void UpdateGroundedState()
         {
+            // 最初から地面に立っていないと仮定します。
+            isGrounded = false;
+            groundNormal = Vector2.up;
+
+            // 地面を検出します。
             RaycastHit2D groundHit;
-            isGrounded = CheckForGround(Vector2.down, groundCheckDistance, out groundHit);
-            
+            isGrounded = CheckForGround(Vector2.down, groundCheckDistance + margin, out groundHit);
+
+            // ここで少し細かい処理を行います。地面に立っていても上へ移動していれば、「地面に立っていない」と
+            // 判定します。そうしないと、斜面上でジャンプをした時に、移動が横にそれてしまうからです。
+            // しかし、斜面を登る時に、縦の速度が0より大きいので、斜面を登る移動とジャンプ・発射移動を識別するために、
+            // 地面の向きと移動の向きを比較する必要があります。
+            if (isGrounded && velocity.magnitude > 0.01f)
+            {
+                // 地面から離れる方向に移動しているか？
+                if (Vector2.Dot(groundHit.normal, velocity.normalized) > 0.25f)
+                {
+                    // これから「離陸」するので、地面に立っていないことにします。
+                    isGrounded = false;
+                }
+            }
+
             if (isGrounded)
             {
+                // 地面に立っているので地面の向きを覚えておきます。
                 groundNormal = groundHit.normal;
-            }
-            else
-            {
-                groundNormal = Vector2.up;
-
             }
         }
     }
