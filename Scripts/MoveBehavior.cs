@@ -93,12 +93,6 @@ namespace PuzzleBox
                 Vector2 velocityChange = Vector2.right * motionInput.x * airAcceleration * Time.fixedDeltaTime;
                 motion2D.velocity += velocityChange;
             }
-            else
-            {
-                float breakDirection = horizontalDirection * -1f;
-                Vector2 velocityChange = breakDirection * Vector2.right * Mathf.Min(airBreakingForce * Time.fixedDeltaTime, Mathf.Abs(horizontalVelocity));
-                motion2D.velocity += velocityChange;
-            }
 
             if (horizontalDirection == groundHorizontalDirection)
             {
