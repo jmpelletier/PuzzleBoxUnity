@@ -14,6 +14,7 @@ namespace PuzzleBox
         [Header("重力")] // インスペクターに見出しを表紙する
         public bool useGravity = true; // 重力の影響を受けるか？
         public float gravityMultiplier = 1f; // 重力の力の調整
+        
 
 
         [Header("衝突判定")]
@@ -28,6 +29,8 @@ namespace PuzzleBox
         public float maxGroundAngleDegrees = 45;
         // 天井の最大の角度。地面と同様に壁との識別に使います。
         public float maxCeilingAngleDegrees = 45;
+
+        public bool useGroundMotion = true; // 移動する地面に影響を受けるか
 
         // 一部のオブジェクトと衝突したくない（すり抜けたい）場合、
         // ここで指定します。
@@ -80,6 +83,31 @@ namespace PuzzleBox
             }
         }
 
+        public Vector2 groundVelocity
+        {
+            get
+            {
+                if (groundMotion != null)
+                {
+                    return groundMotion.velocity;
+                }
+                else
+                {
+                    return Vector2.zero;
+                }
+            }
+        }
+
+        float groundDistance = 0f;
+
+        public Vector2 position
+        {
+            get
+            {
+                return rb.position;
+            }
+        }
+
         // スクリプトで使うコンポーネントへの参照です。
         Rigidbody2D rb;
 
@@ -90,6 +118,8 @@ namespace PuzzleBox
         // 効率をよくするために、メソッドの外で宣言しておきます。
         RaycastHit2D[] hits = new RaycastHit2D[8];
         ContactFilter2D contactFilter = new ContactFilter2D();
+
+        KinematicMotion2D groundMotion = null;
 
         // このメソッドはKinematicMotion2Dの肝心な処理を行います。
         // 「delta」パラメータで指定した距離までオブジェクトを移動します。
@@ -173,6 +203,7 @@ namespace PuzzleBox
 
             hit = new RaycastHit2D(); // 衝突がなかった時にhitは初期のままにします。
             contactFilter.layerMask = collisionMask; // 衝突するとしないUnityのレイヤーを準備します。
+            contactFilter.useLayerMask = true;
 
             // Rigidbody2Dの「Cast」メソッドで衝突判定を行います。「Cast」とは、直訳すると釣りの専門用語で
             // 「竿で仕掛けを飛ばす」という意味です。オブジェクトについているコライダが空間で指定と方向と距離で
@@ -239,6 +270,13 @@ namespace PuzzleBox
             // 地面に立っているかどうかの状態を更新します。
             UpdateGroundedState();
 
+            rb.position += groundVelocity * Time.fixedDeltaTime;
+
+            //if (isGrounded)
+            //{
+            //    rb.position += Vector2.up * groundDistance;
+            //}
+
             if (useGravity && !isGrounded) // 重力の影響を受けるか？
             {
                 // 重力の方向へ加速します。「Time.fixedDeltaTime」は
@@ -276,6 +314,8 @@ namespace PuzzleBox
 
             // 実際の移動から実際の速度を計算します。
             velocity = actualMotion / deltaSeconds;
+
+            
 
             if (isGrounded)
             {
@@ -315,7 +355,7 @@ namespace PuzzleBox
             hit = new RaycastHit2D(); // デフォルトに初期化する
 
             // Rigidbody2Dにキャストしてもらいます。
-            int hitCount = rb.Cast(direction, contactFilter, hits, distance);
+            int hitCount = rb.Cast(direction, contactFilter, hits, distance + margin);
             for (int i = 0; i < hitCount; i++)
             {
                 // 重力の方向と衝突した面の法線を比較します。
@@ -323,6 +363,7 @@ namespace PuzzleBox
                 {
                     // 地面を見つけたので詳細を記憶します。
                     hit = hits[i];
+                    hit.distance -= margin;
                     return true; // これ以上地面を探す必要がありません。
                 }
             }
@@ -337,29 +378,48 @@ namespace PuzzleBox
             // 最初から地面に立っていないと仮定します。
             isGrounded = false;
             groundNormal = Vector2.up;
+            groundDistance = 0f;
 
             // 地面を検出します。
             RaycastHit2D groundHit;
-            isGrounded = CheckForGround(Vector2.down, groundCheckDistance + margin, out groundHit);
+            isGrounded = CheckForGround(Vector2.down, groundCheckDistance, out groundHit);
 
-            // ここで少し細かい処理を行います。地面に立っていても上へ移動していれば、「地面に立っていない」と
-            // 判定します。そうしないと、斜面上でジャンプをした時に、移動が横にそれてしまうからです。
-            // しかし、斜面を登る時に、縦の速度が0より大きいので、斜面を登る移動とジャンプ・発射移動を識別するために、
-            // 地面の向きと移動の向きを比較する必要があります。
-            if (isGrounded && velocity.magnitude > 0.01f)
-            {
-                // 地面から離れる方向に移動しているか？
-                if (Vector2.Dot(groundHit.normal, velocity.normalized) > 0.25f)
-                {
-                    // これから「離陸」するので、地面に立っていないことにします。
-                    isGrounded = false;
-                }
-            }
+            
 
             if (isGrounded)
             {
                 // 地面に立っているので地面の向きを覚えておきます。
                 groundNormal = groundHit.normal;
+                groundDistance = groundHit.distance;
+
+                // ここで、KinematicMotion2Dコンポーネントを持っているオブジェクトの上に立っているかどうかを確認します。
+                // 立っているなら、その動きの影響を受けます。
+                if (useGroundMotion && (groundMotion == null || groundMotion.gameObject != groundHit.collider.gameObject))
+                {
+                    groundMotion = groundHit.collider.gameObject.GetComponent<KinematicMotion2D>();
+                }
+
+                // ここで少し細かい処理を行います。地面に立っていても上へ移動していれば、「地面に立っていない」と
+                // 判定します。そうしないと、斜面上でジャンプをした時に、移動が横にそれてしまうからです。
+                // しかし、斜面を登る時に、縦の速度が0より大きいので、斜面を登る移動とジャンプ・発射移動を識別するために、
+                // 地面の向きと移動の向きを比較する必要があります。
+                if (velocity.magnitude > 0.01f)
+                {
+                    // 地面から離れる方向に移動しているか？
+                    if (Vector2.Dot(groundHit.normal, velocity.normalized) > 0.25f)
+                    {
+                        // これから「離陸」するので、地面に立っていないことにします。
+                        // 地面から離れようとしているので、isGroundedをfalseにします。しかし、
+                        // 地面が動いているなら、その影響を受けたいので、groundMotionは記憶した
+                        // ままにします。（そうしないと、上昇している物体の上に立ってジャンプ
+                        // しようとするとジャンプが正しく動作しません。
+                        isGrounded = false;
+                    }
+                }
+            }
+            else
+            {
+                groundMotion = null;
             }
         }
     }
