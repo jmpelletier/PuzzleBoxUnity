@@ -116,505 +116,505 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TallCharacterIdleBL
+      name: TallCharacter_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 180
-        width: 50
-        height: 90
+        y: 308
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 41bf619682509cf44a1485633f83e802
-      internalID: 26123595
+      spriteID: 00c3f6ea6650b9f4cb728ba3f1ef3b7d
+      internalID: 1532688501
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterIdleL
+      name: TallCharacter_1
       rect:
         serializedVersion: 2
-        x: 50
-        y: 180
-        width: 50
-        height: 90
+        x: 82
+        y: 308
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: dc02e08b2fec27b49b986ce91b85e480
-      internalID: -1852085345
+      spriteID: e15095dea9499584e86051418c8bf4d9
+      internalID: 638509746
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterIdleTL
+      name: TallCharacter_2
       rect:
         serializedVersion: 2
-        x: 100
-        y: 180
-        width: 50
-        height: 90
+        x: 164
+        y: 308
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 132377b5c91162444b3a2c865f497a95
-      internalID: 1923314032
+      spriteID: ee9d20f23897c3644ad189fd27b21959
+      internalID: 2015938755
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterIdleT
+      name: TallCharacter_3
       rect:
         serializedVersion: 2
-        x: 150
-        y: 180
-        width: 50
-        height: 90
+        x: 246
+        y: 308
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4342d2e62a5802f4e9432b850ba4ce7e
-      internalID: -626878944
+      spriteID: 6d3c305f41d5f1c4783a8e4c81c3a568
+      internalID: -874768231
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterIdleTR
+      name: TallCharacter_4
       rect:
         serializedVersion: 2
-        x: 200
-        y: 180
-        width: 50
-        height: 90
+        x: 328
+        y: 308
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4740da7ad52978a41805536be50c66c7
-      internalID: 2125442634
+      spriteID: ca44045094f91f54bb3475a841623f0b
+      internalID: -829028394
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterIdleR
+      name: TallCharacter_5
       rect:
         serializedVersion: 2
-        x: 250
-        y: 180
-        width: 50
-        height: 90
+        x: 410
+        y: 308
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0d8e802898c521f4baed098961556a4d
-      internalID: -2105644672
+      spriteID: 7d1d75484f89a6646a14112655c3578d
+      internalID: 982901604
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterIdleBR
+      name: TallCharacter_6
       rect:
         serializedVersion: 2
-        x: 300
-        y: 180
-        width: 50
-        height: 90
+        x: 492
+        y: 308
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2a29ed50d548ded4f996606826f71ea2
-      internalID: 1890527158
+      spriteID: 9f86e0e226cb90f4e86efac87c99f52f
+      internalID: 1229615318
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterIdleB
+      name: TallCharacter_7
       rect:
         serializedVersion: 2
-        x: 350
-        y: 180
-        width: 50
-        height: 90
+        x: 574
+        y: 308
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 879e7921e07522544b3a49f8a7a9a91c
-      internalID: -93391144
+      spriteID: bde59596ffc7bdd4b910619d8e8814a0
+      internalID: 2080041559
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterWalkBL
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 90
-        width: 50
-        height: 90
-      alignment: 9
-      pivot: {x: 0.5, y: 0.055}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 3ca45146a0cd0d044bc50d9d3d0dc0b1
-      internalID: -871048502
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TallCharacterWalkL
-      rect:
-        serializedVersion: 2
-        x: 50
-        y: 90
-        width: 50
-        height: 90
-      alignment: 9
-      pivot: {x: 0.5, y: 0.055}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 2cd0d2b6d87bb7841b7abc945e970f43
-      internalID: 946012023
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TallCharacterWalkTL
-      rect:
-        serializedVersion: 2
-        x: 100
-        y: 90
-        width: 50
-        height: 90
-      alignment: 9
-      pivot: {x: 0.5, y: 0.055}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 46173533b05375f41bc17798b843b18f
-      internalID: -540743503
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TallCharacterWalkT
-      rect:
-        serializedVersion: 2
-        x: 150
-        y: 90
-        width: 50
-        height: 90
-      alignment: 9
-      pivot: {x: 0.5, y: 0.055}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 7708245ec019c6a488c48d55a47f2914
-      internalID: -1237246339
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TallCharacterWalkTR
-      rect:
-        serializedVersion: 2
-        x: 200
-        y: 90
-        width: 50
-        height: 90
-      alignment: 9
-      pivot: {x: 0.5, y: 0.055}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: cf63805130a2e684191168f4ff444fe6
-      internalID: 1773384853
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TallCharacterWalkR
-      rect:
-        serializedVersion: 2
-        x: 250
-        y: 90
-        width: 50
-        height: 90
-      alignment: 9
-      pivot: {x: 0.5, y: 0.055}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 0df7c39d6fdc42849b041715dd6271b5
-      internalID: 1123733238
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TallCharacterWalkBR
-      rect:
-        serializedVersion: 2
-        x: 300
-        y: 90
-        width: 50
-        height: 90
-      alignment: 9
-      pivot: {x: 0.5, y: 0.055}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: c4b73695786a098419859e43ebf516aa
-      internalID: -842768248
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TallCharacterWalkB
-      rect:
-        serializedVersion: 2
-        x: 350
-        y: 90
-        width: 50
-        height: 90
-      alignment: 9
-      pivot: {x: 0.5, y: 0.055}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 2ab714c87bfa95d409fec0591c1a0ff4
-      internalID: -1799115356
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TallCharacterRunBL
+      name: TallCharacter_8
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 50
-        height: 90
+        y: 154
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3ffc4431c5b5c9a46bed90ffd0860e27
-      internalID: 652150120
+      spriteID: f327b80f369ff344da9701a2f2df4808
+      internalID: -1460104522
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterRunL
+      name: TallCharacter_9
       rect:
         serializedVersion: 2
-        x: 50
-        y: 0
-        width: 50
-        height: 90
+        x: 82
+        y: 154
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 8eea9b5996d1e2c45b06519958cd5713
-      internalID: 1802147517
+      spriteID: 5c03d8c807d1ca04bb3d96fe615c67ef
+      internalID: 2111796824
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterRunTL
+      name: TallCharacter_10
       rect:
         serializedVersion: 2
-        x: 100
-        y: 0
-        width: 50
-        height: 90
+        x: 164
+        y: 154
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 40f844e6f9a5dda4d9418841c1bc7e24
-      internalID: -26029290
+      spriteID: 8a5d8eba997e4584dbe0c5cafc4b53d8
+      internalID: -458438225
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterRunT
+      name: TallCharacter_11
       rect:
         serializedVersion: 2
-        x: 150
-        y: 0
-        width: 50
-        height: 90
+        x: 246
+        y: 154
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ab2b52684a19f2842b0b48103c9b2499
-      internalID: -687677249
+      spriteID: 500d7215e80de6044a5c59c345d2dbf6
+      internalID: -1001299665
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterRunTR
+      name: TallCharacter_12
       rect:
         serializedVersion: 2
-        x: 200
-        y: 0
-        width: 50
-        height: 90
+        x: 328
+        y: 154
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c4a17ff5de0c74c4c865252efb6849f8
-      internalID: -883697278
+      spriteID: 7407a30a59767ab4489df4daec4cf246
+      internalID: 1420708036
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterRunR
+      name: TallCharacter_13
       rect:
         serializedVersion: 2
-        x: 250
-        y: 0
-        width: 50
-        height: 90
+        x: 410
+        y: 154
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f730557c3ff065148a3ce436c89b6310
-      internalID: 724162052
+      spriteID: d0cb5f8169b1d8146baa37a1e0463721
+      internalID: -1060564145
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterRunBR
+      name: TallCharacter_14
       rect:
         serializedVersion: 2
-        x: 300
-        y: 0
-        width: 50
-        height: 90
+        x: 492
+        y: 154
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 8c324b0f651dcd14bb324789b494841d
-      internalID: -1523430414
+      spriteID: 2994fabd94e5eeb4f8c84a5329898af4
+      internalID: -150738502
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TallCharacterRunB
+      name: TallCharacter_15
       rect:
         serializedVersion: 2
-        x: 350
-        y: 0
-        width: 50
-        height: 90
+        x: 574
+        y: 154
+        width: 82
+        height: 154
       alignment: 9
-      pivot: {x: 0.5, y: 0.055}
+      pivot: {x: 0.5, y: 0.032467533}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ac3ba99098dab7643b18a3999d05ce9c
-      internalID: -342918507
+      spriteID: 892b2d9838aa2d747a0a6383836706ea
+      internalID: -1709411648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TallCharacter_16
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 82
+        height: 154
+      alignment: 9
+      pivot: {x: 0.5, y: 0.032467533}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fd7ce5b6a3563594abb9e39b23e7b706
+      internalID: 1743213969
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TallCharacter_17
+      rect:
+        serializedVersion: 2
+        x: 82
+        y: 0
+        width: 82
+        height: 154
+      alignment: 9
+      pivot: {x: 0.5, y: 0.032467533}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1618c409df7439448972855bc2e622c8
+      internalID: -246017020
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TallCharacter_18
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 0
+        width: 82
+        height: 154
+      alignment: 9
+      pivot: {x: 0.5, y: 0.032467533}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f6674ab45a12a7b469f0a8158aa410c6
+      internalID: -82808880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TallCharacter_19
+      rect:
+        serializedVersion: 2
+        x: 246
+        y: 0
+        width: 82
+        height: 154
+      alignment: 9
+      pivot: {x: 0.5, y: 0.032467533}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 26409c7b78ccbbd40b19437308e15e25
+      internalID: -685583019
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TallCharacter_20
+      rect:
+        serializedVersion: 2
+        x: 328
+        y: 0
+        width: 82
+        height: 154
+      alignment: 9
+      pivot: {x: 0.5, y: 0.032467533}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5b25b43962dc16e4fa7688839f1a2dd2
+      internalID: 1687465805
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TallCharacter_21
+      rect:
+        serializedVersion: 2
+        x: 410
+        y: 0
+        width: 82
+        height: 154
+      alignment: 9
+      pivot: {x: 0.5, y: 0.032467533}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 559769bf630f1b24192d9b9577ddb7fa
+      internalID: 122945237
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TallCharacter_22
+      rect:
+        serializedVersion: 2
+        x: 492
+        y: 0
+        width: 82
+        height: 154
+      alignment: 9
+      pivot: {x: 0.5, y: 0.032467533}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9784d427138a5234b929c9a35db6f2fe
+      internalID: 1203074502
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: TallCharacter_23
+      rect:
+        serializedVersion: 2
+        x: 574
+        y: 0
+        width: 82
+        height: 154
+      alignment: 9
+      pivot: {x: 0.5, y: 0.032467533}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c6da870ae8ab5ca40885b899893c7247
+      internalID: 1180591578
       vertices: []
       indices: 
       edges: []
@@ -630,30 +630,30 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      TallCharacterRunB: -342918507
-      TallCharacterIdleB: -93391144
-      TallCharacterWalkB: -1799115356
-      TallCharacterRunL: 1802147517
-      TallCharacterRunTR: -883697278
-      TallCharacterWalkBL: -871048502
-      TallCharacterWalkTR: 1773384853
-      TallCharacterIdleTL: 1923314032
-      TallCharacterIdleBR: 1890527158
-      TallCharacterWalkTL: -540743503
-      TallCharacterRunBR: -1523430414
-      TallCharacterRunR: 724162052
-      TallCharacterWalkT: -1237246339
-      TallCharacterWalkL: 946012023
-      TallCharacterRunT: -687677249
-      TallCharacterWalkR: 1123733238
-      TallCharacterIdleL: -1852085345
-      TallCharacterWalkBR: -842768248
-      TallCharacterRunBL: 652150120
-      TallCharacterIdleR: -2105644672
-      TallCharacterIdleBL: 26123595
-      TallCharacterIdleTR: 2125442634
-      TallCharacterIdleT: -626878944
-      TallCharacterRunTL: -26029290
+      TallCharacter_9: 2111796824
+      TallCharacter_7: 2080041559
+      TallCharacter_13: -1060564145
+      TallCharacter_18: -82808880
+      TallCharacter_17: -246017020
+      TallCharacter_0: 1532688501
+      TallCharacter_21: 122945237
+      TallCharacter_2: 2015938755
+      TallCharacter_23: 1180591578
+      TallCharacter_6: 1229615318
+      TallCharacter_5: 982901604
+      TallCharacter_11: -1001299665
+      TallCharacter_12: 1420708036
+      TallCharacter_14: -150738502
+      TallCharacter_16: 1743213969
+      TallCharacter_15: -1709411648
+      TallCharacter_10: -458438225
+      TallCharacter_1: 638509746
+      TallCharacter_4: -829028394
+      TallCharacter_20: 1687465805
+      TallCharacter_8: -1460104522
+      TallCharacter_22: 1203074502
+      TallCharacter_3: -874768231
+      TallCharacter_19: -685583019
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

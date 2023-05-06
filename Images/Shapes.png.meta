@@ -116,13 +116,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: SquareBlack
+      name: Shapes_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 50
-        height: 60
+        width: 82
+        height: 82
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -130,20 +130,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 111a1ffbb4e116a458802cd1a4de70af
-      internalID: -1632453099
+      spriteID: 51141476045219547b4355b92743f5ed
+      internalID: 1325157328
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SquareBlue
+      name: Shapes_1
       rect:
         serializedVersion: 2
-        x: 50
+        x: 82
         y: 0
-        width: 50
-        height: 60
+        width: 82
+        height: 82
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -151,20 +151,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 4c7607a169b69ba44845b9fb1f42b589
-      internalID: 1343870871
+      spriteID: fc7e2f509f573744b89d25168973432b
+      internalID: -2066926851
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TriangleBlack
+      name: Shapes_2
       rect:
         serializedVersion: 2
-        x: 100
+        x: 164
         y: 0
-        width: 50
-        height: 60
+        width: 82
+        height: 82
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -172,20 +172,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 53b04874ad5bd024fa52fd72a343dc73
-      internalID: -2002284806
+      spriteID: 4c8d8f03dd0b7064889de63cffa96cd7
+      internalID: -941991674
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TriangleBlue
+      name: Shapes_3
       rect:
         serializedVersion: 2
-        x: 150
+        x: 246
         y: 0
-        width: 50
-        height: 60
+        width: 82
+        height: 82
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -193,20 +193,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 177b97cef5c5395459540c2d639a8f12
-      internalID: -1561082603
+      spriteID: 5890ffd4f2c40d64e8223d7b4c5589af
+      internalID: 1117453820
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CircleBlack
+      name: Shapes_4
       rect:
         serializedVersion: 2
-        x: 200
+        x: 328
         y: 0
-        width: 50
-        height: 60
+        width: 82
+        height: 82
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -214,20 +214,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3e7db1a75fbe1354eacd95d2493c824b
-      internalID: -1637682432
+      spriteID: 137416e3f87fd7d4a8902ade697e6a68
+      internalID: 485552342
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: CircleBlue
+      name: Shapes_5
       rect:
         serializedVersion: 2
-        x: 250
+        x: 410
         y: 0
-        width: 50
-        height: 60
+        width: 82
+        height: 82
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -235,20 +235,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 3a8302b5a5535fa4abf88aa44a060c18
-      internalID: 1195389379
+      spriteID: e6baa48779e09cc4ba07cd0485d5adf7
+      internalID: -1963918410
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: StarBlack
+      name: Shapes_6
       rect:
         serializedVersion: 2
-        x: 300
+        x: 492
         y: 0
-        width: 50
-        height: 60
+        width: 82
+        height: 82
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -256,20 +256,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e77bdd0c9cb69444caa3af9e2cab9ed6
-      internalID: -2091157055
+      spriteID: bea1bce6f6a167e4abb27a6003162b35
+      internalID: 1443852866
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: StarBlue
+      name: Shapes_7
       rect:
         serializedVersion: 2
-        x: 350
+        x: 574
         y: 0
-        width: 50
-        height: 60
+        width: 82
+        height: 82
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -277,8 +277,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 71ce78756b7a3da48a7401875d028373
-      internalID: -1793473464
+      spriteID: 5ecc652d161d312488418b93c4340864
+      internalID: -804062108
       vertices: []
       indices: 
       edges: []
@@ -294,14 +294,14 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      TriangleBlue: -1561082603
-      SquareBlack: -1632453099
-      SquareBlue: 1343870871
-      CircleBlue: 1195389379
-      TriangleBlack: -2002284806
-      StarBlue: -1793473464
-      CircleBlack: -1637682432
-      StarBlack: -2091157055
+      Shapes_3: 1117453820
+      Shapes_0: 1325157328
+      Shapes_5: -1963918410
+      Shapes_6: 1443852866
+      Shapes_7: -804062108
+      Shapes_4: 485552342
+      Shapes_1: -2066926851
+      Shapes_2: -941991674
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0
