@@ -122,10 +122,8 @@ namespace PuzzleBox
             }
             else
             {
-                Vector2 groundVelocity = motion2D.groundRight * Vector2.Dot(motion2D.groundRight, motion2D.velocity);
-                Vector2 breakDirection = groundVelocity.normalized * -1f;
-                float groundSpeed = groundVelocity.magnitude;
-
+                Vector2 breakDirection = motion2D.velocity.normalized * -1f;
+                float groundSpeed = motion2D.velocity.magnitude;
                 Vector2 velocityChange = breakDirection * Mathf.Min(breakingForce * Time.fixedDeltaTime, groundSpeed);
                 motion2D.velocity += velocityChange;
             }
@@ -143,4 +141,3 @@ namespace PuzzleBox
         }
     }
 }
-
