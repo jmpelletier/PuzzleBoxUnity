@@ -41,6 +41,8 @@ namespace PuzzleBox
         // コライダがないかを確認します。
         public float groundCheckDistance = 0.01f;
 
+        public bool pushable = false;
+
 
 
         // 斜面に立っている時に微かに滑る事があります。これを止めるために、
@@ -146,6 +148,8 @@ namespace PuzzleBox
             if (collided) // 衝突しました...
             {
                 float contactDistance = hit.distance; // 衝突した位置までの距離
+                // スライドできるようですので、まだ残っている移動距離を計算します。
+                float distanceRemaining = distance - contactDistance;
 
                 // 一応、衝突せずに移動できるところまで移動します。
                 rb.position += direction * contactDistance;
@@ -153,12 +157,26 @@ namespace PuzzleBox
                 // スライドを試す回数がまだ残っているか？
                 if (iterations < maxIterations)
                 {
+                    if (hit.rigidbody != null && hit.rigidbody.bodyType == RigidbodyType2D.Kinematic)
+                    {
+                        KinematicMotion2D otherMotion = hit.rigidbody.gameObject.GetComponent<KinematicMotion2D>();
+                        if (otherMotion != null && otherMotion.pushable)
+                        {
+                            hit.rigidbody.position += direction * distanceRemaining;
+                        }
+
+                        Slide(direction * distanceRemaining, iterations + 1);
+                        return;
+                    }
+
+                    if (hit.rigidbody != null && hit.rigidbody.bodyType == RigidbodyType2D.Dynamic)
+                    {
+                        hit.rigidbody.AddForceAtPosition(delta / Time.fixedDeltaTime, hit.point, ForceMode2D.Force);
+                    }
+
                     // スライドができるのは地面と天井だけです。
                     if (IsGroundNormal(hit.normal) || IsCeilingNormal(hit.normal))
                     {
-                        // スライドできるようですので、まだ残っている移動距離を計算します。
-                        float distanceRemaining = distance - contactDistance;
-
                         // 衝突した面に対する「右方向」
                         Vector2 right = new Vector2(hit.normal.y, -hit.normal.x);
 
@@ -253,6 +271,7 @@ namespace PuzzleBox
             // Rigidbody2Dの種類を「キネマティック」にします。そうすると、物理エンジンではなく、
             // ここのスクリプトがオブジェクトを動かします。
             rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.useFullKinematicContacts = true;
 
             // このスクリプトは重力が真下へ働く前提で作られています。しかし、プロジェクト設定で、
             // どの方向にも重力を設定する事ができます。もし、このスクリプトと互換性のない設定が
