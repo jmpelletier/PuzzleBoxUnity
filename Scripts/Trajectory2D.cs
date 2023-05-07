@@ -7,10 +7,18 @@ namespace PuzzleBox
     [RequireComponent(typeof(KinematicMotion2D))]
     public class Trajectory2D : MonoBehaviour
     {
+        public enum Mode
+        {
+            Loop,
+            Reverse
+        }
+
         public Transform[] waypoints;
         public float speed = 1f;
+        public Mode mode = Mode.Loop;
 
         int currentPoint = 0;
+        int direction = 1;
 
         KinematicMotion2D motion2D;
 
@@ -26,10 +34,18 @@ namespace PuzzleBox
                 if (distance <= travelDistance)
                 {
                     s = distance / Time.fixedDeltaTime;
-                    currentPoint++;
-                    if (currentPoint >= waypoints.Length)
+                    currentPoint += direction;
+                    if (currentPoint >= waypoints.Length || currentPoint < 0)
                     {
-                        currentPoint = 0;
+                        if (mode == Mode.Loop)
+                        {
+                            currentPoint = 0;
+                        }
+                        else
+                        {
+                            direction *= -1;
+                            currentPoint += 2 * direction;
+                        }
                     }
                 }
 
@@ -43,10 +59,19 @@ namespace PuzzleBox
             motion2D = GetComponent<KinematicMotion2D>();
         }
 
-        // Update is called once per frame
-        void Update()
+        private void OnDrawGizmosSelected()
         {
+            if (isActiveAndEnabled)
+            {
+                Gizmos.color = Color.green;
 
+                Vector3 p = transform.position;
+                foreach(Transform t in waypoints)
+                {
+                    Gizmos.DrawLine(p, t.position);
+                    p = t.position;
+                }
+            }
         }
     }
 } // namespace
