@@ -68,8 +68,11 @@ namespace PuzzleBox
                 Vector3 p = transform.position;
                 foreach(Transform t in waypoints)
                 {
-                    Gizmos.DrawLine(p, t.position);
-                    p = t.position;
+                    if (t != null)
+                    {
+                        Gizmos.DrawLine(p, t.position);
+                        p = t.position;
+                    }
                 }
             }
         }
