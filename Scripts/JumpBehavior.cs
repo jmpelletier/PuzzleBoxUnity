@@ -12,32 +12,29 @@ namespace PuzzleBox
     [RequireComponent(typeof(KinematicMotion2D))]
     public class JumpBehavior : MonoBehaviour
     {
+        // ジャンプの最小の高さ。プレーヤーがジャンプボタンを一瞬で離した場合、
+        // キャラクターはこの高さまで飛びます。
+        public float minJumpHeight = 1f;
+
+        // ジャンプの最高の高さです。プレーヤーがずっとジャンプボタンを押し続けると
+        // この高さまで飛びます。
+        public float maxJumpHeight = 3f;
+
         // enumを定義するとインスペクターでドロップダウンメニューを表示させる事ができます。
-        // ここは、ジャンプのアルゴリズムを切り替えるようにしておきます。
-        // ジャンプの高さを調整する方法はいくつかありますが、ここでは２つを実装します。
-        // １つ目の方法（GravityMultiplier）では、プレーヤーがジャンプボタンを押している間に
-        // 重力の力を弱めます。2つ目の方法（BreakForce）では、ジャンプボタンを離すと上昇が止まるまで、
-        // 縦に減速させる力を適用します。BreakForce法では、力を強くする事によってより正確に
-        // ジャンプの高さを調整する事ができます。
+        // ここは、ジャンプの動作を切り替えるようにしておきます。
+        // ジャンプの高さを調整する方法はいくつかありますが、ここでは最も自然でよく
+        // 使われる方法を採用します。ジャンプ中にキャラクターにかかる重力の力を調整
+        // する事によって、ジャンプの高さを変える事ができます。
+        // ここの「Slow」を選ぶと、ジャンプボタンを離した時に、重力を弱めます。
+        // 「Fast」にすると、逆にボタンを離した時に、重力を強くします。
         public enum JumpMode
         {
-            GravityMultiplier,
-            BreakingForce
+            Slow,
+            Fast
         }
 
-        public JumpMode mode = JumpMode.GravityMultiplier;
+        public JumpMode mode = JumpMode.Fast;
 
-        public float jumpSpeed = 5f; // ジャンプの初期速度
-
-        // ジャンプの高さを調整する仕組みは色々あります。このスクリプトで
-        // 実装しているのは、有名なプラットフォームゲームで採用された
-        // アルゴリズムです。プレーヤーがジャンプボタンを押している間に
-        // 重力の力を弱める事によって、ボタンを長く押すほどジャンプが高く
-        // なります。
-        public float jumpGravityMultiplier = 0.7f;
-
-        // 「BreakForce」モードでジャンプを止める力の強さ
-        public float breakingForce = 200f;
 
         // ゲームの何位度を調整するために、空中でも着地寸前ならジャンプを可能に
         // する工夫があります。ここではその距離のしきい値を設定します。
@@ -56,6 +53,11 @@ namespace PuzzleBox
         // 通常の重力の度合い
         float normalGravityMultiplier = 1f;
 
+        // ジャンプボタンを押している時と離している時の重力の調整。
+        // ジャンプをした時にここの正しい値が計算されます。
+        float jumpGravityMultiplier = 1f;
+        float breakGravityMultiplier = 1f;
+
         // 必要なコンポーネントへの参照
         KinematicMotion2D motion2D;
 
@@ -67,7 +69,6 @@ namespace PuzzleBox
         {
             // 必要な参照を取得
             motion2D = GetComponent<KinematicMotion2D>();
-
             animationController = GetComponent<Animator>();
 
             // 初期の重力の設定を記憶
@@ -108,27 +109,45 @@ namespace PuzzleBox
             {
                 if (CanJump()) // ジャンプできるなら...
                 {
+                    float jumpVelocity = 0; // ジャンプの初期速度。これから計算します。
+
+                    if (mode == JumpMode.Fast)
+                    {
+                        // ここは、斜方投射の計算です。通常の重力でmaxJumpHeightの高さに達するための初期速度を求めます。
+                        jumpVelocity = Mathf.Sqrt(-2f * Physics2D.gravity.y * normalGravityMultiplier * maxJumpHeight);
+                        jumpGravityMultiplier = normalGravityMultiplier; // このモードでは、ジャンプの重力が通常重力になります。
+                        breakGravityMultiplier = normalGravityMultiplier * (maxJumpHeight / minJumpHeight); // ジャンプを止める重力の加減を計算します。
+                    }
+                    else if (mode == JumpMode.Slow)
+                    {
+                        // 上記と同様の計算ですが、条件を反転します。
+                        jumpVelocity = Mathf.Sqrt(-2f * Physics2D.gravity.y * normalGravityMultiplier * minJumpHeight);
+                        jumpGravityMultiplier = normalGravityMultiplier * (minJumpHeight / maxJumpHeight);
+                        breakGravityMultiplier = normalGravityMultiplier;
+                    }
+
+                    // ここは少し細かい調整です。KinematicMotion2Dの実装によって、ジャンプによる移動が始まる前に、重力によって
+                    // 速度が下がってしまいます。１フレーム目の重力の影響をなくすために、ジャンプ速度を上げます。
+                    jumpVelocity += -Physics2D.gravity.y * jumpGravityMultiplier * Time.fixedDeltaTime;
+
                     // 空中のジャンプの一つの実装です。ゲームのルールによって、
                     // ここの仕組みを変えることがあります。
                     if (motion2D.velocity.y <= 0f)
                     {
                         // 落下しているなら、落下速度と関係なく、縦の速度をジャンプ速度にします。
-                        motion2D.velocity.y = jumpSpeed;
+                        motion2D.velocity.y = jumpVelocity;
                     }
                     else
                     {
                         // 落下していなければ、ジャンプ速度を現在の縦の速度に足します。
-                        motion2D.velocity.y += jumpSpeed;
+                        motion2D.velocity.y += jumpVelocity;
                     }
 
                     // 地面が動いていれば、その速度を自身の速度に足します。
                     motion2D.velocity += motion2D.groundVelocity;
 
-                    if (mode == JumpMode.GravityMultiplier)
-                    {
-                        // 重力の力を弱めます。
-                        motion2D.gravityMultiplier = jumpGravityMultiplier * normalGravityMultiplier;
-                    }
+                    // 重力調整を適用します。
+                    motion2D.gravityMultiplier = jumpGravityMultiplier;
                     
                     airJumps++; // ジャンプの回数を増やします。
                     isJumping = true; // ジャンプしている事を記憶します。
@@ -149,12 +168,8 @@ namespace PuzzleBox
             }
             else // ジャンプ終了
             {
-                if (mode == JumpMode.GravityMultiplier)
-                {
-                    // ジャンプが終了したので、通常の重力に戻します。
-                    motion2D.gravityMultiplier = normalGravityMultiplier;
-                }
-                    
+                // ジャンプが終わったので、重力の加減を変えます。
+                motion2D.gravityMultiplier = breakGravityMultiplier;
                 isJumping = false;
             }
         }
@@ -173,32 +188,34 @@ namespace PuzzleBox
             {
                 // 地面に立っているなら空中のジャンプ回数をリセットします。
                 airJumps = 0;
+
+                // 重力の加減は通常に戻します。
+                motion2D.gravityMultiplier = normalGravityMultiplier;                                                
             }
             else
             {
                 // プレーヤーがジャンプボタンを押し続けても、落下しているならジャンプを止めます。
-                if (motion2D.velocity.y < 0 && isJumping)
+                if (motion2D.velocity.y <= 0 && isJumping)
                 {
                     Jump(false);
-                }
-
-                if (mode == JumpMode.BreakingForce)
-                {
-                    // 上昇していて、プレーヤーがジャンプボタンを押していなければ、
-                    // ジャンプを止める力を適用します。
-                    if (motion2D.velocity.y > 0 && !isJumping)
-                    {
-                        // 必要以上に強い力を加えません。
-                        float force = Mathf.Min(motion2D.velocity.y, breakingForce * Time.fixedDeltaTime);
-
-                        // 上昇を止める力を適用します。
-                        motion2D.velocity.y -= force;
-                    }
                 }
             }
         }
 
-
+        // このメソッドを実装する事によって、Unityのシーンビューに独自の
+        // 「ギズモ」を描写する事ができます。ここでは、ジャンプの高さを表す
+        // 緑の線を描きます。
+        private void OnDrawGizmosSelected()
+        {
+            if (isActiveAndEnabled)
+            {
+                Vector3 high = transform.position + Vector3.up * maxJumpHeight;
+                Vector3 low = transform.position + Vector3.up * minJumpHeight;
+                Gizmos.color = Color.green;
+                Gizmos.DrawLine(low + Vector3.left * 0.5f, low + Vector3.right * 0.5f);
+                Gizmos.DrawLine(high + Vector3.left * 0.5f, high + Vector3.right * 0.5f);
+            }
+        }
     }
 } // namespace
 
