@@ -78,6 +78,11 @@ namespace PuzzleBox
         // ジャンプできるかを確認します。
         bool CanJump()
         {
+            if (minJumpHeight <= 0 || maxJumpHeight <= 0)
+            {
+                return false;
+            }
+
             if (motion2D.isGrounded)
             {
                 // 地面に立っているならジャンプできます。
@@ -95,6 +100,7 @@ namespace PuzzleBox
                 // 空中で上昇しているのでジャンプできません。
                 return false;
             }
+
 
             // ここまで来たら空中で落下しています。もうすぐに着地するかも知れません。
             // 指定の距離いないに地面を検出したらおまけのジャンプを許します。
