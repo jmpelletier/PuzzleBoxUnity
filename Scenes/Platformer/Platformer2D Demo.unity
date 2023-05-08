@@ -2826,10 +2826,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlatformerPlayer2D
       objectReference: {fileID: 0}
-    - target: {fileID: 9170191272850625308, guid: fd49a4b4a29f48046a08aaab501eccda, type: 3}
-      propertyPath: m_TagString
-      value: Player
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fd49a4b4a29f48046a08aaab501eccda, type: 3}
 --- !u!1001 &2647952263659636202
