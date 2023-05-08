@@ -71,6 +71,9 @@ namespace PuzzleBox
         // この値はC#の便利な機能「アクセサ」を使って、クラスの外部から変えられないようにしています。
         public bool isGrounded { get; private set; }
 
+        // 地面を離れてから経過した時間（秒）。ジャンプの判定で使う事があります。
+        public float timeInAir { get; private set; }
+
         // 地面の法線（地面に立っていない時は真上を指します。）
         public Vector2 groundNormal { get; private set; }
 
@@ -289,12 +292,15 @@ namespace PuzzleBox
             // 地面に立っているかどうかの状態を更新します。
             UpdateGroundedState();
 
-            rb.position += groundVelocity * Time.fixedDeltaTime;
-
-            //if (isGrounded)
-            //{
-            //    rb.position += Vector2.up * groundDistance;
-            //}
+            // 地面から離れた時間を更新します。
+            if (!isGrounded)
+            {
+                timeInAir += deltaSeconds;
+            }
+            else
+            {
+                timeInAir = 0f;
+            }
 
             if (useGravity && !isGrounded) // 重力の影響を受けるか？
             {
@@ -309,6 +315,9 @@ namespace PuzzleBox
                 // スピード違反しているようで、最大速度に減速します。
                 velocity = velocity.normalized * maxSpeed;
             }
+
+            // 地面が移動していれば、離れないように動きます。
+            rb.position += groundVelocity * deltaSeconds;
 
             // この１フレームで移動する距離を計算します。
             Vector2 motion = velocity * deltaSeconds;

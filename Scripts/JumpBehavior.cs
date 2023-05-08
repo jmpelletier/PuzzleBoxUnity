@@ -44,6 +44,9 @@ namespace PuzzleBox
         // 指定します。
         public int maxAirJumps = 1;
 
+        // 落下などで地面から離れた直後でもジャンプを許します。ここでその時間のしきい値（秒）を指定します。
+        public float fallJumpTimeLimit = 3f / 60f;
+
         // ジャンプをしているかどうか
         public bool isJumping { get; private set; }
         
@@ -92,6 +95,12 @@ namespace PuzzleBox
             if (airJumps < maxAirJumps)
             {
                 // 空中ジャンプの上限に達していないのでジャンプできます。
+                return true;
+            }
+
+            if (motion2D.timeInAir <= fallJumpTimeLimit)
+            {
+                // 地面から離れた直後
                 return true;
             }
 
