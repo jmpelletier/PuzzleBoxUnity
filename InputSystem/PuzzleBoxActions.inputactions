@@ -1,5 +1,5 @@
 {
-    "name": "Gameplay",
+    "name": "PuzzleBoxActions",
     "maps": [
         {
             "name": "Player",
@@ -48,6 +48,15 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "Press(behavior=2)",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RhythmTap",
+                    "type": "Button",
+                    "id": "836ddca8-f5b3-4f16-aedc-0b506e4910b4",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
                     "initialStateCheck": false
                 }
             ],
@@ -313,6 +322,28 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Run",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1e75f2d5-54e4-4cd0-bcb6-4761c3acf5b1",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "RhythmTap",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d61cefa1-3a1c-415c-b80f-9b8d7bfd850c",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "RhythmTap",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
