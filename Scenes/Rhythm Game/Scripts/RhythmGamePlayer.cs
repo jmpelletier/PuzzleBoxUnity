@@ -10,17 +10,23 @@ namespace PuzzleBox
     {
         public GameObject noteResultPrefab;
 
-        public int points = 0;
+        [Header("‹Èî•ñ")]
         public int beatsPerBar = 4;
         public int barsInSong = 36;
+
+        [Header("”»’èŠÔ")]
         public float greatTime = 0.025f;
-        public int greatPoints = 100;
         public float goodTime = 0.05f;
-        public int goodPoints = 50;
         public float okTime = 0.1f;
+
+        [Header("”»’è“_”")]
+        public int greatPoints = 100;
+        public int goodPoints = 50;
         public int okPoints = 10;
-        public float missTime = 1f;
         public int missPoints = -10;
+
+        [HideInInspector]
+        public int points = 0;
 
         public Action<int> OnPointsChanged;
 
@@ -68,7 +74,7 @@ namespace PuzzleBox
                 RhythmGameNote note = song.notes[currentNote];
                 float timeDifference = note.time - time;
 
-                if (timeDifference < -missTime)
+                if (timeDifference < -okTime)
                 {
                     RemoveNote(note, "MISS");
                     UpdatePoints(missPoints);
