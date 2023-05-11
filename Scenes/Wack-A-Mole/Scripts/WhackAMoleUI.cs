@@ -7,32 +7,32 @@ namespace PuzzleBox
 {
     public class WhackAMoleUI : MonoBehaviour
     {
-        public GameObject startScreen;
-        public GameObject resultScreen;
-        public GameObject hud;
+        public CanvasVisibility startScreen;
+        public CanvasVisibility resultScreen;
+        public CanvasVisibility hud;
         public TextMeshProUGUI scoreLabel;
         public TextMeshProUGUI finalScoreLabel;
         public TextMeshProUGUI timeLabel;
 
         public void ShowStartScreen()
         {
-            startScreen.SetActive(true);
-            hud.SetActive(false);
-            resultScreen.SetActive(false);
+            startScreen.Show();
+            resultScreen.Hide();
+            hud.Hide();
         }
 
         public void ShowPlayScreen()
         {
-            startScreen.SetActive(false);
-            hud.SetActive(true);
-            resultScreen.SetActive(false);
+            startScreen.Hide();
+            resultScreen.Hide();
+            hud.Show();
         }
 
         public void ShowResultScreen()
         {
-            startScreen.SetActive(false);
-            hud.SetActive(false);
-            resultScreen.SetActive(true);
+            startScreen.Hide();
+            resultScreen.Show();
+            hud.Hide();
         }
 
         public void SetScore(int score)

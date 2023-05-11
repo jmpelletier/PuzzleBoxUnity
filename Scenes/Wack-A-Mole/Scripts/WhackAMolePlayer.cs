@@ -28,18 +28,21 @@ namespace PuzzleBox
 
         void OnAttack()
         {
-            attack.Attack();
+            if (isActiveAndEnabled)
+            {
+                attack.Attack();
+            }
         }
 
         void Attack(GameObject target)
         {
-            WhackAMoleMole mole = target.GetComponent<WhackAMoleMole>();
-            if (mole != null)
+            PuzzleBox.Life life = target.GetComponent<PuzzleBox.Life>();
+            if (life != null)
             {
-                mole.ApplyDamage(1);
+                life.ChangeLife(-life.life);
                 UpdateScore(hitPoints);
 
-                ShowResult($"+{hitPoints}", mole.transform.position);
+                ResultLabel.Show(resultPrefab, $"+{hitPoints}", target.transform.position);
             }
         }
 
@@ -47,21 +50,13 @@ namespace PuzzleBox
         {
             UpdateScore(missPoints);
 
-            ShowResult("MISS", transform.position);
+            ResultLabel.Show(resultPrefab, "MISS", transform.position);
         }
 
         void UpdateScore(int change)
         {
             score += change;
             OnScoreChanged?.Invoke(score);
-        }
-
-        void ShowResult(string message, Vector3 position)
-        {
-            GameObject result = Instantiate(resultPrefab);
-            WhackResult noteResult = result.GetComponent<WhackResult>();
-            noteResult.SetText(message);
-            result.transform.position = position;
         }
 
         // Update is called once per frame

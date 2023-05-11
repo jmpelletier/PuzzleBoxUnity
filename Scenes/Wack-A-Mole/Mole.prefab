@@ -94,10 +94,10 @@ GameObject:
   m_Component:
   - component: {fileID: 8993533220057543187}
   - component: {fileID: 8993533220057543186}
-  - component: {fileID: 8993533220057543185}
-  - component: {fileID: 806035900825929716}
   - component: {fileID: -618752203899796563}
   - component: {fileID: 125508156309757729}
+  - component: {fileID: 806035900825929716}
+  - component: {fileID: 1100524460244250946}
   m_Layer: 0
   m_Name: Mole
   m_TagString: Untagged
@@ -141,34 +141,6 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &8993533220057543185
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8993533220057543184}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 513e08782aa96de4582a4759e35ef7b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  life: 1
---- !u!114 &806035900825929716
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8993533220057543184}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7dcaf345bb77f2e44a6249984347a918, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lifetime: 0.5
-  useAnimator: 1
-  lifeEndTrigger: Destroy
 --- !u!50 &-618752203899796563
 Rigidbody2D:
   serializedVersion: 4
@@ -216,3 +188,33 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.6666, y: 0.6666}
   m_EdgeRadius: 0
+--- !u!114 &806035900825929716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8993533220057543184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7dcaf345bb77f2e44a6249984347a918, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lifetime: 0.5
+  useAnimator: 1
+  lifeEndTrigger: Destroy
+--- !u!114 &1100524460244250946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8993533220057543184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7dbe825c7dd2ce4488bf6a37b2b41da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxLife: 1
+  life: 1
+  canDie: 1
