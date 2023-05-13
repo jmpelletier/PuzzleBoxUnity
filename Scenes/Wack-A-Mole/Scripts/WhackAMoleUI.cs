@@ -7,9 +7,9 @@ namespace PuzzleBox
 {
     public class WhackAMoleUI : MonoBehaviour
     {
-        public CanvasVisibility startScreen;
-        public CanvasVisibility resultScreen;
-        public CanvasVisibility hud;
+        public CanvasTransition startScreen;
+        public CanvasTransition resultScreen;
+        public CanvasTransition hud;
         public TextMeshProUGUI scoreLabel;
         public TextMeshProUGUI finalScoreLabel;
         public TextMeshProUGUI timeLabel;

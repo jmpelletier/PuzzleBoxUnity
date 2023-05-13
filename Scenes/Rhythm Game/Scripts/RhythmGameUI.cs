@@ -7,31 +7,32 @@ namespace PuzzleBox
 {
     public class RhythmGameUI : MonoBehaviour
     {
-        public GameObject startScreen;
-        public GameObject resultScreen;
-        public GameObject hud;
+        public CanvasTransition startScreen;
+        public CanvasTransition resultScreen;
+        public CanvasTransition hud;
+
         public TextMeshProUGUI scoreLabel;
         public TextMeshProUGUI finalScoreLabel;
 
         public void ShowStartScreen()
         {
-            startScreen.SetActive(true);
-            hud.SetActive(false);
-            resultScreen.SetActive(false);
+            startScreen.Show();
+            hud.Hide();
+            resultScreen.Hide();
         }
 
         public void ShowPlayScreen()
         {
-            startScreen.SetActive(false);
-            hud.SetActive(true);
-            resultScreen.SetActive(false);
+            startScreen.Hide();
+            hud.Show();
+            resultScreen.Hide();
         }
 
         public void ShowResultScreen()
         {
-            startScreen.SetActive(false);
-            hud.SetActive(false);
-            resultScreen.SetActive(true);
+            startScreen.Hide();
+            hud.Hide();
+            resultScreen.Show();
         }
 
         public void SetScore(int score)

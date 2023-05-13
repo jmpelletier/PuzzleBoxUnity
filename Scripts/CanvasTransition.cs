@@ -5,8 +5,11 @@ using UnityEngine;
 namespace PuzzleBox
 {
     [RequireComponent(typeof(CanvasGroup))]
-    public class CanvasVisibility : MonoBehaviour
+    public class CanvasTransition : MonoBehaviour
     {
+        public float inTransitionTime = 0.2f;
+        public float outTransitionTime = 0.2f;
+
         Animator animationController;
 
         // Start is called before the first frame update
@@ -21,8 +24,9 @@ namespace PuzzleBox
             {
                 Activate();
 
-                if (animationController != null)
+                if (animationController != null && inTransitionTime > 0f)
                 {
+                    animationController.speed = 1f / inTransitionTime;
                     animationController.SetTrigger("Show");
                 }
             }
@@ -33,8 +37,9 @@ namespace PuzzleBox
         {
             if (gameObject.activeSelf)
             {
-                if (animationController != null)
+                if (animationController != null && outTransitionTime > 0f)
                 {
+                    animationController.speed = 1f / outTransitionTime;
                     animationController.SetTrigger("Hide");
                 }
                 else
@@ -53,6 +58,11 @@ namespace PuzzleBox
         public void Activate()
         {
             gameObject.SetActive(true);
+        }
+
+        public void DestroySelf()
+        {
+            Destroy(gameObject);
         }
     }
 
