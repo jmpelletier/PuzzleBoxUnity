@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System;
+using PuzzleBox;
 
 namespace PuzzleBox
 {
@@ -48,7 +49,7 @@ namespace PuzzleBox
         void ShowNoteResult(string message, Vector3 position)
         {
             GameObject result = Instantiate(noteResultPrefab);
-            NoteResult noteResult = result.GetComponent<NoteResult>();
+            ResultLabel noteResult = result.GetComponent<ResultLabel>();
             noteResult.SetText(message);
             result.transform.position = position;
         }

@@ -1136,7 +1136,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 676c15072a8d5304f97c88790f2c89cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noteResultPrefab: {fileID: 1677726751760382430, guid: cc244fbc3fcee5e498609683f28eb66e, type: 3}
+  noteResultPrefab: {fileID: 1677726751760382430, guid: 99454bbd1d4df6a4f990f3041c477476, type: 3}
   beatsPerBar: 4
   barsInSong: 36
   greatTime: 0.025
