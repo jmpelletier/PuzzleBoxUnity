@@ -1552,6 +1552,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4262994380d51bc4aa3b28e51f99c604, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inTransitionTime: 0.2
+  outTransitionTime: 0.2
 --- !u!225 &1823162256
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1938,6 +1940,10 @@ PrefabInstance:
       propertyPath: m_Alpha
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6183943896111144322, guid: e81bf227dda63884ca8124a8229dfaee, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 22100000, guid: ba48e33ebe2fe794f96c00cad069beb6, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e81bf227dda63884ca8124a8229dfaee, type: 3}
 --- !u!224 &2091400180 stripped
@@ -2093,6 +2099,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: StartScreen
       objectReference: {fileID: 0}
+    - target: {fileID: 6183943896111144322, guid: e81bf227dda63884ca8124a8229dfaee, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 22100000, guid: ba48e33ebe2fe794f96c00cad069beb6, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e81bf227dda63884ca8124a8229dfaee, type: 3}
 --- !u!1 &1564041407592820176 stripped
