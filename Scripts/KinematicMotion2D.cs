@@ -48,7 +48,7 @@ namespace PuzzleBox
         // 斜面に立っている時に微かに滑る事があります。これを止めるために、
         // このしきい値より小さな動きを無視します。これを高く設定してしまうと、
         // 完全に動けなくなるので微小の値にしましょう。
-        float minSlideDistance = 0.002f;
+        public float minSlideDistance = 0.002f;
 
         // このパラメータは少し上級者向けで従来なら変える必要がありません。
         // 何かと衝突したら、移動方向を変えて移動を続けてみます。
@@ -225,6 +225,7 @@ namespace PuzzleBox
             hit = new RaycastHit2D(); // 衝突がなかった時にhitは初期のままにします。
             contactFilter.layerMask = collisionMask; // 衝突するとしないUnityのレイヤーを準備します。
             contactFilter.useLayerMask = true;
+            contactFilter.useTriggers = false;
 
             // Rigidbody2Dの「Cast」メソッドで衝突判定を行います。「Cast」とは、直訳すると釣りの専門用語で
             // 「竿で仕掛けを飛ばす」という意味です。オブジェクトについているコライダが空間で指定と方向と距離で
@@ -342,8 +343,6 @@ namespace PuzzleBox
 
             // 実際の移動から実際の速度を計算します。
             velocity = actualMotion / deltaSeconds;
-
-            
 
             if (isGrounded)
             {
