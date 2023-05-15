@@ -19,24 +19,44 @@ namespace PuzzleBox
         public bool autoSpawn = true;
         public float minSpawnTime = 1;
         public float maxSpawnTime = 5;
+        public Vector3 randomizePostion = Vector2.zero;
+
+        public GameObject parent = null;
 
         int currentIndex = 0;
         float spawnWaitTime = 0;
 
         public Action<GameObject> OnSpawn;
 
+        public void SpawnNow()
+        {
+            Spawn();
+        }
 
-        public void Spawn()
+        public GameObject Spawn()
         {
             if (prefabs.Length > 0)
             {
+                Vector3 noise = new Vector3(
+                    UnityEngine.Random.Range(-randomizePostion.x, randomizePostion.x), 
+                    UnityEngine.Random.Range(-randomizePostion.y, randomizePostion.y),
+                    UnityEngine.Random.Range(-randomizePostion.z, randomizePostion.z));
                 GameObject newObject = Instantiate(prefabs[currentIndex]);
-                newObject.transform.position = transform.position;
+                newObject.transform.position = transform.position + noise;
                 newObject.transform.rotation = transform.rotation;
                 currentIndex = NextIndex();
 
+                if (parent != null)
+                {
+                    newObject.transform.parent = parent.transform;
+                }
+
                 OnSpawn?.Invoke(newObject);
+
+                return newObject;
             }
+
+            return null;
         }
 
         float NewSpawnWaitTime()
