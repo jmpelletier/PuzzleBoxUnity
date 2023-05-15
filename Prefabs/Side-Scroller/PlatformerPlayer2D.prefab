@@ -471,7 +471,7 @@ MonoBehaviour:
   useGroundMotion: 1
   collisionMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 247
   groundCheckDistance: 0.03
   pushable: 1
   maxSpeed: 100
