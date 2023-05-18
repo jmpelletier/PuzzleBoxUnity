@@ -12,6 +12,15 @@ namespace PuzzleBox
         public UnityEvent<float> OnScoreChanged;
         public UnityEvent<string, float> OnValueChanged;
 
+        public void SetDelegate(GameObject target)
+        {
+            ScoreModifier modifier = target.GetComponent<ScoreModifier>();
+            if (modifier != null)
+            {
+                modifier.OnScoreChanged += ChangeScore;
+            }
+        }
+
         public void SetScore(float newScore)
         {
             if (score != newScore)
