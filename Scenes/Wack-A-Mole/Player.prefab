@@ -12,6 +12,9 @@ GameObject:
   - component: {fileID: 3964673961083568566}
   - component: {fileID: 454033725476187341}
   - component: {fileID: 1987574422127468958}
+  - component: {fileID: 8249590387231937570}
+  - component: {fileID: 5547025193129342380}
+  - component: {fileID: 7048973980571542733}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -30,7 +33,8 @@ Transform:
   m_LocalPosition: {x: -4.093923, y: 4.696263, z: -0.022210823}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 470150616078009620}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -58,7 +62,63 @@ MonoBehaviour:
   m_ControlsChangedEvent:
     m_PersistentCalls:
       m_Calls: []
-  m_ActionEvents: []
+  m_ActionEvents:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 8249590387231937570}
+        m_TargetAssemblyTypeName: PuzzleBox.Sensor2D, Assembly-CSharp
+        m_MethodName: Scan
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 836ddca8-f5b3-4f16-aedc-0b506e4910b4
+    m_ActionName: Player/Attack[/Keyboard/space]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: c323890d-9385-485c-9192-0f73d0e6242b
+    m_ActionName: UI/Navigate[/Keyboard/w,/Keyboard/upArrow,/Keyboard/s,/Keyboard/downArrow,/Keyboard/a,/Keyboard/leftArrow,/Keyboard/d,/Keyboard/rightArrow]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 40e3a098-7fdb-4969-82b2-069f7bebc70d
+    m_ActionName: UI/Submit[/Keyboard/enter]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: ae16f161-4ff7-4fa4-9773-5db9189326ae
+    m_ActionName: UI/Cancel[/Keyboard/escape]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: ac3879a2-158a-4c1f-9cba-5c2a7d8bbed7
+    m_ActionName: UI/Point[/Mouse/position,/Pen/position]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: cd36344d-0e35-44de-9bc4-62efe8b11fb1
+    m_ActionName: UI/Click[/Mouse/leftButton,/Pen/tip]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: cc1cc48e-e92a-4368-84bd-354625f72ccd
+    m_ActionName: UI/ScrollWheel[/Mouse/scroll]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: d4bff703-cd82-49eb-9740-77c97b62b2e0
+    m_ActionName: UI/MiddleClick[/Mouse/middleButton]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: d931e22a-3b72-4e18-96a3-db6f34b5680e
+    m_ActionName: UI/RightClick[/Mouse/rightButton]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 10b9b4ef-db4d-4ee2-a5c4-f9135af28b19
+    m_ActionName: UI/TrackedDevicePosition
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 44805117-cdb3-47e3-becb-65b0a178e1da
+    m_ActionName: UI/TrackedDeviceOrientation
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
@@ -109,5 +169,191 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1, y: 10}
+  m_Size: {x: 17.777779, y: 10}
   m_EdgeRadius: 0
+--- !u!114 &8249590387231937570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6909354660867137600}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 59abfd4607107664ca7033d2c2667f83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetTag: Enemy
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  ignoreTriggers: 1
+  OnHit:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 5547025193129342380}
+        m_TargetAssemblyTypeName: PuzzleBox.ApplyDamage, Assembly-CSharp
+        m_MethodName: ApplyDamageToTarget
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  OnMiss:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 799081482835439606}
+        m_TargetAssemblyTypeName: PuzzleBox.Spawner, Assembly-CSharp
+        m_MethodName: SpawnNow
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 7048973980571542733}
+        m_TargetAssemblyTypeName: PuzzleBox.ScoreModifier, Assembly-CSharp
+        m_MethodName: ChangeScore
+        m_Mode: 4
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: -1
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &5547025193129342380
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6909354660867137600}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61209b9b1bd803d4d8bce1ba7d071850, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  baseDamage: 1
+  displayPrefab: {fileID: 1677726751760382430, guid: 99454bbd1d4df6a4f990f3041c477476, type: 3}
+  displayPosition: 1
+  OnDamage:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7048973980571542733}
+        m_TargetAssemblyTypeName: PuzzleBox.ScoreModifier, Assembly-CSharp
+        m_MethodName: ChangeScore
+        m_Mode: 4
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 1
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &7048973980571542733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6909354660867137600}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cb7979ddab40924ca27fa3472ad28c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1001 &4627997888248635495
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 788842903639448119}
+    m_Modifications:
+    - target: {fileID: 3258878616431866863, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: m_Name
+      value: MissSpawner
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098001049299690867, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098001049299690867, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098001049299690867, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098001049299690867, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098001049299690867, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098001049299690867, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098001049299690867, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098001049299690867, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098001049299690867, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098001049299690867, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5098001049299690867, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5417579460619587473, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: autoSpawn
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5417579460619587473, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: prefabs.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5417579460619587473, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+      propertyPath: prefabs.Array.data[0]
+      value: 
+      objectReference: {fileID: 3730573065826141381, guid: 630cc86f350eb8642b963b46fd763a1e, type: 3}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+--- !u!4 &470150616078009620 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5098001049299690867, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+  m_PrefabInstance: {fileID: 4627997888248635495}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &799081482835439606 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5417579460619587473, guid: 5d82c515e090e38479016ee0d2759597, type: 3}
+  m_PrefabInstance: {fileID: 4627997888248635495}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c11033c3105704149b02911df119a97a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

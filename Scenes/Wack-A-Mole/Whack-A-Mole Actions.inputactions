@@ -6,12 +6,12 @@
             "id": "506218ec-d49b-4262-b645-33684a9b9bf8",
             "actions": [
                 {
-                    "name": "Attack",
+                    "name": "Scan",
                     "type": "Button",
                     "id": "836ddca8-f5b3-4f16-aedc-0b506e4910b4",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "",
+                    "interactions": "Press",
                     "initialStateCheck": false
                 }
             ],
@@ -23,7 +23,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Attack",
+                    "action": "Scan",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -34,7 +34,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "Attack",
+                    "action": "Scan",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
