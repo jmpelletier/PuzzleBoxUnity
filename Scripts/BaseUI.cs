@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using TMPro;
 using PuzzleBox;
 
@@ -25,14 +26,19 @@ namespace PuzzleBox
         public CanvasTransition resultScreen;
         public CanvasTransition hud;
 
-        public TextMeshProUGUI scoreLabel;
-        public TextMeshProUGUI finalScoreLabel;
+        public UnityEvent OnGameStart;
 
         private Label[] labels;
 
         private void OnEnable()
         {
             labels = GetComponentsInChildren<Label>(true);
+        }
+
+        public void StartGame()
+        {
+            ShowPlayScreen();
+            OnGameStart?.Invoke();
         }
 
     
@@ -79,23 +85,6 @@ namespace PuzzleBox
             startScreen.Hide();
             resultScreen.Show();
             hud.Hide();
-        }
-
-        public void SetScore(int score)
-        {
-            scoreLabel.text = $"{score}";
-            finalScoreLabel.text = $"{score}";
-        }
-
-        public void SetScore(float score)
-        {
-            scoreLabel.text = $"{score:0.0}";
-            finalScoreLabel.text = $"{score:0.0}";
-        }
-
-        public void SetFloatLabel(string target, float value)
-        {
-
         }
     }
 }

@@ -70,11 +70,6 @@ namespace PuzzleBox
             OnGameEnded?.Invoke();
         }
 
-        public void SetScore(float score)
-        {
-            ui.SetScore(score);
-        }
-
         // Start is called before the first frame update
         void Start()
         {
