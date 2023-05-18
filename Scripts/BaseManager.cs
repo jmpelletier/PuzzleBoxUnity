@@ -24,14 +24,17 @@ namespace PuzzleBox
 
         void SpawnPlayer()
         {
-            player = Instantiate(playerPrefab);
-            if (playerSpawnPoint != null)
+            if (playerPrefab != null)
             {
-                player.transform.position = playerSpawnPoint.position;
-                player.transform.rotation = playerSpawnPoint.rotation;
+                player = Instantiate(playerPrefab);
+                if (playerSpawnPoint != null)
+                {
+                    player.transform.position = playerSpawnPoint.position;
+                    player.transform.rotation = playerSpawnPoint.rotation;
+                }
+                BroadcastMessage("OnPlayerSpawned", player, SendMessageOptions.DontRequireReceiver);
+                OnPlayerSpawned?.Invoke(player);
             }
-            BroadcastMessage("OnPlayerSpawned", player, SendMessageOptions.DontRequireReceiver);
-            OnPlayerSpawned?.Invoke(player);
         }
 
         void DestroyPlayer()
