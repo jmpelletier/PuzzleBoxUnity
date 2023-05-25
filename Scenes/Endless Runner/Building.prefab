@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 362200312}
   m_Layer: 6
   m_Name: SpawnPoint
-  m_TagString: Untagged
+  m_TagString: SpawnTrigger
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -142,7 +142,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4782301568385265582}
   - component: {fileID: 1380143821487412452}
-  m_Layer: 7
+  m_Layer: 6
   m_Name: Building
   m_TagString: Untagged
   m_Icon: {fileID: 0}
