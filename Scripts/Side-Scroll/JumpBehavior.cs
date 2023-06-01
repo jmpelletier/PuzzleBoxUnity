@@ -20,6 +20,8 @@ namespace PuzzleBox
         // この高さまで飛びます。
         public float maxJumpHeight = 3f;
 
+        public Vector2 jumpDirection = Vector2.up;
+
         // enumを定義するとインスペクターでドロップダウンメニューを表示させる事ができます。
         // ここは、ジャンプの動作を切り替えるようにしておきます。
         // ジャンプの高さを調整する方法はいくつかありますが、ここでは最も自然でよく
@@ -150,12 +152,12 @@ namespace PuzzleBox
                     if (motion2D.velocity.y <= 0f)
                     {
                         // 落下しているなら、落下速度と関係なく、縦の速度をジャンプ速度にします。
-                        motion2D.velocity.y = jumpVelocity;
+                        motion2D.velocity = jumpDirection.normalized * jumpVelocity;
                     }
                     else
                     {
                         // 落下していなければ、ジャンプ速度を現在の縦の速度に足します。
-                        motion2D.velocity.y += jumpVelocity;
+                        motion2D.velocity += jumpDirection.normalized * jumpVelocity;
                     }
 
                     // 地面が動いていれば、その速度を自身の速度に足します。
