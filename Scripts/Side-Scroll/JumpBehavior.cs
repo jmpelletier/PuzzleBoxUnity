@@ -147,17 +147,20 @@ namespace PuzzleBox
                     // 速度が下がってしまいます。１フレーム目の重力の影響をなくすために、ジャンプ速度を上げます。
                     jumpVelocity += -Physics2D.gravity.y * jumpGravityMultiplier * Time.fixedDeltaTime;
 
+                    Vector2 jumpDir = jumpDirection.normalized;
+                    jumpDir *= (1f / jumpDir.y);
+
                     // 空中のジャンプの一つの実装です。ゲームのルールによって、
                     // ここの仕組みを変えることがあります。
                     if (motion2D.velocity.y <= 0f)
                     {
                         // 落下しているなら、落下速度と関係なく、縦の速度をジャンプ速度にします。
-                        motion2D.velocity = jumpDirection.normalized * jumpVelocity;
+                        motion2D.velocity = jumpDir * jumpVelocity;
                     }
                     else
                     {
                         // 落下していなければ、ジャンプ速度を現在の縦の速度に足します。
-                        motion2D.velocity += jumpDirection.normalized * jumpVelocity;
+                        motion2D.velocity += jumpDir * jumpVelocity;
                     }
 
                     // 地面が動いていれば、その速度を自身の速度に足します。
