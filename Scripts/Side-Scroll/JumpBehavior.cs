@@ -152,7 +152,7 @@ namespace PuzzleBox
 
                     // 空中のジャンプの一つの実装です。ゲームのルールによって、
                     // ここの仕組みを変えることがあります。
-                    if (motion2D.velocity.y <= 0f)
+                    if (motion2D.velocity.y < 0f)
                     {
                         // 落下しているなら、落下速度と関係なく、縦の速度をジャンプ速度にします。
                         motion2D.velocity = jumpDir * jumpVelocity;
