@@ -8,6 +8,8 @@ namespace PuzzleBox
     [RequireComponent(typeof(KinematicMotion2D))]
     public class MoveBehavior : MonoBehaviour
     {
+        public bool freeze = false;
+
         [Header("地上")]
         public float walkSpeed = 3f;
         public float walkAcceleration = 10f;
@@ -86,7 +88,7 @@ namespace PuzzleBox
             float horizontalDirection = Mathf.Sign(horizontalVelocity);
             float groundHorizontalDirection = Mathf.Sign(motion2D.lastGroundVelocity.x);
             float airSpeedX = Mathf.Abs(horizontalVelocity);
-            float speedLimit = airSpeed;
+            float speedLimit = freeze ? 0 : airSpeed;
 
             if (Mathf.Abs(motionInput.x) > 0)
             {
@@ -124,7 +126,7 @@ namespace PuzzleBox
 
             Vector2 velocity = motion2D.groundRight * Vector2.Dot(motion2D.groundRight, motion2D.velocity);
             float speed = velocity.magnitude;
-            float maxSpeed = isRunning ? runSpeed : walkSpeed;
+            float maxSpeed = freeze ? 0 : (isRunning ? runSpeed : walkSpeed);
 
             if (speed > maxSpeed)
             {
@@ -132,6 +134,11 @@ namespace PuzzleBox
                 Vector2 velocityChange = breakDirection * (speed - maxSpeed);
                 motion2D.velocity += velocityChange;
             }
+        }
+
+        public void Freeze(bool state)
+        {
+            freeze = state;
         }
     }
 }
