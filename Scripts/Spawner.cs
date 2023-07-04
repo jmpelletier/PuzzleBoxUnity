@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.Events;
 
 namespace PuzzleBox
 {
@@ -27,6 +28,7 @@ namespace PuzzleBox
         float spawnWaitTime = 0;
 
         public Action<GameObject> OnSpawn;
+        public UnityEvent<GameObject> SpawnActions;
 
         public void SpawnNow()
         {
@@ -52,6 +54,7 @@ namespace PuzzleBox
                 }
 
                 OnSpawn?.Invoke(newObject);
+                SpawnActions?.Invoke(newObject);
 
                 return newObject;
             }
