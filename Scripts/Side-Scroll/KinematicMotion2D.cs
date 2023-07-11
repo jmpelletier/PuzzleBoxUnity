@@ -168,7 +168,11 @@ namespace PuzzleBox
                         KinematicMotion2D otherMotion = hit.rigidbody.gameObject.GetComponent<KinematicMotion2D>();
                         if (otherMotion != null && otherMotion.pushable)
                         {
-                            hit.rigidbody.position += direction * distanceRemaining;
+                            // hit.rigidbody.position += direction * distanceRemaining;
+                            Vector2 startPosition = hit.rigidbody.position;
+                            otherMotion.Slide(direction * distanceRemaining);
+                            Vector2 pushDelta = hit.rigidbody.position - startPosition;
+                            distanceRemaining = pushDelta.magnitude;
                         }
 
                         Slide(direction * distanceRemaining, iterations + 1);

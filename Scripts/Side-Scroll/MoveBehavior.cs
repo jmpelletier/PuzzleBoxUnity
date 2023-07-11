@@ -54,10 +54,11 @@ namespace PuzzleBox
             Run(val.isPressed);
         }
 
-        void Run(bool state)
+        public void Run(bool state)
         {
             isRunning = state;
         }
+
 
         // Start is called before the first frame update
         void Start()
