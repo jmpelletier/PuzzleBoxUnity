@@ -122,7 +122,10 @@ namespace PuzzleBox
         // 衝突判定に必要な変数。
         // 効率をよくするために、メソッドの外で宣言しておきます。
         RaycastHit2D[] hits = new RaycastHit2D[8];
+        RaycastHit2D[] colliderHits = new RaycastHit2D[8];
         ContactFilter2D contactFilter = new ContactFilter2D();
+
+        Collider2D[] colliders;
 
         KinematicMotion2D groundMotion = null;
 
@@ -214,6 +217,27 @@ namespace PuzzleBox
             }
         }
 
+        int RigidbodyCast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] hits, float distance)
+        {
+            int totalHits = 0;
+            foreach(Collider2D coll in colliders)
+            {
+                if (coll != null && !coll.isTrigger)
+                {
+                    int count = coll.Cast(direction, contactFilter, colliderHits, distance);
+                    for (int i = 0; i < count; i++)
+                    {
+                        hits[totalHits] = colliderHits[i];
+                        totalHits++;
+                        if (totalHits >= hits.Length) {
+                            return hits.Length;
+                        }
+                    }
+                }
+            }
+            return totalHits;
+        }
+
         // このコンポーネントでもう一つの重要なメソッドです。移動方向（direction）と距離（distance）に
         // 移動した場合、何かに衝突するかを確認します。衝突があったかどうかを返します。衝突があった場合、
         // hitにその詳細が記憶されます。
@@ -230,7 +254,7 @@ namespace PuzzleBox
             // Rigidbody2Dの「Cast」メソッドで衝突判定を行います。「Cast」とは、直訳すると釣りの専門用語で
             // 「竿で仕掛けを飛ばす」という意味です。オブジェクトについているコライダが空間で指定と方向と距離で
             // 移動すれば、何に当たるかを計算する処理です。ゲームプログラミングの基本的な演算の一つです。
-            int hitCount = rb.Cast(direction, contactFilter, hits, distance);
+            int hitCount = RigidbodyCast(direction, contactFilter, hits, distance);
 
             // hitCountを当たったコライダの回数です。
             if (hitCount > 0) // 何かと衝突した...
@@ -276,6 +300,8 @@ namespace PuzzleBox
             // ここのスクリプトがオブジェクトを動かします。
             rb.bodyType = RigidbodyType2D.Kinematic;
             rb.useFullKinematicContacts = true;
+
+            colliders = GetComponentsInChildren<Collider2D>();
 
             // このスクリプトは重力が真下へ働く前提で作られています。しかし、プロジェクト設定で、
             // どの方向にも重力を設定する事ができます。もし、このスクリプトと互換性のない設定が
@@ -382,7 +408,7 @@ namespace PuzzleBox
             hit = new RaycastHit2D(); // デフォルトに初期化する
 
             // Rigidbody2Dにキャストしてもらいます。
-            int hitCount = rb.Cast(direction, contactFilter, hits, distance + margin);
+            int hitCount = RigidbodyCast(direction, contactFilter, hits, distance + margin);
             for (int i = 0; i < hitCount; i++)
             {
                 // 重力の方向と衝突した面の法線を比較します。
