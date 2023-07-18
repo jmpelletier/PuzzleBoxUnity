@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace PuzzleBox
 {
@@ -9,6 +10,7 @@ namespace PuzzleBox
         public float lifetime = 10f;
         public bool useAnimator = true;
         public string lifeEndTrigger = "Destroy";
+        public UnityEvent OnLifeEnd;
 
         Animator animationController;
 
@@ -71,6 +73,7 @@ namespace PuzzleBox
 
         public void DestroySelf()
         {
+            OnLifeEnd?.Invoke();
             Destroy(gameObject);
         }
     }
