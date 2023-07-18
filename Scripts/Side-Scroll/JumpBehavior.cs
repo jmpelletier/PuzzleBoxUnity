@@ -165,6 +165,7 @@ namespace PuzzleBox
 
                     // 地面が動いていれば、その速度を自身の速度に足します。
                     motion2D.velocity += motion2D.groundVelocity;
+                    motion2D.lastGroundVelocity += motion2D.groundVelocity;
 
                     // 重力調整を適用します。
                     motion2D.gravityMultiplier = jumpGravityMultiplier;
