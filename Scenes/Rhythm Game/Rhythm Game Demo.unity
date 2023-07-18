@@ -783,7 +783,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 676c15072a8d5304f97c88790f2c89cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noteResultPrefab: {fileID: 1677726751760382430, guid: 99454bbd1d4df6a4f990f3041c477476, type: 3}
+  noteResultPrefab: {fileID: 4296701584142407514, guid: 9726d8fa510006346bf25e9387f15a72, type: 3}
+  times:
+  - 0.1
+  - 0.05
   OnSongStart:
     m_PersistentCalls:
       m_Calls: []

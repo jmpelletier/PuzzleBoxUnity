@@ -13,6 +13,8 @@ namespace PuzzleBox
     {
         public GameObject noteResultPrefab;
 
+        public float[] times = { 0.1f, 0.05f }; 
+
         [Header("Events")]
         public UnityEvent OnSongStart;
         public UnityEvent OnSongEnd;
@@ -61,30 +63,41 @@ namespace PuzzleBox
             }
         }
 
-        protected void ShowNoteResult(string message, Vector3 position)
+        protected void ShowNoteResult(Vector3 position, int index)
         {
             if (noteResultPrefab != null)
             {
                 GameObject result = Instantiate(noteResultPrefab);
-                ResultLabel noteResult = result.GetComponent<ResultLabel>();
-                if (noteResult != null)
-                {
-                    noteResult.SetText(message);
-                }
+                //ResultLabel noteResult = result.GetComponent<ResultLabel>();
+                //if (noteResult != null)
+                //{
+                //    noteResult.SetText(message);
+                //}
                 result.transform.position = position;
+                result.SendMessage("SetIndex", index, SendMessageOptions.DontRequireReceiver);
             }
         }
 
         virtual protected void MissedNote(Vector3 position)
         {
-            ShowNoteResult("MISS!", position);
+            ShowNoteResult(position, 0);
             OnNoteMiss?.Invoke();
             
         }
 
         virtual protected void HitNote(Vector3 position, float timeDifference)
         {
-            ShowNoteResult("HIT!", position);
+            int index = 0;
+            for (int i = times.Length - 1; i >= 0; i--)
+            {
+                if (Mathf.Abs(timeDifference) < times[i])
+                {
+                    index = i + 1;
+                    break;
+                }
+            }
+
+            ShowNoteResult(position, index);
             OnNoteHit?.Invoke(timeDifference);
         }
 
