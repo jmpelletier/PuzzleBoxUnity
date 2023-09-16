@@ -268,6 +268,15 @@ namespace PuzzleBox
                 {
                     if (hits[i].distance < distance)
                     {
+                        PlatformEffector2D effector = hits[i].collider.GetComponent<PlatformEffector2D>();
+                        if (effector && effector.useOneWay) {
+                            // 注意：surfaceArcはまだ使用していない
+                            Vector2 localVelocity = effector.transform.InverseTransformVector(velocity);
+                            if (localVelocity.y > 0f) {
+                                continue;
+                            }
+                        }
+                        
                         // 今まで確認した接触の中で最も近いですので、詳細を覚えておきます。
                         distance = hits[i].distance; // 衝突までの移動距離
                         hit = hits[i]; // 衝突の詳細情報を記憶します。
