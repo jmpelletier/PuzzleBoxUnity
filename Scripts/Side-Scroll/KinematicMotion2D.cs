@@ -272,7 +272,7 @@ namespace PuzzleBox
                         if (effector && effector.useOneWay) {
                             // 注意：surfaceArcはまだ使用していない
                             Vector2 localVelocity = effector.transform.InverseTransformVector(velocity);
-                            if (localVelocity.y > 0f) {
+                            if (localVelocity.y > 0f || hits[i].distance < 0.0001f) {
                                 continue;
                             }
                         }
