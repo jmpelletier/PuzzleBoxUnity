@@ -271,8 +271,9 @@ namespace PuzzleBox
                         PlatformEffector2D effector = hits[i].collider.GetComponent<PlatformEffector2D>();
                         if (effector && effector.useOneWay) {
                             // 注意：surfaceArcはまだ使用していない
-                            Vector2 localVelocity = effector.transform.InverseTransformVector(velocity);
-                            if (localVelocity.y > 0f || hits[i].distance < 0.0001f) {
+                           Quaternion angle = effector.transform.rotation * Quaternion.Euler(0, 0, effector.rotationalOffset);
+                           float dot = Vector2.Dot(velocity, angle * Vector3.up);
+                           if (dot > 0 || hits[i].distance < 0.0001f) {
                                 continue;
                             }
                         }
