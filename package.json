@@ -9,7 +9,7 @@
     "dependencies": {
         "com.unity.cinemachine": "1.0.0",
         "com.unity.inputsystem": "1.0.0"
-    }
+    },
 
     "author": {
         "name": "Jean-Marc Pelletier",
