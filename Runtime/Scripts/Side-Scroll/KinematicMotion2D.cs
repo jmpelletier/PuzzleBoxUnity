@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace PuzzleBox
 {
+     [AddComponentMenu("Puzzle Box/Side-Scroll/Kinematic Motion 2D")]
     /**
      * このクラスは本来、Rigibody2Dが行うような処理を代わりに担当します。
      * プラットフォームゲームなど、より正確な動かいが必要な時に使います。

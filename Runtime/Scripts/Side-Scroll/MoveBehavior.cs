@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace PuzzleBox
 {
+     [AddComponentMenu("Puzzle Box/Side-Scroll/Move Behavior")]
     [RequireComponent(typeof(KinematicMotion2D))]
     public class MoveBehavior : MonoBehaviour
     {

@@ -5,6 +5,7 @@ using UnityEngine.Events;
 
 namespace PuzzleBox
 {
+    [AddComponentMenu("Puzzle Box/Time/Metronome")]
     public class Metronome : Stopwatch
     {
         [Header("Metronome")]

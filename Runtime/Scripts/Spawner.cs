@@ -6,6 +6,7 @@ using UnityEngine.Events;
 
 namespace PuzzleBox
 {
+    [AddComponentMenu("Puzzle Box/Spawner")]
     public class Spawner : MonoBehaviour
     {
         public enum Mode

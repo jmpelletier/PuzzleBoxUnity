@@ -5,6 +5,8 @@ using UnityEngine.Events;
 
 namespace PuzzleBox
 {
+
+    [AddComponentMenu("Puzzle Box/Trigger Actions")]
     public class TriggerActions : MonoBehaviour
     {
         public string targetTag = "";

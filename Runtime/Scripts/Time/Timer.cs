@@ -5,6 +5,7 @@ using UnityEngine.Events;
 
 namespace PuzzleBox
 {
+    [AddComponentMenu("Puzzle Box/Time/Timer")]
     public class Timer : Stopwatch
     {
         public enum CountDirection

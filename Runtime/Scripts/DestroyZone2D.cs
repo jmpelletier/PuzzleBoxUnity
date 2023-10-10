@@ -5,6 +5,7 @@ using UnityEngine.Events;
 
 namespace PuzzleBox
 {
+    [AddComponentMenu("Puzzle Box/DestroyZone2D")]
     public class DestroyZone2D : MonoBehaviour
     {
         public string targetTag = "";

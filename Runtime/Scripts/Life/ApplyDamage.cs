@@ -5,6 +5,7 @@ using UnityEngine.Events;
 
 namespace PuzzleBox
 {
+    [AddComponentMenu("Puzzle Box/Life/Apply Damage")]
     public class ApplyDamage : MonoBehaviour
     {
         public enum DisplayPosition
