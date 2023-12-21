@@ -152,16 +152,28 @@ namespace PuzzleBox
 
                     // 空中のジャンプの一つの実装です。ゲームのルールによって、
                     // ここの仕組みを変えることがあります。
-                    if (motion2D.velocity.y < 0f)
+                    if (motion2D.isGrounded)
                     {
-                        // 落下しているなら、落下速度と関係なく、縦の速度をジャンプ速度にします。
-                        motion2D.velocity = jumpDir * jumpVelocity;
+                        motion2D.velocity += jumpDir * jumpVelocity;
                     }
                     else
                     {
-                        // 落下していなければ、ジャンプ速度を現在の縦の速度に足します。
-                        motion2D.velocity += jumpDir * jumpVelocity;
+                        if (motion2D.velocity.y < 0f)
+                        {
+                            // 落下しているなら、落下速度と関係なく、縦の速度をジャンプ速度にします。
+                            Vector2 v = motion2D.velocity;
+                            Vector2 delta = jumpDir * jumpVelocity;
+                            v.x += delta.x;
+                            v.y = delta.y;
+                        }
+                        else
+                        {
+                            // 落下していなければ、ジャンプ速度を現在の縦の速度に足します。
+                            motion2D.velocity += jumpDir * jumpVelocity;
+                        }
                     }
+
+                    
 
                     // 地面が動いていれば、その速度を自身の速度に足します。
                     motion2D.velocity += motion2D.groundVelocity;
