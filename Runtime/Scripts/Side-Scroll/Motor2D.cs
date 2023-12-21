@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace PuzzleBox
 {
+     [AddComponentMenu("Puzzle Box/Side-Scroll/Motor 2D")]
     [RequireComponent(typeof(KinematicMotion2D))]
     public class Motor2D : MonoBehaviour
     {

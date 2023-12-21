@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace PuzzleBox
 {
+    [AddComponentMenu("Puzzle Box/Side-Scroll/Face Motion Input")]
     public class FaceMotionInput : MonoBehaviour
     {
         public bool flip = true;

@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace PuzzleBox
 {
+
+     [AddComponentMenu("Puzzle Box/Side-Scroll/Kinematic Position 2D")]
     [ExecuteAlways]
     [RequireComponent(typeof(KinematicMotion2D))]
     public class KinematicPosition2D : MonoBehaviour

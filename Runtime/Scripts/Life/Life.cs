@@ -5,6 +5,7 @@ using System;
 
 namespace PuzzleBox
 {
+    [AddComponentMenu("Puzzle Box/Life/Life")]
     [RequireComponent(typeof(Lifetime))]
     public class Life : MonoBehaviour
     {

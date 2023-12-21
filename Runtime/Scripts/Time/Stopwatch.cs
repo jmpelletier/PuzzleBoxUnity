@@ -5,6 +5,7 @@ using UnityEngine.Events;
 
 namespace PuzzleBox
 {
+    [AddComponentMenu("Puzzle Box/Time/Stopwatch")]
     public class Stopwatch : MonoBehaviour
     {
 

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 namespace PuzzleBox
 {
+    [AddComponentMenu("Puzzle Box/UI/Canvas Transition")]
     [ExecuteAlways]
     [RequireComponent(typeof(CanvasGroup))]
     [RequireComponent(typeof(Image))]

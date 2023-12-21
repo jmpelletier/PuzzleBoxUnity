@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace PuzzleBox
 {
+     [AddComponentMenu("Puzzle Box/Side-Scroll/Jump Behavior")]
     /**
      * このクラスはプレーヤーキャラクターなどの「ジャンプ」を実装します。
      * UnityのInput Systemからの入力、または外部スクリプトから制御できます。

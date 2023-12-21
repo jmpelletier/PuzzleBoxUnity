@@ -5,6 +5,7 @@ using TMPro;
 
 namespace PuzzleBox
 {
+    [AddComponentMenu("Puzzle Box/UI/Result Label")]
     public class ResultLabel : MonoBehaviour
     {
         public TextMeshProUGUI label;

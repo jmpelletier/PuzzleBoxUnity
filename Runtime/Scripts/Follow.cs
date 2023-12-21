@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace PuzzleBox
 {
+    [AddComponentMenu("Puzzle Box/Follow")]
     public class Follow : MonoBehaviour
     {
         public Transform target;

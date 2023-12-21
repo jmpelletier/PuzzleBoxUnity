@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 
 namespace PuzzleBox
 {
+    [AddComponentMenu("Puzzle Box/Sensor 2D")]
     public class Sensor2D : MonoBehaviour
     {
         public string targetTag = "";
