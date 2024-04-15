@@ -11,7 +11,7 @@ using UnityEngine;
 namespace PuzzleBox
 {
 
-    public class Toggle : ActionDelegate
+    public class Switch : ActionDelegate
     {
         public enum Mode
         {
@@ -66,20 +66,20 @@ namespace PuzzleBox
             }
         }
 
-        private void OnDrawGizmosSelected()
-        {
-            const float lineWidth = 0.1f;
-            const float arrowheadHalfWidth = 0.2f;
-            const float arrowheadLength = 0.5f;
+        //private void OnDrawGizmosSelected()
+        //{
+        //    const float lineWidth = 0.1f;
+        //    const float arrowheadHalfWidth = 0.2f;
+        //    const float arrowheadLength = 0.5f;
 
-            foreach (PuzzleBoxBehaviour target in targets)
-            {
-                if (target != null)
-                {
-                    PuzzleBox.EditorUtilities.DrawArrow(transform.position, target.transform.position, lineWidth, arrowheadHalfWidth, arrowheadLength, PuzzleBox.EditorUtilities.redColor);
-                }
-            }
-        }
+        //    foreach (PuzzleBoxBehaviour target in targets)
+        //    {
+        //        if (target != null)
+        //        {
+        //            PuzzleBox.EditorUtilities.DrawArrow(transform.position, target.transform.position, lineWidth, arrowheadHalfWidth, arrowheadLength, PuzzleBox.EditorUtilities.redColor);
+        //        }
+        //    }
+        //}
 
         public override string GetIcon()
         {

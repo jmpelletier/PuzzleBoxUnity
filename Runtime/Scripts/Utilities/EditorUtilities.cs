@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace PuzzleBox
 {
@@ -23,7 +24,6 @@ namespace PuzzleBox
 
         private static string _iconsPath = "Packages/com.jmpelletier.puzzlebox/Runtime/Images/Icons/";
         private static string _logosPath = "Packages/com.jmpelletier.puzzlebox/Runtime/Images/Logos/";
-        private static string _gizmosPath = "Packages/com.jmpelletier.puzzlebox/Gizmos/";
 
         public static Texture logo
         {
@@ -156,6 +156,19 @@ namespace PuzzleBox
         public static void DrawArrow(Vector3 from, Vector3 to, float lineWidth, float arrowheadHalfWidth, float arrowheadLength, Color color, Vector3 normal)
         {
             DrawArrow(from, to, lineWidth, arrowheadHalfWidth, arrowheadLength, color, false, normal);
+        }
+
+        public static bool DrawBezierConnection(Vector3 from, Vector3 to, float lineWidth, Color color, float minimumDistance = 0.25f)
+        {
+            Vector3 delta = to - from;
+            if (delta.sqrMagnitude > minimumDistance * minimumDistance)
+            {
+                Vector3 tangentFrom = new Vector3(delta.x, 0, delta.z) * 0.5f;
+                Vector3 tangentTo = new Vector3(0, delta.y, delta.z) * 0.5f;
+                Handles.DrawBezier(from, to, from + tangentFrom, to - tangentTo, color, null, lineWidth);
+                return true;
+            }
+            return false;
         }
 
         public static void DrawCollider(Collider2D coll, Color strokeColor, Color fillColor)
