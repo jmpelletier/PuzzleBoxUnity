@@ -1,0 +1,51 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+ */
+ 
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace PuzzleBox
+{
+    public class GotoPosition : ActionDelegate
+    {
+        public Transform position;
+        public Vector3 offset = Vector3.zero;
+        public bool keepVelocity = true;
+
+        // Start is called before the first frame update
+        void Start()
+        {
+
+        }
+
+        public override void Perform(GameObject sender, GameObject target)
+        {
+            if (target != null && position != null) 
+            {
+                target.transform.position = position.position + offset;
+
+                if (!keepVelocity)
+                {
+                    KinematicMotion2D motion2D = target.GetComponent<KinematicMotion2D>();
+                    if (motion2D != null)
+                    {
+                        motion2D.velocity = Vector2.zero;
+                        return;
+                    }
+
+                    Rigidbody2D rb = target.GetComponent<Rigidbody2D>();
+                    if (rb != null)
+                    {
+                        rb.velocity = Vector2.zero;
+                        return;
+                    }
+                }
+            }
+        }
+    }
+}
+
