@@ -18,6 +18,10 @@ namespace PuzzleBox
 
         }
 
+        public virtual string GetIcon()
+        {
+            return null;
+        }
 
         public virtual void Toggle()
         {

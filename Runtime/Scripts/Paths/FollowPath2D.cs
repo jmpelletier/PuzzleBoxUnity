@@ -225,6 +225,11 @@ namespace PuzzleBox
             EditorUtilities.DrawArrow(from, toWaypoint.position, lineWidth, arrowheadHalfWidth, arrowheadLength, color, twoWay);
         }
 
+        public override string GetIcon()
+        {
+            return "FollowPathIcon";
+        }
+
         private void OnDrawGizmos()
         {
             if (waypoints.Length == 0)

@@ -60,6 +60,11 @@ namespace PuzzleBox
         {
             Play();
         }
+
+        public override string GetIcon()
+        {
+            return "SoundIcon";
+        }
     }
 }
 

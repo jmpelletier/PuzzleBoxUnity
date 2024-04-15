@@ -123,6 +123,11 @@ namespace PuzzleBox
             }
         }
 
+        public override string GetIcon()
+        {
+            return "AnimateIcon";
+        }
+
         public override void Perform(GameObject sender, bool newState)
         {
             if (animator.runtimeAnimatorController != null)

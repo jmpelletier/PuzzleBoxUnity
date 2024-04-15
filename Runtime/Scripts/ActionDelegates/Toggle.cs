@@ -80,6 +80,11 @@ namespace PuzzleBox
                 }
             }
         }
+
+        public override string GetIcon()
+        {
+            return "ToggleIcon";
+        }
     }
 }
 

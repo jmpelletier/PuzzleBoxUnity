@@ -70,6 +70,11 @@ namespace PuzzleBox
                 UpdateTime(Time.fixedDeltaTime);
             }
         }
+
+        public override string GetIcon()
+        {
+            return "TimerIcon";
+        }
     }
 }
 

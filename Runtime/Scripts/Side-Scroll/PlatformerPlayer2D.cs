@@ -1278,6 +1278,11 @@ namespace PuzzleBox
             OnDestroyed?.Invoke();
             Destroy(gameObject);
         }
+
+        public override string GetIcon()
+        {
+            return "PlayerIcon";
+        }
     }
 } // namespace
 

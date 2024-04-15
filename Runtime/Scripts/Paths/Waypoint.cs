@@ -42,6 +42,11 @@ namespace PuzzleBox
                 return float.PositiveInfinity;
             }
         }
+
+        public override string GetIcon()
+        {
+            return "WaypointIcon";
+        }
     }
 }
 

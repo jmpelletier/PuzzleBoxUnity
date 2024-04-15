@@ -77,6 +77,7 @@ namespace PuzzleBox
                 offset += 20;
             };
 
+            // We don't display the PuzzleBox icon if there is only a HierarchyCustomizer.
             bool hasPuzzleBoxComponent = false;
             foreach(PuzzleBoxBehaviour puzzleBoxBehaviour in puzzleBoxBehaviours)
             {
@@ -87,16 +88,34 @@ namespace PuzzleBox
                 }
             }
 
+            // Adjust the color to fit the skin.
             Color oldColor = GUI.color;
             GUI.color = EditorGUIUtility.isProSkin ? PuzzleBox.EditorUtilities.lightColor : PuzzleBox.EditorUtilities.darkColor;
 
-            
+
+            // Draw the PuzzleBox icon if needed.
             if (hasPuzzleBoxComponent && PuzzleBox.EditorUtilities.icon != null)
             {
                 Vector2 size = DrawTexture(PuzzleBox.EditorUtilities.icon, selectionRect, offset, Alignment.Right);
                 offset += size.x;
             }
 
+            // Now draw the other icons
+            foreach (PuzzleBoxBehaviour puzzleBoxBehaviour in puzzleBoxBehaviours)
+            {
+                string iconName = puzzleBoxBehaviour.GetIcon();
+                if (!string.IsNullOrEmpty(iconName))
+                {
+                    Texture icon = EditorUtilities.GetIconTexture(iconName);
+                    if (icon != null)
+                    {
+                        Vector2 size = DrawTexture(icon, selectionRect, offset, Alignment.Right);
+                        offset += size.x;
+                    }
+                }
+            }
+
+            // Then, add the icons added by the HierarchyCustomizer
             if (customizer)
             {
                 if (customizer.icons != null)

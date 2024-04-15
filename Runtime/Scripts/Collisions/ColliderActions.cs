@@ -160,6 +160,11 @@ namespace PuzzleBox
 
             EditorUtilities.DrawCollider(coll, strokeColor, fillColor);
         }
+
+        public override string GetIcon()
+        {
+            return "CollisionIcon";
+        }
     }
 }
 

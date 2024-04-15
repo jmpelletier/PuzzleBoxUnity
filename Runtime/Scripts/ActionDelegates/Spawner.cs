@@ -111,6 +111,11 @@ namespace PuzzleBox
             
             Handles.Label(transform.position, "Spawn: " + items);
         }
+
+        public override string GetIcon()
+        {
+            return "SpawnIcon";
+        }
     }
 }
 
