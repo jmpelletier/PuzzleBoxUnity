@@ -10,25 +10,76 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 using static Codice.Client.BaseCommands.Import.Commit;
+using System.Reflection;
+using static Cinemachine.CinemachineBlendDefinition;
+using UnityEngine.UIElements;
 
 namespace PuzzleBox
 {
     public static class PuzzleBoxGizmos
     {
-        static float connectionLineWidth = 2f;
-        static Color outConnectionColor = new Color(0.11f, 0.47f, 0.98f);
+        const float connectionLineWidth = 2f;
+
+        public const string gizmosPath  = "Packages/com.jmpelletier.puzzlebox/Gizmos/";
+
+        static public Color gizmoTextColor { get; private set; } = new Color(0.11f, 0.47f, 0.98f);
+        static public Color gizmoConnectionColor { get; private set; } = gizmoTextColor;
+
+
+        static private GUIStyle _gizmoTextStyle = GUIStyle.none;
+        static public GUIStyle gizmoTextStyle
+        {
+            get
+            {
+                if (_gizmoTextStyle == GUIStyle.none)
+                {
+                    _gizmoTextStyle = new GUIStyle();
+                    _gizmoTextStyle.normal.textColor = gizmoTextColor;
+                    _gizmoTextStyle.alignment = TextAnchor.UpperCenter;
+                }
+                return _gizmoTextStyle;
+            }
+        }
+
+        static private void DrawConnections(Vector3 position, IEnumerable<MonoBehaviour> targets, bool selected)
+        {
+            if (targets != null)
+            {
+                foreach (var t in targets)
+                {
+                    if (t != null)
+                    {
+                        if (!EditorUtilities.DrawBezierConnection(position, t.transform.position, selected ? connectionLineWidth * 3 : connectionLineWidth, gizmoConnectionColor))
+                        {
+                            Handles.color = gizmoConnectionColor;
+                            Handles.DrawWireDisc(t.transform.position, -Camera.current.transform.forward, 0.1f, connectionLineWidth);
+                        }
+                    }
+                }
+            }
+        }
+
+        static private void DrawIcon(MonoBehaviour target)
+        {
+            Gizmos.color = Color.white;
+            Gizmos.DrawIcon(target.transform.position, $"{gizmosPath}{target.GetType().Name}Gizmo.png", true);
+        }
+
+        static private void DrawLabel(MonoBehaviour target, string text)
+        {
+            if (!string.IsNullOrEmpty(text))
+            {
+                Handles.Label(target.transform.position + Vector3.down * 0.25f, text, gizmoTextStyle);
+            }
+        }
 
         [DrawGizmo(GizmoType.Active | GizmoType.Pickable | GizmoType.NonSelected)]
         static void DrawPuzzleBoxGizmo(PuzzleBox.Spawner target, GizmoType gizmoType)
         {
             Vector3 position = target.transform.position;
 
-            Gizmos.color = Color.white;
-            Gizmos.DrawIcon(position, $"PuzzleBox/{target.GetType().Name}Gizmo.png", true);
+            DrawIcon(target);
 
-            GUIStyle style = new GUIStyle();
-            style.normal.textColor = outConnectionColor;
-            style.alignment = TextAnchor.UpperCenter;
             string displayText = "";
             foreach (GameObject prefab in target.prefabs)
             {
@@ -42,10 +93,7 @@ namespace PuzzleBox
                 }
             }
 
-            if (!string.IsNullOrEmpty(displayText))
-            {
-                Handles.Label(position, displayText, style);
-            }
+            DrawLabel(target, displayText);
         }
 
         [DrawGizmo(GizmoType.Active | GizmoType.Pickable | GizmoType.NonSelected)]
@@ -54,38 +102,8 @@ namespace PuzzleBox
             Vector3 position = target.transform.position;
             bool selected = Selection.activeGameObject == target.gameObject;
 
-            foreach (var t in target.targets)
-            {
-                if (t != null)
-                {
-                    if (!EditorUtilities.DrawBezierConnection(target.transform.position, t.transform.position, selected ? connectionLineWidth * 3 : connectionLineWidth, outConnectionColor))
-                    {
-                        Handles.color = outConnectionColor;
-                        Handles.DrawWireDisc(t.transform.position, -Camera.current.transform.forward, 0.1f, connectionLineWidth);
-                    }
-                }
-            }
-
-            Gizmos.color = Color.white;
-            Gizmos.DrawIcon(position, $"PuzzleBox/{target.GetType().Name}Gizmo.png", true);
-        }
-
-        static void DrawActionDelegateConnections(Vector3 from, ActionDelegate[] actionDelegates, bool selected = false)
-        {
-            if (actionDelegates != null)
-            {
-                foreach(ActionDelegate actionDelegate in actionDelegates)
-                {
-                    if (actionDelegate != null)
-                    {
-                        if (!EditorUtilities.DrawBezierConnection(from, actionDelegate.transform.position, selected ? connectionLineWidth * 3 : connectionLineWidth, outConnectionColor))
-                        {
-                            Handles.color = outConnectionColor;
-                            Handles.DrawWireDisc(actionDelegate.transform.position, -Camera.current.transform.forward, 0.1f, connectionLineWidth);
-                        }
-                    }
-                }
-            }
+            DrawConnections(target.transform.position, target.targets, selected);
+            DrawIcon(target);
         }
 
         [DrawGizmo(GizmoType.Active | GizmoType.Pickable | GizmoType.NonSelected)]
@@ -94,18 +112,13 @@ namespace PuzzleBox
             Vector3 position = target.transform.position;
             bool selected = Selection.activeGameObject == target.gameObject;
 
-            DrawActionDelegateConnections(position, target.OnStart, selected);
-            DrawActionDelegateConnections(position, target.OnUpdate, selected);
-            DrawActionDelegateConnections(position, target.OnPause, selected);
-            DrawActionDelegateConnections(position, target.OnEnd, selected);
+            DrawConnections(position, target.OnStart, selected);
+            DrawConnections(position, target.OnUpdate, selected);
+            DrawConnections(position, target.OnPause, selected);
+            DrawConnections(position, target.OnEnd, selected);
 
-            Gizmos.color = Color.white;
-            Gizmos.DrawIcon(position, $"PuzzleBox/{target.GetType().Name}Gizmo.png", true);
-
-            GUIStyle style = new GUIStyle();
-            style.normal.textColor = outConnectionColor;
-            style.alignment = TextAnchor.UpperCenter;
-            Handles.Label(position, $"{target.duration:0.##} s", style);
+            DrawIcon(target);
+            DrawLabel(target, $"{target.duration:0.##} s");
         }
 
         [DrawGizmo(GizmoType.Active | GizmoType.Pickable | GizmoType.NonSelected)]
@@ -114,52 +127,38 @@ namespace PuzzleBox
             Vector3 position = target.transform.position;
             bool selected = Selection.activeGameObject == target.gameObject;
 
-            DrawActionDelegateConnections(position, target.OnStart, selected);
-            DrawActionDelegateConnections(position, target.OnUpdate, selected);
-            DrawActionDelegateConnections(position, target.OnPause, selected);
-            DrawActionDelegateConnections(position, target.OnTick, selected);
+            DrawConnections(position, target.OnStart, selected);
+            DrawConnections(position, target.OnUpdate, selected);
+            DrawConnections(position, target.OnPause, selected);
+            DrawConnections(position, target.OnTick, selected);
 
-            Gizmos.color = Color.white;
-            Gizmos.DrawIcon(position, $"PuzzleBox/{target.GetType().Name}Gizmo.png", true);
-
-            GUIStyle style = new GUIStyle();
-            style.normal.textColor = outConnectionColor;
-            style.alignment = TextAnchor.UpperCenter;
-            Handles.Label(position, $"{target.interval:0.##} s", style);
+            DrawIcon(target);
+            DrawLabel(target, $"{target.interval:0.##} s");
         }
 
-        [InitializeOnLoad]
-        static class CopyGizmos
+        [DrawGizmo(GizmoType.Active | GizmoType.Pickable | GizmoType.NonSelected)]
+        static void DrawPuzzleBoxGizmo(PuzzleBox.Delay target, GizmoType gizmoType)
         {
+            Vector3 position = target.transform.position;
+            bool selected = Selection.activeGameObject == target.gameObject;
 
-            static CopyGizmos()
-            {
-                CopyPackageGizmos();
-            }
+            DrawConnections(position, target.targets, selected);
 
-            [MenuItem("Tools/Copy Package Gizmos")]
-            static public void CopyPackageGizmos()
-            {
-                Debug.Log("Copying Gizmos...");
-                string sourceDirectory = Path.Combine(Application.dataPath, "../Packages/com.jmpelletier.puzzlebox/Gizmos");
-                string destinationDirectory = Path.Combine(Application.dataPath, "Gizmos/PuzzleBox");
+            DrawIcon(target);
+            DrawLabel(target, $"{target.delay:0.##} s");
+        }
 
-                if (!Directory.Exists(destinationDirectory))
-                {
-                    Directory.CreateDirectory(destinationDirectory);
-                }
+        [DrawGizmo(GizmoType.Active | GizmoType.Pickable | GizmoType.NonSelected)]
+        static void DrawPuzzleBoxGizmo(PuzzleBox.ColliderActions target, GizmoType gizmoType)
+        {
+            Vector3 position = target.transform.position;
+            bool selected = Selection.activeGameObject == target.gameObject;
 
-                string[] files = Directory.GetFiles(sourceDirectory);
+            DrawConnections(position, target.triggerEnterActions, selected);
+            DrawConnections(position, target.triggerExitActions, selected);
+            DrawConnections(position, target.collisionActions, selected);
 
-                foreach (string file in files)
-                {
-                    if (Path.GetExtension(file) == ".png" || Path.GetExtension(file) == ".jpg")
-                    {
-                        string destinationFile = Path.Combine(destinationDirectory, Path.GetFileName(file));
-                        File.Copy(file, destinationFile, true);
-                    }
-                }
-            }
+            DrawIcon(target);
         }
     }
 }

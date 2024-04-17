@@ -158,14 +158,19 @@ namespace PuzzleBox
             DrawArrow(from, to, lineWidth, arrowheadHalfWidth, arrowheadLength, color, false, normal);
         }
 
-        public static bool DrawBezierConnection(Vector3 from, Vector3 to, float lineWidth, Color color, float minimumDistance = 0.25f)
+        public static bool DrawBezierConnection(Vector3 from, Vector3 to, float lineWidth, Color color, float minimumDistance = 0.25f, float horizontalOffset = 0.25f)
         {
             Vector3 delta = to - from;
+            float dx = 5f;
+            Vector3 offset = Vector3.right * horizontalOffset;
+            from += offset;
+            to -= offset;
             if (delta.sqrMagnitude > minimumDistance * minimumDistance)
             {
-                Vector3 tangentFrom = new Vector3(delta.x, 0, delta.z) * 0.5f;
-                Vector3 tangentTo = new Vector3(0, delta.y, delta.z) * 0.5f;
+                Vector3 tangentFrom = new Vector3(dx, 0, delta.z) * 0.5f;
+                Vector3 tangentTo = new Vector3(dx, 0, delta.z) * 0.5f;
                 Handles.DrawBezier(from, to, from + tangentFrom, to - tangentTo, color, null, lineWidth);
+                DrawArrowhead(to, to - Vector3.right * 0.1f, 0.05f, color);
                 return true;
             }
             return false;
