@@ -40,10 +40,12 @@ namespace PuzzleBox
         [Header("ジャンプ")]
         // ジャンプの最小の高さ。プレーヤーがジャンプボタンを一瞬で離した場合、
         // キャラクターはこの高さまで飛びます。
+        [Min(0.1f)]
         public float minJumpHeight = 1f;
 
         // ジャンプの最高の高さです。プレーヤーがずっとジャンプボタンを押し続けると
         // この高さまで飛びます。
+        [Min(0.1f)]
         public float maxJumpHeight = 3f;
 
         public float jumpAngle = 0f;
