@@ -99,8 +99,10 @@ namespace PuzzleBox
             _trianglePoints[1] = basePosition + cross * halfWidth;
             _trianglePoints[2] = basePosition - cross * halfWidth;
 
+            Color c = Handles.color;
             Handles.color = color;
             Handles.DrawAAConvexPolygon(_trianglePoints);
+            Handles.color = c;
         }
 
         public static void DrawThickLine(Vector3 startPosition, Vector3 endPosition, float width, Color color, Vector3 normal)
@@ -115,8 +117,38 @@ namespace PuzzleBox
             _rectanglePoints[2] = endPosition - cross * halfWidth;
             _rectanglePoints[3] = startPosition - cross * halfWidth;
 
+            Color c = Handles.color;
             Handles.color = color;
             Handles.DrawAAConvexPolygon(_rectanglePoints);
+            Handles.color = c;
+        }
+
+        public static void DrawRectangle3D(Vector3 center, Vector2 size, Color color, Vector3 normal, Vector3 up)
+        {
+            Vector3 right = Vector3.Cross(up, normal);
+            _rectanglePoints[0] = center + right * size.x + up * size.y;
+            _rectanglePoints[1] = center + right * size.x - up * size.y;
+            _rectanglePoints[2] = center - right * size.x - up * size.y;
+            _rectanglePoints[3] = center - right * size.x + up * size.y;
+
+            Color c = Handles.color;
+            Handles.color = color;
+            Handles.DrawAAConvexPolygon(_rectanglePoints);
+            Handles.color = c;
+        }
+
+        public static void DrawScreenSpaceRectangle(Vector3 center, Vector2 size, float distance, Color color)
+        {
+            Vector3 halfSize = size * 0.5f;
+            _rectanglePoints[0] = Camera.current.ScreenToWorldPoint(center - halfSize); // Bottom left
+            _rectanglePoints[1] = Camera.current.ScreenToWorldPoint(center + new Vector3(halfSize.x, -halfSize.y, 0)); // Bottom right
+            _rectanglePoints[2] = Camera.current.ScreenToWorldPoint(center + halfSize); // Top right
+            _rectanglePoints[3] = Camera.current.ScreenToWorldPoint(center + new Vector3(-halfSize.x, halfSize.y, 0)); // Top left
+
+            Color c = Handles.color;
+            Handles.color = color;
+            Handles.DrawAAConvexPolygon(_rectanglePoints);
+            Handles.color = c;
         }
 
         public static void DrawArrowhead(Vector3 tipPosition, Vector3 basePosition, float halfWidth, Color color)
@@ -161,16 +193,36 @@ namespace PuzzleBox
         public static bool DrawBezierConnection(Vector3 from, Vector3 to, float lineWidth, Color color, float minimumDistance = 0.25f, float horizontalOffset = 0.25f)
         {
             Vector3 delta = to - from;
-            float dx = 5f;
+            float dx = Mathf.Max(1f, Mathf.Abs(delta.x));
             Vector3 offset = Vector3.right * horizontalOffset;
             from += offset;
             to -= offset;
+            Vector3 arrowheadBase = to - Vector3.right * 0.07f;
             if (delta.sqrMagnitude > minimumDistance * minimumDistance)
             {
                 Vector3 tangentFrom = new Vector3(dx, 0, delta.z) * 0.5f;
                 Vector3 tangentTo = new Vector3(dx, 0, delta.z) * 0.5f;
-                Handles.DrawBezier(from, to, from + tangentFrom, to - tangentTo, color, null, lineWidth);
-                DrawArrowhead(to, to - Vector3.right * 0.1f, 0.05f, color);
+                Handles.DrawBezier(from, arrowheadBase, from + tangentFrom, to - tangentTo, color, null, lineWidth);
+                DrawArrowhead(to, arrowheadBase, 0.03f, color);
+                return true;
+            }
+            return false;
+        }
+
+        public static bool DrawStraightConnection(Vector3 from, Vector3 to, float lineWidth, Color color, float minimumDistance = 0.25f, float offset = 0.25f)
+        {
+            Vector3 delta = to - from;
+
+            if (delta.sqrMagnitude > minimumDistance * minimumDistance)
+            {
+                float arrowHeadLength = lineWidth * 2;
+                Vector3 direction = delta.normalized;
+                Vector3 positionOffset = direction * offset;
+                from += positionOffset;
+                to -= positionOffset + direction * arrowHeadLength;
+
+                DrawThickLine(from, to, lineWidth, color, Vector3.forward);
+                DrawArrowhead(to + direction * arrowHeadLength, to, arrowHeadLength * 0.5f, color);
                 return true;
             }
             return false;
@@ -180,6 +232,7 @@ namespace PuzzleBox
         {
             if (coll == null) return;
 
+            Color c = Handles.color;
             if (coll is BoxCollider2D)
             {
                 BoxCollider2D box = (BoxCollider2D)coll;
@@ -216,6 +269,7 @@ namespace PuzzleBox
             {
                 Handles.DrawSolidRectangleWithOutline(new Rect(coll.bounds.min, coll.bounds.size), fillColor, Color.clear);
             }
+            Handles.color = c;
         }
 
         public static bool SceneIsIncludedInBuild(string sceneName)
