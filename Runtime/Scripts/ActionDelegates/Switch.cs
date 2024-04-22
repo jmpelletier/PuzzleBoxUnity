@@ -20,7 +20,7 @@ namespace PuzzleBox
         }
 
         public Mode mode = Mode.Toggle;
-        public PuzzleBoxBehaviour[] targets;
+        public ActionDelegate.Target[] targets;
         public bool state = true;
 
         // Start is called before the first frame update
@@ -32,11 +32,11 @@ namespace PuzzleBox
         public override void Perform(GameObject sender, bool value)
         {
             state = value;
-            foreach (PuzzleBoxBehaviour target in targets)
+            foreach (ActionDelegate.Target target in targets)
             {
-                if (target != null)
+                if (target.behaviour != null)
                 {
-                    target.Toggle(state);
+                    target.behaviour.Toggle(state);
                 }
             }
         }
@@ -46,40 +46,25 @@ namespace PuzzleBox
             switch(mode)
             {
                 case Mode.Toggle:
-                    foreach (PuzzleBoxBehaviour target in targets)
+                    foreach (ActionDelegate.Target target in targets)
                     {
-                        if (target != null)
+                        if (target.behaviour != null)
                         {
-                            target.Toggle();
+                            target.behaviour.Toggle();
                         }
                     }
                     break;
                 case Mode.Set:
-                    foreach(PuzzleBoxBehaviour target in targets)
+                    foreach(ActionDelegate.Target target in targets)
                     {
-                        if (target != null)
+                        if (target.behaviour != null)
                         {
-                            target.Toggle(state);
+                            target.behaviour.Toggle(state);
                         }
                     }
                     break;
             }
         }
-
-        //private void OnDrawGizmosSelected()
-        //{
-        //    const float lineWidth = 0.1f;
-        //    const float arrowheadHalfWidth = 0.2f;
-        //    const float arrowheadLength = 0.5f;
-
-        //    foreach (PuzzleBoxBehaviour target in targets)
-        //    {
-        //        if (target != null)
-        //        {
-        //            PuzzleBox.EditorUtilities.DrawArrow(transform.position, target.transform.position, lineWidth, arrowheadHalfWidth, arrowheadLength, PuzzleBox.EditorUtilities.redColor);
-        //        }
-        //    }
-        //}
 
         public override string GetIcon()
         {
