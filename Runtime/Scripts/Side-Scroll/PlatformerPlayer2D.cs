@@ -1255,6 +1255,7 @@ namespace PuzzleBox
 
         private bool isKilled = false;
 
+        [PuzzleBox.Action]
         public void Kill()
         {
             if (!isKilled)
