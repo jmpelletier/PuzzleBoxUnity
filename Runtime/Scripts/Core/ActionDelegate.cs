@@ -3,7 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
- 
+
+using System.Reflection;
 using UnityEngine;
 
 namespace PuzzleBox
@@ -19,6 +20,15 @@ namespace PuzzleBox
         public virtual void Perform(GameObject sender, GameObject target) { }
 
         public virtual void Pause() { }
+
+        [System.Serializable]
+        public struct Target
+        {
+            public GameObject target;
+            public PuzzleBoxBehaviour behaviour;
+            public string methodName;
+        }
+
 
         public static void Invoke(ActionDelegate[] delegates, GameObject sender)
         {
