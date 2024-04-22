@@ -12,11 +12,12 @@ using UnityEngine.Events;
 
 namespace PuzzleBox
 {
-
+    [ExecuteAlways]
     [AddComponentMenu("Puzzle Box/Collider Actions")]
     [RequireComponent(typeof(UniqueID))]
     public class ColliderActions : PersistentBehaviour
     {
+
         [Space]
         public ActionDelegate[] triggerEnterActions;
         public ActionDelegate[] triggerExitActions;
@@ -33,6 +34,10 @@ namespace PuzzleBox
         public bool left = true;
 
         [Space]
+        public ObjectReference otherObjectReference;
+        public bool useParentCollider = false;
+
+        [Space]
         [Tooltip("一回反応したら無効にするか？")]
         public bool deactivateOnEnter = false;
         public bool deactivateOnExit = false;
@@ -44,9 +49,39 @@ namespace PuzzleBox
 
         public int triggerCount = 0;
 
+        private class ColliderActionListener : MonoBehaviour
+        {
+            public ColliderActions parent;
+
+            private void OnTriggerEnter2D(Collider2D collision)
+            {
+                parent?.OnTriggerEnter2D(collision);
+            }
+
+            private void OnTriggerExit2D(Collider2D collision)
+            {
+                parent?.OnTriggerExit2D(collision);
+            }
+
+            private void OnCollisionEnter2D(Collision2D collision)
+            {
+                parent?.OnCollisionEnter2D(collision);
+            }
+        }
+
         private void Start()
         {
             triggerCount = 0;
+
+            if (useParentCollider && Application.isPlaying)
+            {
+                Collider2D coll = GetComponentInParent<Collider2D>();
+                if (coll != null)
+                {
+                    ColliderActionListener listener = coll.gameObject.AddComponent<ColliderActionListener>();
+                    listener.parent = this;
+                }
+            }
         }
 
         private void OnCollisionEnter2D(Collision2D collision)
@@ -82,6 +117,11 @@ namespace PuzzleBox
                     return;
                 }
 
+                if (otherObjectReference != null)
+                {
+                    otherObjectReference.referencedObject = collision.gameObject;
+                }
+
                 foreach (ActionDelegate action in collisionActions)
                 {
                     if (action != null)
@@ -107,6 +147,11 @@ namespace PuzzleBox
 
                 if (triggerCount == 1)
                 {
+                    if (otherObjectReference != null)
+                    {
+                        otherObjectReference.referencedObject = collision.gameObject;
+                    }
+
                     foreach (ActionDelegate action in triggerEnterActions)
                     {
                         if (action != null)
@@ -141,6 +186,11 @@ namespace PuzzleBox
                             action.Perform(gameObject);
                             action.Perform(gameObject, false);
                         }
+                    }
+
+                    if (otherObjectReference != null)
+                    {
+                        otherObjectReference.referencedObject = null;
                     }
 
                     if (deactivateOnEnter)
