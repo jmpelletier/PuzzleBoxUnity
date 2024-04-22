@@ -7,18 +7,30 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 namespace PuzzleBox
 {
     public class SendMessage : ActionDelegate
     {
+        [System.Serializable]
+        public struct MessageTarget
+        {
+            public GameObject target;
+            public PuzzleBoxBehaviour behaviour;
+        }
+
+        public MessageTarget[] targets;
         public string message = "";
 
-        public override void Perform(GameObject sender, GameObject target)
+        public override void Perform(GameObject sender)
         {
-            if (message != "" && target != null) 
+            foreach(MessageTarget target in targets)
             {
-                target.SendMessage(message);    
+                if (target.behaviour != null)
+                {
+                    target.behaviour.Invoke(message);
+                }
             }
         }
     }
