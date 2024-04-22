@@ -25,6 +25,7 @@ namespace PuzzleBox
         }
 
         public Mode mode = Mode.Cycle;
+        public bool moving = true;
         public bool oneWay = false;
         public Waypoint[] waypoints;
 
@@ -33,6 +34,7 @@ namespace PuzzleBox
 
         KinematicMotion2D motion2D;
         private int direction = 1;
+        private bool stopAtNextWaypoint = false;
 
         // Start is called before the first frame update
         void Start()
@@ -55,8 +57,34 @@ namespace PuzzleBox
             motion2D.velocity = Vector2.zero;
         }
 
+        [PuzzleBox.Action]
+        public void Move()
+        {
+            moving = true;
+            stopAtNextWaypoint = false;
+        }
+
+        [PuzzleBox.Action]
+        public void Stop()
+        {
+            moving = false;
+            stopAtNextWaypoint = false;
+        }
+
+        [PuzzleBox.Action]
+        public void StopNext()
+        {
+            stopAtNextWaypoint = true;
+        }
+
         private void NextIndex()
         {
+            if (stopAtNextWaypoint)
+            {
+                moving = false;
+                stopAtNextWaypoint = false;
+            }
+
             if (waypoints.Length <= 1)
             {
                 return;
@@ -105,8 +133,9 @@ namespace PuzzleBox
         // Update is called once per frame
         void FixedUpdate()
         {
-            if (waypoints.Length == 0)
+            if (waypoints.Length == 0 || !moving)
             {
+                motion2D.velocity = Vector2.zero;
                 return;
             }
 
