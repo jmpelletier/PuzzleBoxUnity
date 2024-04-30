@@ -11,6 +11,7 @@ using UnityEngine;
 
 namespace PuzzleBox
 {
+    [PuzzleBox.HideInEnumeration]
     public class Waypoint : PuzzleBoxBehaviour
     {
         [Min(0)]

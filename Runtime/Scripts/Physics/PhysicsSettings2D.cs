@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace PuzzleBox
 {
-    [AddComponentMenu("Puzzle Box/Physics Settings 2D")]
+    [PuzzleBox.HideInEnumeration]
     public class PhysicsSettings2D : PuzzleBoxBehaviour
     {
         public float gravity = -9.8f;

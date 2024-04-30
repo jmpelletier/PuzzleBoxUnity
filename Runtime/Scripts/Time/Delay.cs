@@ -12,7 +12,7 @@ using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 
 namespace PuzzleBox
 {
-    [AddComponentMenu("Puzzle Box/Time/Delay")]
+    [PuzzleBox.HideInEnumeration]
     [ExecuteAlways]
     public class Delay : ActionDelegate
     {
