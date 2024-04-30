@@ -18,10 +18,13 @@ namespace PuzzleBox
         {
             public GameObject target;
             public PuzzleBoxBehaviour behaviour;
+            public string targetName; // Use for targeting a child in hierarchy. This is gameObject.name
         }
 
-        public MessageTarget[] targets;
         public string message = "";
+        public MessageTarget[] targets;
+        public GameObject[] arguments;
+        
 
         public override void Perform(GameObject sender)
         {
