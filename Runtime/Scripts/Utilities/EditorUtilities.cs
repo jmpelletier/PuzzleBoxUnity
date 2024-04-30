@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TextCore.Text;
 using UnityEngine.UIElements;
 
 namespace PuzzleBox
@@ -19,24 +20,25 @@ namespace PuzzleBox
         public static Color darkColor = new Color(0.4f, 0.4f, 0.4f);
         public static Color redColor = new Color(1, 0.15f, 0f);
 
-        private static Texture _puzzleBoxLogoTexture = null;
         private static Dictionary<string, Texture> _iconTextures = new Dictionary<string, Texture>();
 
         private static string _iconsPath = "Packages/com.jmpelletier.puzzlebox/Runtime/Images/Icons/";
         private static string _logosPath = "Packages/com.jmpelletier.puzzlebox/Runtime/Images/Logos/";
+        private static string _texturesPath = "Packages/com.jmpelletier.puzzlebox/Editor/Images/";
 
-        public static Texture logo
+        public class Asset<T> where T : UnityEngine.Object
         {
-            get
+            public T _asset;
+            public Asset(string path)
             {
-                if (_puzzleBoxLogoTexture == null)
-                {
-                    _puzzleBoxLogoTexture = AssetDatabase.LoadAssetAtPath<Texture>(_logosPath + "PuzzleBox_Logo_Small.png");
-                }
-
-                return _puzzleBoxLogoTexture;
+                _asset = AssetDatabase.LoadAssetAtPath<T>(path);
             }
+
+            public T Get() { return _asset; }
         }
+
+        public static Asset<Texture> logo = new Asset<Texture>(_logosPath + "PuzzleBox_Logo_Small.png");
+        public static Asset<Texture2D> bezierConnectionTexture = new Asset<Texture2D>(_texturesPath + "BezierConnectionTexture.png");
 
         public static Texture GetIconTexture(string iconName)
         {
@@ -123,6 +125,11 @@ namespace PuzzleBox
             Handles.color = c;
         }
 
+        public static void DrawRectangle3D(Vector3 center, Vector2 size, Color color)
+        {
+            DrawRectangle3D(center, size, color, -Camera.current.transform.forward, Camera.current.transform.up);
+        }
+
         public static void DrawRectangle3D(Vector3 center, Vector2 size, Color color, Vector3 normal, Vector3 up)
         {
             Vector3 right = Vector3.Cross(up, normal);
@@ -135,6 +142,21 @@ namespace PuzzleBox
             Handles.color = color;
             Handles.DrawAAConvexPolygon(_rectanglePoints);
             Handles.color = c;
+        }
+
+        public static float ScreenDistanceToWorldDistance(float distance, Vector3 worldPosition)
+        {
+            Vector3 screenPosition = Camera.current.WorldToScreenPoint(worldPosition);
+            screenPosition.x += distance;
+            Vector3 offsetWorldPosition = Camera.current.ScreenToWorldPoint(screenPosition);
+            return Vector3.Distance(offsetWorldPosition, worldPosition);
+        }
+
+        public static float WorldDistanceToScreenDistance(float distance, Vector3 worldPosition)
+        {
+            Vector3 screenPosition = Camera.current.WorldToScreenPoint(worldPosition);
+            Vector3 offsetScreenPosition = Camera.current.WorldToScreenPoint(worldPosition + Vector3.up * distance);
+            return Vector3.Distance(offsetScreenPosition, worldPosition);
         }
 
         public static void DrawScreenSpaceRectangle(Vector3 center, Vector2 size, float distance, Color color)
@@ -190,26 +212,111 @@ namespace PuzzleBox
             DrawArrow(from, to, lineWidth, arrowheadHalfWidth, arrowheadLength, color, false, normal);
         }
 
-        public static bool DrawBezierConnection(Vector3 from, Vector3 to, float lineWidth, Color color, float minimumDistance = 0.25f, float horizontalOffset = 0.25f)
+        public static void DrawBezierConnection(Vector3 from, Vector3 to, float lineWidth, Color color)
         {
             Vector3 delta = to - from;
             float dx = Mathf.Max(1f, Mathf.Abs(delta.x));
-            Vector3 offset = Vector3.right * horizontalOffset;
-            from += offset;
-            to -= offset;
-            Vector3 arrowheadBase = to - Vector3.right * 0.07f;
-            if (delta.sqrMagnitude > minimumDistance * minimumDistance)
-            {
-                Vector3 tangentFrom = new Vector3(dx, 0, delta.z) * 0.5f;
-                Vector3 tangentTo = new Vector3(dx, 0, delta.z) * 0.5f;
-                Handles.DrawBezier(from, arrowheadBase, from + tangentFrom, to - tangentTo, color, null, lineWidth);
-                DrawArrowhead(to, arrowheadBase, 0.03f, color);
-                return true;
-            }
-            return false;
+            float dy = Mathf.Abs(delta.y);
+
+            float tangentLength = 0.5f * dx * Mathf.Clamp01(dy * 10f);
+            Vector3 tangent = new Vector3(tangentLength, 0, delta.z * 0.5f);
+            Color c = Handles.color;
+            Handles.color = color;
+            Handles.DrawBezier(from, to, from + tangent, to - tangent, Color.white, bezierConnectionTexture.Get(), lineWidth);
+            Handles.color = c;
         }
 
-        public static bool DrawStraightConnection(Vector3 from, Vector3 to, float lineWidth, Color color, float minimumDistance = 0.25f, float offset = 0.25f)
+        public static void LabelWithBackground(Vector3 worldPosition, string text, Color backgroundColor, GUIStyle textStyle)
+        {
+            if (!string.IsNullOrEmpty(text))
+            {
+                const float distanceThreshold = 10f;
+                float cameraDistance = Vector3.Distance(worldPosition, Camera.current.transform.position);
+                float fadeFactor = 1f - Mathf.Clamp01(cameraDistance / distanceThreshold);
+
+                Vector3 textSize = textStyle.CalcSize(new GUIContent(text));
+                textSize.x *= 1.5f; // For some reason, the width returned is off by this factor...
+
+                Vector3 labelScreenPosition = Camera.current.WorldToScreenPoint(worldPosition);
+                Vector3 rectPosition = labelScreenPosition;
+                switch(textStyle.alignment)
+                {
+                    case TextAnchor.UpperLeft:
+                        rectPosition.x += textSize.x * 0.5f - textStyle.padding.left;
+                        rectPosition.y -= textSize.y * 0.5f - textStyle.padding.top;
+                        break;
+                    case TextAnchor.UpperCenter:
+                        rectPosition.y += textSize.y * 0.5f - textStyle.padding.top;
+                        break;
+                    case TextAnchor.UpperRight:
+                        rectPosition.x -= textSize.x * 0.5f - textStyle.padding.right;
+                        rectPosition.y -= textSize.y * 0.5f - textStyle.padding.top;
+                        break;
+                    case TextAnchor.MiddleLeft:
+                        rectPosition.x += textSize.x * 0.5f - textStyle.padding.left;
+                        break;
+                    case TextAnchor.MiddleCenter:
+                        break;
+                    case TextAnchor.MiddleRight:
+                        rectPosition.x -= textSize.x * 0.5f - textStyle.padding.right;
+                        break;
+                    case TextAnchor.LowerLeft:
+                        rectPosition.x += textSize.x * 0.5f - textStyle.padding.left;
+                        rectPosition.y += textSize.y * 0.5f - textStyle.padding.bottom;
+                        break;
+                    case TextAnchor.LowerCenter:
+                        rectPosition.y += textSize.y * 0.5f - textStyle.padding.bottom;
+                        break;
+                    case TextAnchor.LowerRight:
+                        rectPosition.x -= textSize.x * 0.5f - textStyle.padding.right;
+                        rectPosition.y += textSize.y * 0.5f - textStyle.padding.bottom;
+                        break;
+                }
+
+                Color c = textStyle.normal.textColor;
+                backgroundColor.a *= fadeFactor;
+                textStyle.normal.textColor = new Color(c.r, c.g, c.b, fadeFactor);
+
+                EditorUtilities.DrawScreenSpaceRectangle(rectPosition, textSize, cameraDistance, backgroundColor);
+                Handles.Label(worldPosition, text, textStyle);
+                textStyle.normal.textColor = c;
+            }
+        }
+
+        public static void DrawTextToTexture(Texture2D texture, string text, GUIStyle style)
+        {
+            if (texture == null || string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
+            RenderTexture tmp = RenderTexture.GetTemporary(texture.width, texture.height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
+            RenderTexture previousRenderTexture = RenderTexture.active;
+            RenderTexture.active = tmp;
+
+            GL.Clear(true, true, Color.white);
+
+            Graphics.SetRenderTarget(tmp);
+
+            GL.PushMatrix();
+            GL.LoadPixelMatrix(0, texture.width, texture.height, 0);
+
+            GUIContent content = new GUIContent(text);
+            Vector2 size = style.CalcSize(content);
+            Rect rect = new Rect(0, 0, texture.width, texture.height);
+
+            style.Draw(rect, content, false, false, false, false);
+
+            GL.PopMatrix();
+
+            texture.ReadPixels(new Rect(0, 0, texture.width, texture.height), 0, 0);
+            texture.Apply();
+
+            RenderTexture.active = previousRenderTexture;
+            RenderTexture.ReleaseTemporary(tmp);
+        }
+
+        public static bool DrawStraightConnection(Vector3 from, Vector3 to, float lineWidth, Color color, bool drawArrow = true, float minimumDistance = 0.25f, float offset = 0.25f)
         {
             Vector3 delta = to - from;
 
@@ -219,10 +326,20 @@ namespace PuzzleBox
                 Vector3 direction = delta.normalized;
                 Vector3 positionOffset = direction * offset;
                 from += positionOffset;
-                to -= positionOffset + direction * arrowHeadLength;
+                to -= positionOffset;
+
+                if (drawArrow)
+                {
+                    to -= direction * arrowHeadLength;
+                }
 
                 DrawThickLine(from, to, lineWidth, color, Vector3.forward);
-                DrawArrowhead(to + direction * arrowHeadLength, to, arrowHeadLength * 0.5f, color);
+
+                if (drawArrow)
+                {
+                    DrawArrowhead(to + direction * arrowHeadLength, to, arrowHeadLength * 0.5f, color);
+                }
+                
                 return true;
             }
             return false;

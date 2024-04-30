@@ -132,29 +132,6 @@ namespace PuzzleBox
             }
 
             GUI.color = oldColor;
-
-            //EditorGUI.DrawRect(selectionRect, customizer.backgroundColor);
-
-            //// Redraw the text and icon
-            //string objectName = gameObject.name;
-            //bool isActive = gameObject.activeInHierarchy;
-            //Texture icon = EditorGUIUtility.ObjectContent(gameObject, typeof(GameObject)).image;
-
-            //Vector2 size = DrawTexture(icon, selectionRect, 0, Alignment.Left);
-            //size.x += 3;
-
-            //Rect offsetRect = new Rect();
-            //offsetRect.x = selectionRect.x + size.x;
-            //offsetRect.y = selectionRect.y;
-            //offsetRect.width = selectionRect.width - size.x;
-            //offsetRect.height = selectionRect.height;
-
-            //GUIStyle style = new GUIStyle();
-            //style.normal.textColor = isActive ? customizer.activeTextColor : customizer.disabledTextColor;
-            //style.fontStyle = FontStyle.Normal;
-            //EditorGUI.LabelField(offsetRect, objectName, style);
-
-
         }
     }
 }

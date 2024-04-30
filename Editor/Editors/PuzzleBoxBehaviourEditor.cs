@@ -24,7 +24,7 @@ namespace PuzzleBox
             {
                 Color oldColor = GUI.color;
                 GUI.color = EditorGUIUtility.isProSkin ? PuzzleBox.EditorUtilities.lightColor : PuzzleBox.EditorUtilities.darkColor;
-                GUILayout.Label(PuzzleBox.EditorUtilities.logo, GUILayout.MaxHeight(16));
+                GUILayout.Label(PuzzleBox.EditorUtilities.logo.Get(), GUILayout.MaxHeight(16));
                 GUI.color = oldColor;
             }
             base.OnInspectorGUI();
