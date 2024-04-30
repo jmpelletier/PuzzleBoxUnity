@@ -14,7 +14,7 @@ namespace PuzzleBox
     // 特に「EventSystem」の実行順番が低いので、以下の設定を行わないと
     // Singletonを使用しても警告が出てしまう。
     [DefaultExecutionOrder(int.MinValue)]
-    public class Singleton : PuzzleBoxBehaviour
+    public class Singleton : Utility
     {
         private static Dictionary<string, Singleton> instances = new Dictionary<string, Singleton>();
 

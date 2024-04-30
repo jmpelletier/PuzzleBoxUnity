@@ -11,9 +11,10 @@ using UnityEngine;
 
 namespace PuzzleBox
 {
+    [PuzzleBox.HideInEnumeration]
     [ExecuteInEditMode]
     [DisallowMultipleComponent]
-    public class SceneViewText : PuzzleBoxBehaviour
+    public class SceneViewText : Utility
     {
         [TextArea(1, 10)]
         public string text;

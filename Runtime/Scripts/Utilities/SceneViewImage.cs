@@ -12,9 +12,10 @@ using UnityEngine.UIElements;
 
 namespace PuzzleBox
 {
+    [PuzzleBox.HideInEnumeration]
     [ExecuteInEditMode]
     [DisallowMultipleComponent]
-    public class SceneViewImage : PuzzleBoxBehaviour
+    public class SceneViewImage : Utility
     {
         public Texture texture;
         public float size = 5f;

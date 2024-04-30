@@ -15,7 +15,7 @@ namespace PuzzleBox
 {
     [ExecuteAlways]
     [DisallowMultipleComponent]
-    public class UniqueID : PuzzleBoxBehaviour
+    public class UniqueID : Utility
     {
         public string uid = "";
 

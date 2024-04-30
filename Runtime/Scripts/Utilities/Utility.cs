@@ -4,16 +4,15 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
- 
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace PuzzleBox
 {
-    public class HierarchyCustomizer : Utility
+    public abstract class Utility : PuzzleBoxBehaviour
     {
-        public Texture[] icons;
+        
     }
-}
 
+}
