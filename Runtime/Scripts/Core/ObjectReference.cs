@@ -7,13 +7,42 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 namespace PuzzleBox
 {
+    [ExecuteAlways]
+    [PuzzleBox.HideInEnumeration]
     public class ObjectReference : PuzzleBoxBehaviour
     {
-        [HideInInspector]
-        public GameObject referencedObject = null;
+        private GameObject _referencedObject = null;
+        public GameObject referencedObject
+        {
+            get { return  _referencedObject; }
+            set
+            {
+                _referencedObject = value;
+                if (_referencedObject != null)
+                {
+                    behaviour = _referencedObject.GetComponent<PuzzleBoxBehaviour>();
+                    foreach(BehaviourReference reference in referencedBehaviours)
+                    {
+                        if (reference != null)
+                        {
+                            reference.SetOwner(_referencedObject);
+                        }
+                    }
+                }
+                else
+                {
+                    behaviour = null;
+                }
+            }
+        }
+
+        public bool referenceChildBehaviours = true;
+        public BehaviourReference[] referencedBehaviours;
+
         private PuzzleBoxBehaviour behaviour;
 
         public override void Invoke(string message)
@@ -29,6 +58,31 @@ namespace PuzzleBox
                     behaviour.Invoke(message);
                 }
             }
+        }
+
+        private void OnEnable()
+        {
+            UpdateReferences();
+        }
+
+        private void UpdateReferences()
+        {
+            if (referenceChildBehaviours)
+            {
+                if (referencedBehaviours == null)
+                {
+                    referencedBehaviours = GetComponentsInChildren<BehaviourReference>();
+                }
+                else
+                {
+                    referencedBehaviours = referencedBehaviours.Concat(GetComponentsInChildren<BehaviourReference>()).Where(x => x != null).Distinct().ToArray();
+                }
+            }
+        }
+
+        private void OnTransformChildrenChanged()
+        {
+            UpdateReferences();
         }
     }
 }

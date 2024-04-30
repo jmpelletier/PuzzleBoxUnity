@@ -66,13 +66,13 @@ namespace PuzzleBox
         }
 
         [PuzzleBox.Action]
-        public void Enable()
+        public virtual void Enable()
         {
             enabled = true;
         }
 
         [PuzzleBox.Action]
-        public void Disable()
+        public virtual void Disable()
         {
             enabled = false;
         }
