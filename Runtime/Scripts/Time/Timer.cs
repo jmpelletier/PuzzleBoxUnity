@@ -68,6 +68,12 @@ namespace PuzzleBox
                 ActionDelegate.Invoke(OnUpdate, gameObject);
                 ActionDelegate.Invoke(OnUpdate, gameObject, time);
             }
+
+        }
+
+        public override string GetIcon()
+        {
+            return "TimerIcon";
         }
     }
 }
