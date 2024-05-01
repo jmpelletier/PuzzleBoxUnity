@@ -30,6 +30,11 @@ namespace PuzzleBox
             }
 #endif
         }
+
+        public override string ToString()
+        {
+            return uid;
+        }
     }
 }
 
