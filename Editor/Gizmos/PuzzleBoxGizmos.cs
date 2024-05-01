@@ -166,7 +166,7 @@ namespace PuzzleBox
         static private void DrawReferenceIcon(MonoBehaviour target)
         {
             const string path = gizmosPath + "ReferenceGizmo.png";
-            Gizmos.DrawIcon(target.transform.position, path);
+            Gizmos.DrawIcon(target.transform.position + Camera.current.transform.forward * -0.001f, path);
         }
 
         static private void DrawLabel(MonoBehaviour target, string text, TextAnchor anchor = TextAnchor.MiddleCenter, int index = 0)
@@ -179,6 +179,12 @@ namespace PuzzleBox
             float labelOffset = GetGizmoWorldSpaceHeight() * 0.65f + lineHeight * index;
             Vector3 labelPosition = target.transform.position + -Camera.current.transform.up * labelOffset;
             EditorUtilities.LabelWithBackground(labelPosition, text, textLabelBackgroundColor, gizmoTextStyle);
+        }
+
+        static private void DrawRelationshipLine(MonoBehaviour target, GameObject other)
+        {
+            float offset = GetGizmoConnectionOffset();
+            EditorUtilities.DrawStraightConnection(other.transform.position, target.transform.position, relationshipLineWidth, relationshipColor, false, 0, offset);
         }
 
         [DrawGizmo(defaultGizmoType)]
@@ -238,7 +244,7 @@ namespace PuzzleBox
                     {
                         if (arg != null)
                         {
-                            EditorUtilities.DrawStraightConnection(arg.transform.position, position, relationshipLineWidth, relationshipColor, false, 0, offset);
+                            DrawRelationshipLine(target, arg);
                         }
                     }
                 }
@@ -314,16 +320,66 @@ namespace PuzzleBox
         }
 
         [DrawGizmo(defaultGizmoType)]
+        static void DrawPuzzleBoxGizmo(PuzzleBox.Animate target, GizmoType gizmoType)
+        {
+            if (target.hideGizmo) return;
+
+            Vector3 position = target.transform.position;
+            bool selected = Selection.activeGameObject == target.gameObject;
+
+            if (target.mode == Animate.Mode.OneShot)
+            {
+                DrawConnections(position, target.OnStartPerforming, selected, GetGizmoWorldSpaceHeight() * 0.25f, "Start");
+                DrawConnections(position, target.OnFinishedPerforming, selected, GetGizmoWorldSpaceHeight() * -0.25f, "Finished");
+            }
+            else
+            {
+                DrawConnections(position, target.OnTurnOn, selected, GetGizmoWorldSpaceHeight() * 0.5f, "Turning On");
+                DrawConnections(position, target.OnTurningOff, selected, 0, "Turning Off");
+                DrawConnections(position, target.OnTurnedOff, selected, GetGizmoWorldSpaceHeight() * -0.5f, "Off");
+            }
+        }
+
+        [DrawGizmo(defaultGizmoType)]
+        static void DrawPuzzleBoxGizmo(PuzzleBox.Counter target, GizmoType gizmoType)
+        {
+            if (target.hideGizmo) return;
+
+            Vector3 position = target.transform.position;
+            bool selected = Selection.activeGameObject == target.gameObject;
+
+            DrawConnections(position, target.reachedMinimumActions, selected, GetGizmoWorldSpaceHeight() * 0.25f, "Reached Min.");
+            DrawConnections(position, target.reachedMaximumActions, selected, GetGizmoWorldSpaceHeight() * -0.25f, "Reached Max.");
+
+            if (target.referencedValue != null)
+            {
+                DrawRelationshipLine(target, target.referencedValue.gameObject);
+            }
+        }
+
+        [DrawGizmo(defaultGizmoType)]
+        static void DrawPuzzleBoxGizmo(PuzzleBox.TargetObject target, GizmoType gizmoType)
+        {
+            if (target.hideGizmo) return;
+
+            Vector3 position = target.transform.position;
+            bool selected = Selection.activeGameObject == target.gameObject;
+
+            Vector3 horizontalOffset = Camera.current.transform.right * GetGizmoConnectionOffset();
+            DrawBezierConnection(position + horizontalOffset, target.target.transform.position - horizontalOffset, selected);
+        }
+
+        [DrawGizmo(defaultGizmoType)]
         static void DrawPuzzleBoxGizmo(PuzzleBox.BehaviourReference target, GizmoType gizmoType)
         {
             if (target.hideGizmo) return;
+
+            DrawReferenceIcon(target);
 
             if (target.behaviour != null)
             {
                 DrawIconForClass(target.transform.position, target.behaviour.GetClass());
             }
-
-            DrawReferenceIcon(target);
         }
 
         [DrawGizmo(defaultGizmoType)]
@@ -338,7 +394,7 @@ namespace PuzzleBox
                 {
                     if (reference != null)
                     {
-                        EditorUtilities.DrawStraightConnection(reference.transform.position, target.transform.position, relationshipLineWidth, relationshipColor, false, 0, offset);
+                        DrawRelationshipLine(target, reference.gameObject);
                     }
                 }
             }
