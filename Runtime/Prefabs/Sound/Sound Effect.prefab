@@ -141,6 +141,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bbac23606c7e2584fa13603dd5bf6957, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hideGizmo: 1
   clips:
   - {fileID: 0}
   minimumVolume: 1
