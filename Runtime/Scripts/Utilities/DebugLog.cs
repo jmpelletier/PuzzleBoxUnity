@@ -15,9 +15,15 @@ namespace PuzzleBox
         public string message;
 
         [PuzzleBox.Action]
-        public void Print()
+        public void Print(GameObject sender, GameObject[] arguments)
         {
-            Debug.Log(message);
+            Debug.Log($"Message from {sender.name}: {message}");
+            ForEach<PuzzleBoxBehaviour>(arguments, x => Debug.Log($"{x.GetType().Name}: {x.ToString()}"));
+        }
+
+        public override string GetIcon()
+        {
+            return "DebugIcon";
         }
     }
 }
