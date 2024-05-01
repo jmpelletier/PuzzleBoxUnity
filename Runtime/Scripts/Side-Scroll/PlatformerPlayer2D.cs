@@ -35,6 +35,10 @@ namespace PuzzleBox
         [Min(0)]
         public float hangSpeed = 1f;
         public float hangGravityRatio = 0.1f;
+
+        [Space]
+        [Tooltip("プレーヤー入力の方向を反転したい場合、こちらの該当する軸を「-1」にする。")]
+        public Vector2 movementInputScaling = Vector2.one;
         
 
         [Header("ジャンプ")]
@@ -629,24 +633,29 @@ namespace PuzzleBox
         #endregion
 
         #region Player Input
-        void OnMove(InputValue val)
+        void OnMove(object val)
         {
-            Move(val.Get<Vector2>());
+            Move(PuzzleBox.InputValue.GetValue<Vector2>(val));
         }
 
-        void OnRun(InputValue val)
+        void OnRun(object val)
         {
-            Run(val.isPressed);
+            Run(PuzzleBox.InputValue.IsPressed(val));
         }
 
-        void OnGrabWall(InputValue val)
+        void OnGrabWall(object val)
         {
-            GrabWall(val.isPressed);
+            GrabWall(PuzzleBox.InputValue.IsPressed(val));
         }
 
-        void OnDash()
+        void OnDash(object val)
         {
             Dash();
+        }
+
+        void OnJump(object val)
+        {
+            Jump(PuzzleBox.InputValue.IsPressed(val), true);
         }
 
         void SetUserInputEnabled(bool enabled)
@@ -766,11 +775,11 @@ namespace PuzzleBox
 
         public void Move(Vector2 input)
         {
-            rawMotionInput = input;
+            rawMotionInput = Vector2.Scale(input, movementInputScaling);
 
             if (!acceptInput) return;
 
-            motionInput = input;
+            motionInput = rawMotionInput;
 
             dashTimer.Cancel();
         }
@@ -1179,12 +1188,7 @@ namespace PuzzleBox
                 isJumping = false;
             }
         }
-
-        // これはUnityのInput Systemに呼び出されます。
-        void OnJump(InputValue val)
-        {
-            Jump(val.isPressed, true);
-        }
+        
         #endregion
 
 
