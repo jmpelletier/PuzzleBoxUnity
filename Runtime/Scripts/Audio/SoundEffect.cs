@@ -43,7 +43,7 @@ namespace PuzzleBox
 
         void PlayClipOneShot(int clipIndex)
         {
-            if (clipIndex >= 0 && clipIndex < clips.Length)
+            if (clipIndex >= 0 && clipIndex < clips.Length && clips[clipIndex] != null)
             {
                 if (source == null)
                 {
