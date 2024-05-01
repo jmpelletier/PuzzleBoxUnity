@@ -19,7 +19,9 @@ namespace PuzzleBox
 
         public static MethodInfo[] GetMethods(Type type)
         {
-            return type.GetMethods().Where(x => x.GetCustomAttributes<ActionAttribute>().Any()).ToArray();
+            return type.GetMethods()
+                .Where(x => x.GetCustomAttributes<ActionAttribute>().Any())
+                .ToArray();
         }
 
 

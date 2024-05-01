@@ -45,7 +45,7 @@ namespace PuzzleBox
 
         private PuzzleBoxBehaviour behaviour;
 
-        public override void Invoke(string message)
+        public override void Invoke(string message, GameObject sender, GameObject[] arguments)
         {
             if (referencedObject != null)
             {
@@ -55,7 +55,7 @@ namespace PuzzleBox
                 }
                 if (behaviour != null)
                 {
-                    behaviour.Invoke(message);
+                    behaviour.Invoke(message, sender, arguments);
                 }
             }
         }
@@ -83,6 +83,11 @@ namespace PuzzleBox
         private void OnTransformChildrenChanged()
         {
             UpdateReferences();
+        }
+
+        public override string GetIcon()
+        {
+            return "referenceIcon";
         }
     }
 }

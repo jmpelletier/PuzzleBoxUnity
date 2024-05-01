@@ -99,12 +99,16 @@ namespace PuzzleBox
             }
         }
 
-        public override void Invoke(string message)
+        public override void Invoke(string message, GameObject sender, GameObject[] arguments)
         {
             if (puzzleBoxBehaviour != null)
             {
-                puzzleBoxBehaviour.Invoke(message);
+                puzzleBoxBehaviour.Invoke(message, sender, arguments);
             }
+        }
+        public override string GetIcon()
+        {
+            return "referenceIcon";
         }
     }
 }

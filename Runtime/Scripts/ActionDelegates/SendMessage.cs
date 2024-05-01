@@ -32,9 +32,14 @@ namespace PuzzleBox
             {
                 if (target.behaviour != null)
                 {
-                    target.behaviour.Invoke(message);
+                    target.behaviour.Invoke(message, sender, arguments);
                 }
             }
+        }
+
+        public override string GetIcon()
+        {
+            return "SendMessageIcon";
         }
     }
 }

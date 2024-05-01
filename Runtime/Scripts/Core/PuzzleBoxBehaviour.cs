@@ -27,11 +27,45 @@ namespace PuzzleBox
 
             foreach(MethodInfo method in _actionMethodInfo[type])
             {
-                instance._actions[method.Name] = (Action)Delegate.CreateDelegate(typeof(Action), instance, method);
+                Action<GameObject, GameObject[]> action = instance.MakeAction(method);
+
+                if (action != null)
+                {
+                    instance._actions[method.Name] = action;
+                }
+                else
+                {
+                    Debug.LogError($"Invalid PuzzleBox.Action ({method.DeclaringType}.{method.Name}): check return and argument types.");
+                }
             }
         }
 
-        protected Dictionary<string, Action> _actions { get; private set; } = new Dictionary<string, Action>();
+        private Action<GameObject, GameObject[]> MakeAction(MethodInfo method)
+        {
+            ParameterInfo[] parameters = method.GetParameters();
+            if (method.ReturnType == typeof(void))
+            {
+                if (parameters.Length == 2 &&
+                        parameters[0].ParameterType == typeof(GameObject) &&
+                        parameters[1].ParameterType == typeof(GameObject[]))
+                {
+                    return (Action<GameObject, GameObject[]>)Delegate.CreateDelegate(typeof(Action<GameObject, GameObject[]>), this, method);
+                }
+                else if (parameters.Length == 1 &&
+                        parameters[0].ParameterType == typeof(GameObject))
+                {
+                    return (sender, args) => { method.Invoke(this, new object[] { sender }); };
+                }
+                else if (parameters.Length == 0)
+                {
+                    return (sender, args) => { method.Invoke(this, new object[] { }); };
+                }
+            }
+
+            return null;
+        }
+
+        protected Dictionary<string, Action<GameObject, GameObject[]>> _actions { get; private set; } = new Dictionary<string, Action<GameObject, GameObject[]>>();
 
         public PuzzleBoxBehaviour() : base()
         {
@@ -77,18 +111,42 @@ namespace PuzzleBox
             enabled = false;
         }
 
-        public virtual void Invoke(string message)
+        public virtual void Invoke(string message, GameObject sender, GameObject[] arguments)
         {
             if (_actions.ContainsKey(message))
             {
-                Action action = _actions[message];
+                Action<GameObject, GameObject[]> action = _actions[message];
                 if (action != null)
                 {
-                    action.Invoke();
+                    action.Invoke(sender, arguments);
                 }
             }
         }
 
+        protected static void ForEach<T>(GameObject gameObject, Action<T> action)
+        {
+            if (gameObject != null && action != null)
+            {
+                foreach (T behaviour in gameObject.GetComponentsInChildren<T>())
+                {
+                    if (behaviour != null)
+                    {
+                        action.Invoke(behaviour);
+                    }
+                }
+            }
+        }
+
+        protected static void ForEach<T>(GameObject[] gameObjects, Action<T> action)
+        {
+            if (gameObjects != null && action != null)
+            {
+                foreach (GameObject gameObject in gameObjects)
+                {
+                    ForEach<T>(gameObject, action);
+                }
+            }
+        }
     }
 }
 
