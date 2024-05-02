@@ -4,8 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using UnityEditor;
-using UnityEngine;
 using System;
 using System.Reflection;
 using System.Linq;
@@ -13,24 +11,24 @@ using System.Linq;
 namespace PuzzleBox
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class ActionAttribute : Attribute
+    public abstract class MethodAttribute : Attribute
     {
-        public ActionAttribute() { }
+        public MethodAttribute() { }
 
-        public static MethodInfo[] GetMethods(Type type)
+        public static MethodInfo[] GetMethods<T>(Type type) where T : MethodAttribute
         {
             return type.GetMethods()
-                .Where(x => x.GetCustomAttributes<ActionAttribute>().Any())
+                .Where(x => x.GetCustomAttributes<T>().Any())
                 .ToArray();
         }
 
 
         private static readonly MethodInfo[] noMethods = new MethodInfo[0];
-        public static MethodInfo[] GetMethods(PuzzleBoxBehaviour behaviour)
+        public static MethodInfo[] GetMethods<T>(PuzzleBoxBehaviour behaviour) where T : MethodAttribute
         {
             if (behaviour != null)
             {
-                return GetMethods(behaviour.GetType());
+                return GetMethods<T>(behaviour.GetType());
             }
             else
             {

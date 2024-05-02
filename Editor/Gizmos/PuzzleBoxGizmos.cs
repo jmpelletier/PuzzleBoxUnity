@@ -193,12 +193,18 @@ namespace PuzzleBox
 
         static private void DrawConnections(Vector3 position, IEnumerable<MonoBehaviour> targets, bool selected, float verticalOffset = 0f, string label = "")
         {
-            DrawConnections(position, targets.Select(x => x == null ? null : x.transform), selected, verticalOffset, label);
+            if (targets != null)
+            {
+                DrawConnections(position, targets.Select(x => x == null ? null : x.transform), selected, verticalOffset, label);
+            }
         }
 
         static private void DrawConnections(Vector3 position, IEnumerable<ActionDelegate.Target> targets, bool selected, float verticalOffset = 0f, string label = "")
         {
-            DrawConnections(position, targets.Select(x => x.target == null ? null : x.target.transform), selected, verticalOffset, label);
+            if (targets != null)
+            {
+                DrawConnections(position, targets.Select(x => x.target == null ? null : x.target.transform), selected, verticalOffset, label);
+            }
         }
 
         #endregion // DRAWING_CONNECTIONS

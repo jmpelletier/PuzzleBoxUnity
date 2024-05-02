@@ -28,7 +28,7 @@ namespace PuzzleBox
             {
                 _asset = AssetDatabase.LoadAssetAtPath<T>(path);
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 // File does not exist, set to null
                 _asset = null;

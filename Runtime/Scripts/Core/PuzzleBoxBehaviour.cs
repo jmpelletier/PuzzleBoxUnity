@@ -14,6 +14,7 @@ namespace PuzzleBox
 {
     public abstract class PuzzleBoxBehaviour : MonoBehaviour
     {
+        [PuzzleBox.Overridable]
         public bool hideGizmo = false;
 
         private static Dictionary<string, MethodInfo[]> _actionMethodInfo = new Dictionary<string, MethodInfo[]>();
@@ -22,7 +23,7 @@ namespace PuzzleBox
             string type = instance.GetType().Name;
             if (!_actionMethodInfo.ContainsKey(type))
             {
-                _actionMethodInfo[type] = ActionAttribute.GetMethods(instance.GetType());
+                _actionMethodInfo[type] = ActionAttribute.GetMethods<ActionAttribute>(instance.GetType());
             }
 
             foreach(MethodInfo method in _actionMethodInfo[type])
@@ -67,9 +68,173 @@ namespace PuzzleBox
 
         protected Dictionary<string, Action<GameObject, GameObject[]>> _actions { get; private set; } = new Dictionary<string, Action<GameObject, GameObject[]>>();
 
+        protected struct Override
+        {
+            public MonoBehaviour owner;
+            public FieldInfo field;
+            public object value;
+            public object defaultValue;
+
+            public Override(MonoBehaviour owner, FieldInfo field, object value)
+            {
+                this.owner = owner;
+                this.field = field;
+                this.value = value;
+                this.defaultValue = default;
+            }
+        }
+
+        private const int MAX_OVERRIDES = 8;
+
+        public virtual void AddOverride(MonoBehaviour owner, string fieldName, object value)
+        {
+            // Make sure field can be overridden
+            if (overrides.ContainsKey(fieldName))
+            {
+                Override[] fieldOverrides = overrides[fieldName];
+
+                // See if override already exist
+                for (int i = 0; i < MAX_OVERRIDES; i++)
+                {
+                    if (fieldOverrides[i].owner == null)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        if (fieldOverrides[i].owner == owner && fieldOverrides[i].field.Name.Equals(fieldName))
+                        {
+                            // Remove so we can add again
+                            RemoveOverride(owner, fieldName);
+                        }
+                    }
+                }
+
+                // See if already full
+                if (fieldOverrides[MAX_OVERRIDES - 1].owner != null)
+                {
+                    return; // Full...
+                }
+
+                // Store the default value
+                FieldInfo fieldInfo = _overridableFields[GetType()][fieldName];
+                // If there are overrides active, this may not be correct.
+                // We will need to obtain the correct value from other overrides.
+                object defaultValue = fieldInfo.GetValue(this); 
+
+                // Add override at the end
+                for (int i = 0; i < MAX_OVERRIDES; i++)
+                {
+                    if (fieldOverrides[i].owner == null)
+                    {
+                        fieldOverrides[i].owner = owner;
+                        fieldOverrides[i].field = fieldInfo;
+                        fieldOverrides[i].value = value;
+                        fieldOverrides[i].defaultValue = defaultValue;
+
+                        return;
+                    }
+                    else
+                    {
+                        // We get previous overrides to teach us the actual default value.
+                        defaultValue = fieldOverrides[i].defaultValue;
+                    }
+                }
+            }
+        }
+
+        public virtual void RemoveOverride(MonoBehaviour owner, string fieldName)
+        {
+            if (overrides.ContainsKey(fieldName))
+            {
+                Override[] fieldOverrides = overrides[fieldName];
+
+                for (int i = 0; i < MAX_OVERRIDES; i++)
+                {
+                    if (fieldOverrides[i].owner == null)
+                    {
+                        return;
+                    }
+
+                    if (fieldOverrides[i].owner == owner)
+                    {
+                        if (i == 0 && fieldOverrides[1].owner == null)
+                        {
+                            // This is the last override for this field.
+                            // Restore defaults.
+                            fieldOverrides[i].field.SetValue(this, fieldOverrides[i].defaultValue);
+                            fieldOverrides[i].owner = null;
+                            return; // No need to check the rest
+                        }
+
+                        for (int j = i + 1; j < MAX_OVERRIDES; j++, i++)
+                        {
+                            fieldOverrides[i] = fieldOverrides[j];
+                        }
+                        fieldOverrides[MAX_OVERRIDES - 1].owner = null;
+                    }
+                }
+            }
+        }
+
+
+        private void InitializeOverrides()
+        {
+            if (!_overridableFields.ContainsKey(GetType()))
+            {
+                Dictionary<string, FieldInfo> fieldMap = new Dictionary<string, FieldInfo>();
+                FieldInfo[] fields = FieldAttribute.GetFields<OverridableAttribute>(GetType());
+                foreach (FieldInfo field in fields)
+                {
+                    fieldMap[field.Name] = field;
+                }
+                _overridableFields[GetType()] = fieldMap;
+            }
+
+            foreach(var pair in _overridableFields[GetType()])
+            {
+                overrides[pair.Key] = new Override[MAX_OVERRIDES];
+            }
+        }
+
+        protected Dictionary<string, Override[]> overrides { get; private set; } = new Dictionary<string, Override[]>();
+        protected static Dictionary<Type, Dictionary<string, FieldInfo>> _overridableFields = new Dictionary<Type, Dictionary<string, FieldInfo>>();  
+
+        public virtual void ApplyOverrides()
+        {
+            foreach(var pair in overrides)
+            {
+                for (int i = 0; i < MAX_OVERRIDES; i++)
+                {
+                    if (pair.Value[i].owner == null) break;
+                    else
+                    {
+                        pair.Value[i].field.SetValue(this, pair.Value[i].value);
+                    }
+                }
+            }
+        }
+
+        public virtual void RestoreOverrides()
+        {
+            foreach (var pair in overrides)
+            {
+                if (pair.Value[0].owner != null) // All default values are the same.
+                {
+                    // Note that if an overridden field is directly modified,
+                    // this change will be undone when RestoreOverrides is called.
+                    // In practice, this should probably not happen too often,
+                    // but it is a possibility.
+                    pair.Value[0].field.SetValue(this, pair.Value[0].defaultValue);
+                }
+            }
+        }
+
+
         public PuzzleBoxBehaviour() : base()
         {
             RegisterInstanceActions(this);
+            InitializeOverrides();
         }
          
 

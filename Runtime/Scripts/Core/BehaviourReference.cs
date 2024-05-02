@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 using UnityEditor;
 using UnityEngine;
+using static PuzzleBox.ParameterOverride;
 
 namespace PuzzleBox
 {
@@ -109,6 +110,38 @@ namespace PuzzleBox
         public override string GetIcon()
         {
             return "referenceIcon";
+        }
+
+        public override void AddOverride(MonoBehaviour owner, string fieldName, object value)
+        {
+            if (puzzleBoxBehaviour != null)
+            {
+               puzzleBoxBehaviour.AddOverride(owner, fieldName, value);
+            }
+        }
+
+        public override void RemoveOverride(MonoBehaviour owner, string fieldName)
+        {
+            if (puzzleBoxBehaviour != null)
+            {
+                puzzleBoxBehaviour.RemoveOverride(owner, fieldName);
+            }
+        }
+
+        public override void ApplyOverrides()
+        {
+            if (puzzleBoxBehaviour != null)
+            {
+                puzzleBoxBehaviour.ApplyOverrides();
+            }
+        }
+
+        public override void RestoreOverrides()
+        {
+            if (puzzleBoxBehaviour != null)
+            {
+                puzzleBoxBehaviour.RestoreOverrides();
+            }
         }
     }
 }

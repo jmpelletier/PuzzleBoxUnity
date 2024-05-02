@@ -19,14 +19,18 @@ namespace PuzzleBox
     public class PlatformerPlayer2D : KinematicMotion2D
     {
         [Header("移動")]
-        //[Space]
+        
         public float walkSpeed = 3f;
         public float walkAcceleration = 10f;
+
+
+        [PuzzleBox.Overridable]
         public float runSpeed = 10f;
         public float runAcceleration = 10f;
         public float breakingForce = 10f;
 
         [Space]
+        [PuzzleBox.Overridable]
         public float airSpeed = 2f;
         public float airAcceleration = 10f;
         public float airBreakingForce = 10f;
@@ -45,13 +49,16 @@ namespace PuzzleBox
         // ジャンプの最小の高さ。プレーヤーがジャンプボタンを一瞬で離した場合、
         // キャラクターはこの高さまで飛びます。
         [Min(0.1f)]
+        [PuzzleBox.Overridable]
         public float minJumpHeight = 1f;
 
         // ジャンプの最高の高さです。プレーヤーがずっとジャンプボタンを押し続けると
         // この高さまで飛びます。
         [Min(0.1f)]
+        [PuzzleBox.Overridable]
         public float maxJumpHeight = 3f;
 
+        [PuzzleBox.Overridable]
         public float jumpAngle = 0f;
 
         // 助走によるジャンプ高さの調整
@@ -83,46 +90,76 @@ namespace PuzzleBox
 
         // ダブルジャンプ・トリプルジャンプを許すならここで空中でできるジャンプの回数を
         // 指定します。
+        [PuzzleBox.Overridable]
         public int maxAirJumps = 1;
 
         // 通常のジャンプに比べてのダブルジャンプの高さ（比率）
+        [PuzzleBox.Overridable]
         public float airJumpHeightRatio = 0.5f;
 
         // 落下などで地面から離れた直後でもジャンプを許します。ここでその時間のしきい値（秒）を指定します。
         public float fallJumpTimeLimit = 3f / 60f;
 
         [Space]
+        [PuzzleBox.Overridable]
         public bool canWallJump = false;
+
+        [PuzzleBox.Overridable]
         public float wallJumpHeightRatio = 1f;
+
+        [PuzzleBox.Overridable]
         public float wallJumpHorizontalVelocity = 1f;
 
         [Space]
+        [PuzzleBox.Overridable]
         public bool canJumpWhenGrabbing = true;
+
+        [PuzzleBox.Overridable]
         public float grabJumpHeightRatio = 1f;
+
+        [PuzzleBox.Overridable]
         public float grabJumpHorizontalVelocity = 1f;
 
         [Header("壁")]
         public Collider2D[] wallCheckSensors = new Collider2D[2];
+
+        [PuzzleBox.Overridable]
         public float wallSlideGravityRatio = 0.5f;
+
+        [PuzzleBox.Overridable]
         public float wallSlideMaxSpeed = 5f;
 
         [Space]
+        [PuzzleBox.Overridable]
         public bool canGrabWall = false;
+
+        [PuzzleBox.Overridable]
         public float maxWallGrabTime = 1f;
 
         [Space]
+        [PuzzleBox.Overridable]
         public float wallClimbUpSpeed = 2f;
+
+        [PuzzleBox.Overridable]
         public float wallClimbDownSpeed = 4f;
         public float climbOverEdgeJumpHeight = 1f;
         public float climbOverHorizontalVelocity = 2f;
 
 
         [Header("ダッシュ")]
+        [PuzzleBox.Overridable]
         public bool canDash = false;
 
+        [PuzzleBox.Overridable]
         public float dashSpeedSide = 20f;
+
+        [PuzzleBox.Overridable]
         public float dashSpeedUp = 20f;
+
+        [PuzzleBox.Overridable]
         public float dashSpeedDown = 0f;
+
+        [PuzzleBox.Overridable]
         public float dashTime = 0.2f;
 
         [Curve(0, 0, 1f, 1f)]
@@ -132,14 +169,17 @@ namespace PuzzleBox
         public float minDashSpeed = 0f;
 
         [Tooltip("ダッシュ開始後、ユーザー入力を無視する時間（秒）")]
+        [PuzzleBox.Overridable]
         public float dashInputFreezeTime = 0.2f;
 
+        [PuzzleBox.Overridable]
         public float dashCoolDownTime = 2f;
 
         [Tooltip("これが「オン」になっていると、ダッシュの方向が上下左右と斜め45°に制限される。「オフ」だとどの角度でもダッシュできる。")]
         public bool limitDashAngle = true;
 
         [Tooltip("ダッシュしている時の重力補正")]
+        [PuzzleBox.Overridable]
         public float dashGravityRatio = 0f;
 
 

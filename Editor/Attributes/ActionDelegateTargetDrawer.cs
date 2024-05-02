@@ -8,6 +8,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
+using static UnityEngine.InputSystem.OnScreen.OnScreenStick;
 
 namespace PuzzleBox
 {
@@ -43,7 +45,6 @@ namespace PuzzleBox
             {
                 PuzzleBoxBehaviour[] behaviours = target.GetComponents<PuzzleBoxBehaviour>();
 
-
                 if (behaviours.Length > 0)
                 {
                     if (behaviours.Length == 1)
@@ -72,6 +73,11 @@ namespace PuzzleBox
                     }
                 }
             }
+
+
+            
+
+
 
             EditorGUI.indentLevel = indent;
         }
