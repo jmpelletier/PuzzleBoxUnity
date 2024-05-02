@@ -24,21 +24,8 @@ namespace PuzzleBox
 
         private static string _iconsPath = "Packages/com.jmpelletier.puzzlebox/Runtime/Images/Icons/";
         private static string _logosPath = "Packages/com.jmpelletier.puzzlebox/Runtime/Images/Logos/";
-        private static string _texturesPath = "Packages/com.jmpelletier.puzzlebox/Editor/Images/";
 
-        public class Asset<T> where T : UnityEngine.Object
-        {
-            public T _asset;
-            public Asset(string path)
-            {
-                _asset = AssetDatabase.LoadAssetAtPath<T>(path);
-            }
-
-            public T Get() { return _asset; }
-        }
-
-        public static Asset<Texture> logo = new Asset<Texture>(_logosPath + "PuzzleBox_Logo_Small.png");
-        public static Asset<Texture2D> bezierConnectionTexture = new Asset<Texture2D>(_texturesPath + "BezierConnectionTexture.png");
+        public static PuzzleBox.Asset<Texture> logo = new PuzzleBox.Asset<Texture>(_logosPath + "PuzzleBox_Logo_Small.png");
 
         public static Texture GetIconTexture(string iconName)
         {
@@ -54,6 +41,23 @@ namespace PuzzleBox
             }
 
             return tex;
+        }
+
+        public static bool IsInSelectedHierarchy(GameObject obj)
+        {
+            if (obj != null)
+            {
+                Transform t = obj.transform;
+                while (t != null)
+                {
+                    if (t.gameObject == Selection.activeGameObject)
+                    {
+                        return true;
+                    }
+                    t = t.parent;
+                }
+            }
+            return false;
         }
 
         public static void DrawIcon(string iconName, Rect rect)
@@ -144,6 +148,13 @@ namespace PuzzleBox
             Handles.color = c;
         }
 
+        public static float CalculateViewportDistance(Vector3 worldPositionA, Vector3 worldPositionB)
+        {
+            Vector3 viewportPositionA = Camera.current.WorldToViewportPoint(worldPositionA);
+            Vector3 viewportPositionB = Camera.current.WorldToViewportPoint(worldPositionB);
+            return Vector3.Distance(viewportPositionA, viewportPositionB);
+        }
+
         public static float ScreenDistanceToWorldDistance(float distance, Vector3 worldPosition)
         {
             Vector3 screenPosition = Camera.current.WorldToScreenPoint(worldPosition);
@@ -210,20 +221,6 @@ namespace PuzzleBox
         public static void DrawArrow(Vector3 from, Vector3 to, float lineWidth, float arrowheadHalfWidth, float arrowheadLength, Color color, Vector3 normal)
         {
             DrawArrow(from, to, lineWidth, arrowheadHalfWidth, arrowheadLength, color, false, normal);
-        }
-
-        public static void DrawBezierConnection(Vector3 from, Vector3 to, float lineWidth, Color color)
-        {
-            Vector3 delta = to - from;
-            float dx = Mathf.Max(1f, Mathf.Abs(delta.x));
-            float dy = Mathf.Abs(delta.y);
-
-            float tangentLength = 0.5f * dx * Mathf.Clamp01(dy * 10f);
-            Vector3 tangent = new Vector3(tangentLength, 0, delta.z * 0.5f);
-            Color c = Handles.color;
-            Handles.color = color;
-            Handles.DrawBezier(from, to, from + tangent, to - tangent, Color.white, bezierConnectionTexture.Get(), lineWidth);
-            Handles.color = c;
         }
 
         public static void LabelWithBackground(Vector3 worldPosition, string text, Color backgroundColor, GUIStyle textStyle)
@@ -316,7 +313,7 @@ namespace PuzzleBox
             RenderTexture.ReleaseTemporary(tmp);
         }
 
-        public static bool DrawStraightConnection(Vector3 from, Vector3 to, float lineWidth, Color color, bool drawArrow = true, float minimumDistance = 0.25f, float offset = 0.25f)
+        public static bool DrawStraightLine(Vector3 from, Vector3 to, float lineWidth, Color color, bool drawArrow = true, float minimumDistance = 0)
         {
             Vector3 delta = to - from;
 
@@ -324,9 +321,6 @@ namespace PuzzleBox
             {
                 float arrowHeadLength = lineWidth * 2;
                 Vector3 direction = delta.normalized;
-                Vector3 positionOffset = direction * offset;
-                from += positionOffset;
-                to -= positionOffset;
 
                 if (drawArrow)
                 {

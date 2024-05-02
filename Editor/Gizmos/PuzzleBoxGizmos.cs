@@ -4,34 +4,60 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.IO;
-using static Codice.Client.BaseCommands.Import.Commit;
-using System.Reflection;
-using static Cinemachine.CinemachineBlendDefinition;
-using UnityEngine.UIElements;
 using System.Linq;
+using UnityEngine.UIElements;
 
 namespace PuzzleBox
 {
     public static class PuzzleBoxGizmos
     {
-        const float connectionLineWidth = 5f;
-        const float relationshipLineWidth = 0.01f;
-        const float arrowLineWidth = 0.02f;
+
+        #region BASIC_SETTINGS
+
         const GizmoType defaultGizmoType = GizmoType.Active | GizmoType.Pickable | GizmoType.NonSelected | GizmoType.NotInSelectionHierarchy | GizmoType.InSelectionHierarchy;
 
-        public const string gizmosPath  = "Packages/com.jmpelletier.puzzlebox/Gizmos/";
+        private const string _gizmosPath  = "Packages/com.jmpelletier.puzzlebox/Gizmos/";
+        private const string _texturesPath = "Packages/com.jmpelletier.puzzlebox/Editor/Images/";
 
+        public static Asset<Texture2D> bezierConnectionTexture = new PuzzleBox.Asset<Texture2D>(_texturesPath + "BezierConnectionTexture.png");
+
+        #endregion // BASIC_SETTINGS
+
+        #region STYLING
+
+        /**
+         * Styling: lines and arrows.
+         */
+        const float connectionLineWidth = 5f;
+        const float selectedConnectionLineWidth = 10f;
+        const float relationshipLineWidth = 0.01f;
+        const float arrowLineWidth = 0.02f;
+
+        /**
+         * Styling: Colors
+         */
         static public Color gizmoTextColor { get; private set; } = new Color(1f, 1f, 1f);
         static public Color gizmoConnectionColor { get; private set; } = new Color(0.7f, 0.7f, 0.7f);
+        static public Color selectedGizmoConnectionColor { get; private set; } = new Color(1f, 1f, 1f);
         static public Color relationshipColor { get; private set; } = new Color(0, 0, 0, 0.65f);
         static public Color textLabelBackgroundColor { get; private set; } = new Color(0, 0, 0, 0.85f);
 
+        /**
+         * Styling: Spacing and sizing
+         */
+        const float gizmosVisibilityThreshold = 20f; // Do not draw gizmos that are further than this distance.
+        const float minimumConnectionViewportDistance = 0.05f; // We use this to avoid drawing connections that are too short
+        static public float gizmosWorldSpaceSize { get { return GizmoUtility.iconSize * 32f; } }
+        static private float gizmosConnectionOffsetDistance { get { return gizmosWorldSpaceSize * 0.55f; } }
+        static private Vector3 gizmosConnectionOffset { get { return Camera.current.transform.right * gizmosConnectionOffsetDistance; } }
 
+        /**
+         * Styling: Text styles
+         */
 
         static private GUIStyle _gizmoTextStyle = GUIStyle.none;
         static public GUIStyle gizmoTextStyle
@@ -67,81 +93,122 @@ namespace PuzzleBox
             }
         }
 
-        static private float GetGizmoWorldSpaceHeight()
+        #endregion // STYLING
+
+        #region STYLE_UTILITIES
+
+        // Use this to compute the alpha value of a gizmo we want to fade out with distance
+        static public float GetGizmosFadeFactor(Vector3 worldPosition)
         {
-            return GizmoUtility.iconSize * 32f;
+            float cameraDistance = Vector3.Distance(worldPosition, Camera.current.transform.position);
+            return 1f - Mathf.Clamp01(cameraDistance / gizmosVisibilityThreshold);
         }
 
-        static private float GetGizmoConnectionOffset()
+        static public Color FadeColor(Color color, float fadeFactor)
         {
-            return GetGizmoWorldSpaceHeight() * 0.5f;
+            return new Color(color.r, color.g, color.g, color.a * fadeFactor);
         }
 
-        static private void DrawBezierConnection(Vector3 from, Vector3 to, bool selected)
+        static public Color FadeGizmoColor(Color color, Vector3 worldPosition)
         {
-            EditorUtilities.DrawBezierConnection(from, to, selected ? connectionLineWidth * 3 : connectionLineWidth, gizmoConnectionColor);
+            return FadeColor(color, GetGizmosFadeFactor(worldPosition));
         }
 
-        static private void DrawConnections(Vector3 position, IEnumerable<ActionDelegate.Target> targets, bool selected, float verticalOffset = 0f, string label = "")
+        #endregion // STYLE_UTILITIES
+
+        #region DRAWING_CONNECTIONS
+
+        // Connected two points in world space with a bezier curve.
+        public static void DrawBezierConnection(Vector3 from, Vector3 to, float lineWidth, Color color)
         {
-            Color c = Handles.color;
-            Handles.color = gizmoConnectionColor;
-
-            Vector3 horizontalOffset = Camera.current.transform.right * GetGizmoConnectionOffset();
-            position += Camera.current.transform.up * verticalOffset;
-            position += horizontalOffset;
-
-            if (targets != null)
+            float viewportDistance = EditorUtilities.CalculateViewportDistance(from, to);
+            if (viewportDistance > minimumConnectionViewportDistance)
             {
-                foreach (var t in targets)
+                Vector3 delta = to - from;
+                float dx = Mathf.Max(1f, Mathf.Abs(delta.x));
+                float dy = Mathf.Abs(delta.y);
+
+                float tangentLength = 0.5f * dx * Mathf.Clamp01(dy * 10f);
+                Vector3 tangent = new Vector3(tangentLength, 0, delta.z * 0.5f);
+                Color c = Handles.color;
+                Handles.color = color;
+                Handles.DrawBezier(from, to, from + tangent, to - tangent, Color.white, bezierConnectionTexture.Get(), lineWidth);
+                Handles.color = c;
+            }
+        }
+
+        // Connect two objects with a straight line.
+        static private void DrawRelationshipLine(Vector3 sourcePosition, Vector3 destinationPosition, bool isArrow = false)
+        {
+            if (sourcePosition != null && destinationPosition != null)
+            {
+                float colorFade = GetGizmosFadeFactor(sourcePosition);
+
+                if (colorFade > 0)
                 {
-                    if (t.target != null && t.behaviour != null)
-                    {
-                        DrawBezierConnection(position, t.target.transform.position + horizontalOffset, selected);
-                    }
+                    Vector3 delta = sourcePosition - destinationPosition;
+                    Vector3 offset = gizmosConnectionOffsetDistance * delta.normalized;
+                    EditorUtilities.DrawStraightLine(sourcePosition - offset, destinationPosition + offset, relationshipLineWidth, FadeColor(relationshipColor, colorFade), isArrow);
                 }
             }
+        }
 
-            if (!string.IsNullOrWhiteSpace(label))
+        static private void DrawBezierConnection(Vector3 from, Vector3 to, bool selected, Color color)
+        {
+            DrawBezierConnection(from, to, selected ? selectedConnectionLineWidth : connectionLineWidth, color);
+        }
+
+        static private void DrawConnections(Vector3 position, IEnumerable<Transform> targetTransforms, bool selected, float verticalOffsetDistance = 0, string label = "")
+        {
+            Color c = Handles.color;
+            float colorFade = selected ? 1f : GetGizmosFadeFactor(position);
+
+            if (colorFade > 0f)
             {
-                EditorUtilities.LabelWithBackground(position, label, textLabelBackgroundColor, gizmoConnectionTextStyle);
-            }
+                Handles.color = FadeColor(selected ? selectedGizmoConnectionColor : gizmoConnectionColor, colorFade);
 
-            Handles.color = c;
+                Vector3 horizontalOffset = gizmosConnectionOffset;
+                Vector3 verticalOffset = Camera.current.transform.up * verticalOffsetDistance;
+                position += horizontalOffset + verticalOffset;
+
+                if (targetTransforms != null)
+                {
+                    foreach (Transform t in targetTransforms)
+                    {
+                        if (t != null)
+                        {
+                            DrawBezierConnection(position, t.position - horizontalOffset, selected, Handles.color);
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(label))
+                {
+                    EditorUtilities.LabelWithBackground(position, label, textLabelBackgroundColor, gizmoConnectionTextStyle);
+                }
+
+                Handles.color = c;
+            }
         }
 
         static private void DrawConnections(Vector3 position, IEnumerable<MonoBehaviour> targets, bool selected, float verticalOffset = 0f, string label = "")
         {
-            Color c = Handles.color;
-            Handles.color = gizmoConnectionColor;
-
-            Vector3 horizontalOffset = Camera.current.transform.right * GetGizmoConnectionOffset();
-            position += Camera.current.transform.up * verticalOffset;
-            position += horizontalOffset;
-
-            if (targets != null)
-            {
-                foreach (var t in targets)
-                {
-                    if (t != null)
-                    {
-                        DrawBezierConnection(position, t.transform.position - horizontalOffset, selected);
-                    }
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(label))
-            {
-                EditorUtilities.LabelWithBackground(position, label, textLabelBackgroundColor, gizmoConnectionTextStyle);
-            }
-
-            Handles.color = c;
+            DrawConnections(position, targets.Select(x => x == null ? null : x.transform), selected, verticalOffset, label);
         }
+
+        static private void DrawConnections(Vector3 position, IEnumerable<ActionDelegate.Target> targets, bool selected, float verticalOffset = 0f, string label = "")
+        {
+            DrawConnections(position, targets.Select(x => x.target == null ? null : x.target.transform), selected, verticalOffset, label);
+        }
+
+        #endregion // DRAWING_CONNECTIONS
+
+        #region DRAWING_ICONS
 
         static private void DrawIcon(MonoBehaviour target)
         {
             Gizmos.color = Color.white;
-            float gizmoHeight = GetGizmoWorldSpaceHeight();
+            float gizmoHeight = gizmosWorldSpaceSize;
             DrawIconForClass(target.transform.position, target.GetType());
         }
 
@@ -149,7 +216,7 @@ namespace PuzzleBox
         {
             if (type != null && type != typeof(object))
             {
-                string path = $"{gizmosPath}{type.Name}Gizmo.png";
+                string path = $"{_gizmosPath}{type.Name}Gizmo.png";
                 if (File.Exists(path))
                 {
                     Gizmos.DrawIcon(position, path, true);
@@ -165,9 +232,15 @@ namespace PuzzleBox
 
         static private void DrawReferenceIcon(MonoBehaviour target)
         {
-            const string path = gizmosPath + "ReferenceGizmo.png";
+            const string path = _gizmosPath + "ReferenceGizmo.png";
+
+            // We need to offset the position of the icon to make sure it is drawn on top.
             Gizmos.DrawIcon(target.transform.position + Camera.current.transform.forward * -0.001f, path);
         }
+
+        #endregion // DRAWING_ICONS
+
+        #region DRAWING_LABELS
 
         static private void DrawLabel(MonoBehaviour target, string text, TextAnchor anchor = TextAnchor.MiddleCenter, int index = 0)
         {
@@ -176,16 +249,14 @@ namespace PuzzleBox
             textSize.x *= 1.5f; // For some reason, the width returned is off by this factor...
             float lineHeight = EditorUtilities.ScreenDistanceToWorldDistance(textSize.y, target.transform.position);
 
-            float labelOffset = GetGizmoWorldSpaceHeight() * 0.65f + lineHeight * index;
+            float labelOffset = gizmosWorldSpaceSize * 0.65f + lineHeight * index;
             Vector3 labelPosition = target.transform.position + -Camera.current.transform.up * labelOffset;
             EditorUtilities.LabelWithBackground(labelPosition, text, textLabelBackgroundColor, gizmoTextStyle);
         }
 
-        static private void DrawRelationshipLine(MonoBehaviour target, GameObject other)
-        {
-            float offset = GetGizmoConnectionOffset();
-            EditorUtilities.DrawStraightConnection(other.transform.position, target.transform.position, relationshipLineWidth, relationshipColor, false, 0, offset);
-        }
+        #endregion
+
+        #region INDIVIDUAL_GIZMOS
 
         [DrawGizmo(defaultGizmoType)]
         static void DrawPuzzleBoxGizmo(PuzzleBox.Spawner target, GizmoType gizmoType)
@@ -215,7 +286,7 @@ namespace PuzzleBox
         {
             if (target.hideGizmo) return;
 
-            bool selected = Selection.activeGameObject == target.gameObject;
+            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
 
             DrawConnections(target.transform.position, target.targets, selected);
         }
@@ -227,7 +298,7 @@ namespace PuzzleBox
             if (target.hideGizmo) return;
 
             Vector3 position = target.transform.position;
-            bool selected = Selection.activeGameObject == target.gameObject;
+            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
 
             if (target is SendMessage)
             {
@@ -239,12 +310,12 @@ namespace PuzzleBox
                 }
                 if (sendMessage.arguments != null && sendMessage.arguments.Length > 0)
                 {
-                    float offset = GetGizmoConnectionOffset();
+                    float offset = gizmosConnectionOffsetDistance;
                     foreach (GameObject arg in sendMessage.arguments)
                     {
                         if (arg != null)
                         {
-                            DrawRelationshipLine(target, arg);
+                            DrawRelationshipLine(target.transform.position, arg.transform.position);
                         }
                     }
                 }
@@ -261,7 +332,7 @@ namespace PuzzleBox
             if (target.hideGizmo) return;
 
             Vector3 position = target.transform.position;
-            bool selected = Selection.activeGameObject == target.gameObject;
+            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
 
             DrawConnections(position, target.OnStart, selected);
             DrawConnections(position, target.OnUpdate, selected);
@@ -277,7 +348,7 @@ namespace PuzzleBox
             if (target.hideGizmo) return;
 
             Vector3 position = target.transform.position;
-            bool selected = Selection.activeGameObject == target.gameObject;
+            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
 
             DrawConnections(position, target.OnStart, selected);
             DrawConnections(position, target.OnUpdate, selected);
@@ -293,7 +364,7 @@ namespace PuzzleBox
             if (target.hideGizmo) return;
 
             Vector3 position = target.transform.position;
-            bool selected = Selection.activeGameObject == target.gameObject;
+            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
 
             DrawConnections(position, target.targets, selected);
 
@@ -306,16 +377,15 @@ namespace PuzzleBox
             if (target.hideGizmo) return;
 
             Vector3 position = target.transform.position;
-            bool selected = Selection.activeGameObject == target.gameObject;
+            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
 
-            DrawConnections(position, target.triggerEnterActions, selected, GetGizmoWorldSpaceHeight() * 0.5f, "Enter");
+            DrawConnections(position, target.triggerEnterActions, selected, gizmosWorldSpaceSize * 0.5f, "Enter");
             DrawConnections(position, target.triggerExitActions, selected, 0, "Exit");
-            DrawConnections(position, target.collisionActions, selected, GetGizmoWorldSpaceHeight() * -0.5f, "Collision");
-
+            DrawConnections(position, target.collisionActions, selected, gizmosWorldSpaceSize * -0.5f, "Collision");
 
             if (target.otherObjectReference != null)
             {
-                EditorUtilities.DrawStraightConnection(target.otherObjectReference.transform.position, position, arrowLineWidth, relationshipColor, true, 0, GetGizmoWorldSpaceHeight() * 0.5f);
+                DrawRelationshipLine(target.otherObjectReference.transform.position, position, true);
             }
         }
 
@@ -325,18 +395,18 @@ namespace PuzzleBox
             if (target.hideGizmo) return;
 
             Vector3 position = target.transform.position;
-            bool selected = Selection.activeGameObject == target.gameObject;
+            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
 
             if (target.mode == Animate.Mode.OneShot)
             {
-                DrawConnections(position, target.OnStartPerforming, selected, GetGizmoWorldSpaceHeight() * 0.25f, "Start");
-                DrawConnections(position, target.OnFinishedPerforming, selected, GetGizmoWorldSpaceHeight() * -0.25f, "Finished");
+                DrawConnections(position, target.OnStartPerforming, selected, gizmosWorldSpaceSize * 0.25f, "Start");
+                DrawConnections(position, target.OnFinishedPerforming, selected, gizmosWorldSpaceSize * -0.25f, "Finished");
             }
             else
             {
-                DrawConnections(position, target.OnTurnOn, selected, GetGizmoWorldSpaceHeight() * 0.5f, "Turning On");
+                DrawConnections(position, target.OnTurnOn, selected, gizmosWorldSpaceSize * 0.5f, "Turning On");
                 DrawConnections(position, target.OnTurningOff, selected, 0, "Turning Off");
-                DrawConnections(position, target.OnTurnedOff, selected, GetGizmoWorldSpaceHeight() * -0.5f, "Off");
+                DrawConnections(position, target.OnTurnedOff, selected, gizmosWorldSpaceSize * -0.5f, "Off");
             }
         }
 
@@ -346,14 +416,14 @@ namespace PuzzleBox
             if (target.hideGizmo) return;
 
             Vector3 position = target.transform.position;
-            bool selected = Selection.activeGameObject == target.gameObject;
+            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
 
-            DrawConnections(position, target.reachedMinimumActions, selected, GetGizmoWorldSpaceHeight() * 0.25f, "Reached Min.");
-            DrawConnections(position, target.reachedMaximumActions, selected, GetGizmoWorldSpaceHeight() * -0.25f, "Reached Max.");
+            DrawConnections(position, target.reachedMinimumActions, selected, gizmosWorldSpaceSize * 0.25f, "Reached Min.");
+            DrawConnections(position, target.reachedMaximumActions, selected, gizmosWorldSpaceSize * -0.25f, "Reached Max.");
 
             if (target.referencedValue != null)
             {
-                DrawRelationshipLine(target, target.referencedValue.gameObject);
+                DrawRelationshipLine(position, target.referencedValue.transform.position);
             }
         }
 
@@ -363,10 +433,12 @@ namespace PuzzleBox
             if (target.hideGizmo) return;
 
             Vector3 position = target.transform.position;
-            bool selected = Selection.activeGameObject == target.gameObject;
+            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
 
-            Vector3 horizontalOffset = Camera.current.transform.right * GetGizmoConnectionOffset();
-            DrawBezierConnection(position + horizontalOffset, target.target.transform.position - horizontalOffset, selected);
+            if (target.target != null)
+            {
+                DrawConnections(position, new Transform[] { target.target.transform }, selected);
+            }
         }
 
         [DrawGizmo(defaultGizmoType)]
@@ -389,12 +461,12 @@ namespace PuzzleBox
 
             if (target.referencedBehaviours != null)
             {
-                float offset = GetGizmoConnectionOffset();
-                foreach(BehaviourReference reference in target.referencedBehaviours)
+                float offset = gizmosConnectionOffsetDistance;
+                foreach (BehaviourReference reference in target.referencedBehaviours)
                 {
                     if (reference != null)
                     {
-                        DrawRelationshipLine(target, reference.gameObject);
+                        DrawRelationshipLine(target.transform.position, reference.transform.position);
                     }
                 }
             }
@@ -410,6 +482,8 @@ namespace PuzzleBox
 
             DrawIcon(target);
         }
+
+        #endregion // INDIVIDUAL_GIZMOS
     }
 }
 
