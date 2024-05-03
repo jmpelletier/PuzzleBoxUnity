@@ -67,7 +67,8 @@ namespace PuzzleBox
             if (inventoryComponent != null)
             {
                 Item targetItem = GetItemComponent();
-                inventoryComponent.GetItem(targetItem);
+
+                PerformAction(() => inventoryComponent.GetItem(targetItem));
             }
             else if (inventoryReference != null && inventoryReference.referencedObject != null)
             {
@@ -75,7 +76,8 @@ namespace PuzzleBox
                 if (targetInventory != null)
                 {
                     Item targetItem = GetItemComponent();
-                    targetInventory.GetItem(targetItem);
+
+                    PerformAction(() => targetInventory.GetItem(targetItem));
                 }
             }
         }

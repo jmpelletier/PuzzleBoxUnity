@@ -20,28 +20,28 @@ namespace PuzzleBox
         }
 
         public override void Perform(GameObject sender) 
-        { 
-            Invoke(actionDelegates, sender);
+        {
+            PerformAction(() => Invoke(actionDelegates, sender));
         }
 
         public override void Perform(GameObject sender, bool value)
         {
-            Invoke(actionDelegates, sender, value);
+            PerformAction(() => Invoke(actionDelegates, sender, value));
         }
 
         public override void Perform(GameObject sender, float value)
         {
-            Invoke(actionDelegates, sender, value);
+            PerformAction(() => Invoke(actionDelegates, sender, value));
         }
 
         public override void Perform(GameObject sender, Vector2 value)
         {
-            Invoke(actionDelegates, sender, value);
+            PerformAction(() => Invoke(actionDelegates, sender, value));
         }
 
         public override void Perform(GameObject sender, GameObject target)
         {
-            Invoke(actionDelegates, sender, target);
+            PerformAction(() => Invoke(actionDelegates, sender, target));
         }
     }
 }

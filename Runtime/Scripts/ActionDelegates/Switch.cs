@@ -36,7 +36,7 @@ namespace PuzzleBox
             {
                 if (target.behaviour != null)
                 {
-                    target.behaviour.Toggle(state);
+                    PerformAction(() => target.behaviour.Toggle(state));
                 }
             }
         }
@@ -50,7 +50,7 @@ namespace PuzzleBox
                     {
                         if (target.behaviour != null)
                         {
-                            target.behaviour.Toggle();
+                            PerformAction(() => target.behaviour.Toggle());
                         }
                     }
                     break;
@@ -59,7 +59,7 @@ namespace PuzzleBox
                     {
                         if (target.behaviour != null)
                         {
-                            target.behaviour.Toggle(state);
+                            PerformAction(() => target.behaviour.Toggle(state));
                         }
                     }
                     break;

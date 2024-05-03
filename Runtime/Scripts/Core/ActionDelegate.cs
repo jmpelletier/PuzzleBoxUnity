@@ -4,7 +4,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using System.Reflection;
+using System;
+using System.Collections;
 using UnityEngine;
 
 namespace PuzzleBox
@@ -12,6 +13,8 @@ namespace PuzzleBox
     [DisallowMultipleComponent]
     public abstract class ActionDelegate : PuzzleBoxBehaviour
     {
+        [Min(0)]
+        public float delay = 0f;
         public virtual void Perform(GameObject sender) { }
         public virtual void Perform(GameObject sender, bool value) { }
         public virtual void Perform(GameObject sender, float value) { }
@@ -29,6 +32,23 @@ namespace PuzzleBox
             public string methodName;
         }
 
+        protected void PerformAction(Action action)
+        {
+            if (delay > 0)
+            {
+                StartCoroutine(PerformActionWithDelay(action));
+            }
+            else
+            {
+                action?.Invoke();
+            }
+        }
+
+        private IEnumerator PerformActionWithDelay(Action action)
+        {
+            yield return new WaitForSeconds(delay);
+            action?.Invoke();
+        }
 
         public static void Invoke(ActionDelegate[] delegates, GameObject sender)
         {

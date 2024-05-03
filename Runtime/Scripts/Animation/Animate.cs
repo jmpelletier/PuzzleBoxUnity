@@ -92,11 +92,11 @@ namespace PuzzleBox
                 if (mode == Mode.Toggle)
                 {
                     state = !state;
-                    animator.SetBool("State", state);
+                    PerformAction(() => animator.SetBool("State", state));
                 }
                 else
                 {
-                    animator.SetTrigger("Perform");
+                    PerformAction(() => animator.SetBool("Perform", state));
                 }
             }
             else
@@ -106,19 +106,25 @@ namespace PuzzleBox
                     state = !state;
                     if (state)
                     {
-                        ExitedState(State.Off);
-                        EnteredState(State.On);
+                        PerformAction(() => {
+                            ExitedState(State.Off);
+                            EnteredState(State.On);
+                        });
                     }
                     else
                     {
-                        ExitedState(State.On);
-                        EnteredState(State.Off);
+                        PerformAction(() => {
+                            ExitedState(State.On);
+                            EnteredState(State.Off);
+                        });
                     }
                 }
                 else
                 {
-                    EnteredState(State.Perform);
-                    ExitedState(State.Perform);
+                    PerformAction(() => {
+                        ExitedState(State.Perform);
+                        EnteredState(State.Perform);
+                    });
                 }
             }
         }
@@ -134,12 +140,16 @@ namespace PuzzleBox
             {
                 if (mode == Mode.Toggle)
                 {
-                    state = newState;
-                    animator.SetBool("State", state);
+                    PerformAction(() => {
+                        state = newState;
+                        animator.SetBool("State", state);
+                    });                    
                 }
                 else
                 {
-                    animator.SetTrigger("Perform");
+                    PerformAction(() => {
+                        animator.SetTrigger("Perform");
+                    });
                 }
             }
             else
@@ -147,21 +157,26 @@ namespace PuzzleBox
                 if (mode == Mode.Toggle && state != newState)
                 {
                     state = newState;
-                    if (state)
-                    {
-                        ExitedState(State.Off);
-                        EnteredState(State.On);
-                    }
-                    else
-                    {
-                        ExitedState(State.On);
-                        EnteredState(State.Off);
-                    }
+                    PerformAction(() => {
+                        if (state)
+                        {
+                            ExitedState(State.Off);
+                            EnteredState(State.On);
+                        }
+                        else
+                        {
+                            ExitedState(State.On);
+                            EnteredState(State.Off);
+                        }
+                    });
+                    
                 }
                 else
                 {
-                    EnteredState(State.Perform);
-                    ExitedState(State.Perform);
+                    PerformAction(() => {
+                        EnteredState(State.Perform);
+                        ExitedState(State.Perform);
+                    });
                 }
             }
         }

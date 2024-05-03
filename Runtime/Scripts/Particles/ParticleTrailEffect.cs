@@ -45,25 +45,26 @@ namespace PuzzleBox
         {
             if (maxParticles > 0f)
             {
-                if (!particles.isPlaying)
-                {
-                    particles.Play();
-                }
-
                 float a = Mathf.Clamp(size * scale / maxParticles, 0, 1);
                 float rate = countCurve.Evaluate(a) * maxParticles;
                 var emissions = particles.emission;
 
-                switch(mode)
-                {
-                    case Mode.Time:
-                        emissions.rateOverTime = rate;
-                        break;
-                    case Mode.Distance:
-                        emissions.rateOverDistance = rate;
-                        break;
-                }
-                
+                PerformAction(() => {
+                    if (!particles.isPlaying)
+                    {
+                        particles.Play();
+                    }
+
+                    switch (mode)
+                    {
+                        case Mode.Time:
+                            emissions.rateOverTime = rate;
+                            break;
+                        case Mode.Distance:
+                            emissions.rateOverDistance = rate;
+                            break;
+                    }
+                });
             }
         }
 

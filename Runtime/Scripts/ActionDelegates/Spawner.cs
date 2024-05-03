@@ -81,7 +81,7 @@ namespace PuzzleBox
 
         public override void Perform(GameObject sender)
         {
-            SpawnNow();
+            PerformAction(SpawnNow);
         }
 
         // Start is called before the first frame update
@@ -89,28 +89,6 @@ namespace PuzzleBox
         {
             
         }
-
-        //private void OnDrawGizmos()
-        //{
-        //    string items = "";
-
-        //    if (prefabs != null)
-        //    {
-        //        foreach (var item in prefabs)
-        //        {
-        //            if (item)
-        //            {
-        //                if (!string.IsNullOrEmpty(items))
-        //                {
-        //                    items += ", ";
-        //                }
-        //                items += item.name;
-        //            }
-        //        }
-        //    }
-            
-        //    Handles.Label(transform.position, "Spawn: " + items);
-        //}
 
         public override string GetIcon()
         {

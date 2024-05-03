@@ -35,7 +35,15 @@ namespace PuzzleBox
             {
                 float a = Mathf.Clamp(size * scale / maxParticles, 0, 1);
                 int count = (int)Mathf.Floor(burstCountCurve.Evaluate(a) * maxParticles);
-                StartCoroutine(Emit(count));
+
+                if (delay > 0)
+                {
+                    PerformAction(() => particles.Emit(count));
+                }
+                else
+                {
+                    StartCoroutine(Emit(count));
+                }
             }
         }
 

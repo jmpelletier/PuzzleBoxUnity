@@ -58,7 +58,7 @@ namespace PuzzleBox
 
         public override void Perform(GameObject sender)
         {
-            Play();
+            PerformAction(Play);
         }
 
         public override string GetIcon()

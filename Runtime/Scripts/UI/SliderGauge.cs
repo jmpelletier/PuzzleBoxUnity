@@ -34,11 +34,13 @@ namespace PuzzleBox
         {
             if (slider != null)
             {
-                if (!slider.gameObject.activeSelf)
-                {
-                    slider.gameObject.SetActive(true);
-                }
-                slider.value = value * scale;
+                PerformAction(() => {
+                    if (!slider.gameObject.activeSelf)
+                    {
+                        slider.gameObject.SetActive(true);
+                    }
+                    slider.value = value * scale;
+                });
             }
         }
 

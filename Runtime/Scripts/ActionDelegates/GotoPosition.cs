@@ -24,27 +24,29 @@ namespace PuzzleBox
 
         public override void Perform(GameObject sender, GameObject target)
         {
-            if (target != null && position != null) 
-            {
-                target.transform.position = position.position + offset;
-
-                if (!keepVelocity)
+            PerformAction(() => {
+                if (target != null && position != null)
                 {
-                    KinematicMotion2D motion2D = target.GetComponent<KinematicMotion2D>();
-                    if (motion2D != null)
-                    {
-                        motion2D.velocity = Vector2.zero;
-                        return;
-                    }
+                    target.transform.position = position.position + offset;
 
-                    Rigidbody2D rb = target.GetComponent<Rigidbody2D>();
-                    if (rb != null)
+                    if (!keepVelocity)
                     {
-                        rb.velocity = Vector2.zero;
-                        return;
+                        KinematicMotion2D motion2D = target.GetComponent<KinematicMotion2D>();
+                        if (motion2D != null)
+                        {
+                            motion2D.velocity = Vector2.zero;
+                            return;
+                        }
+
+                        Rigidbody2D rb = target.GetComponent<Rigidbody2D>();
+                        if (rb != null)
+                        {
+                            rb.velocity = Vector2.zero;
+                            return;
+                        }
                     }
                 }
-            }
+            });
         }
     }
 }

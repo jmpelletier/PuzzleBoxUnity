@@ -14,16 +14,18 @@ namespace PuzzleBox
     {
         public override void Perform(GameObject sender)
         {
-            if (Manager.instance != null)
-            {
-                LevelManager.UnloadSubScene();
-                Manager.instance.ClearGame();
-            }
-            else
-            {
-                Debug.Log("Game Clear!");
-                SceneTransition.ReloadCurrentScene();
-            }
+            PerformAction(() => {
+                if (Manager.instance != null)
+                {
+                    LevelManager.UnloadSubScene();
+                    Manager.instance.ClearGame();
+                }
+                else
+                {
+                    Debug.Log("Game Clear!");
+                    SceneTransition.ReloadCurrentScene();
+                }
+            });
         }
     }
 }

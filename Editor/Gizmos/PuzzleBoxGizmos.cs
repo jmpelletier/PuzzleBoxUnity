@@ -236,12 +236,24 @@ namespace PuzzleBox
             return false;
         }
 
-        static private void DrawReferenceIcon(MonoBehaviour target)
+        static private void DrawBadge(MonoBehaviour target, string path)
         {
-            const string path = _gizmosPath + "ReferenceGizmo.png";
-
             // We need to offset the position of the icon to make sure it is drawn on top.
             Gizmos.DrawIcon(target.transform.position + Camera.current.transform.forward * -0.001f, path);
+        }
+
+        static private void DrawReferenceIcon(MonoBehaviour target)
+        {
+            const string path = _gizmosPath + "ReferenceBadgeGizmo.png";
+
+            DrawBadge(target, path);
+        }
+
+        static private void DrawTimerIcon(MonoBehaviour target)
+        {
+            const string path = _gizmosPath + "DelayBadgeGizmo.png";
+
+            DrawBadge(target, path);
         }
 
         #endregion // DRAWING_ICONS
@@ -297,7 +309,6 @@ namespace PuzzleBox
             DrawConnections(target.transform.position, target.targets, selected);
         }
 
-
         [DrawGizmo(defaultGizmoType)]
         static void DrawPuzzleBoxGizmo(PuzzleBox.ActionDelegate target, GizmoType gizmoType)
         {
@@ -329,6 +340,11 @@ namespace PuzzleBox
             else if (target is ClearGame)
             {
                 DrawLabel(target, "Clear Game");
+            }
+
+            if (target.delay > 0)
+            {
+                DrawTimerIcon(target);
             }
         }
 
@@ -362,19 +378,6 @@ namespace PuzzleBox
             DrawConnections(position, target.OnTick, selected);
 
             DrawLabel(target, $"{target.interval:0.##} s");
-        }
-
-        [DrawGizmo(defaultGizmoType)]
-        static void DrawPuzzleBoxGizmo(PuzzleBox.Delay target, GizmoType gizmoType)
-        {
-            if (target.hideGizmo) return;
-
-            Vector3 position = target.transform.position;
-            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
-
-            DrawConnections(position, target.targets, selected);
-
-            DrawLabel(target, $"{target.delay:0.##} s");
         }
 
         [DrawGizmo(defaultGizmoType)]
@@ -499,7 +502,6 @@ namespace PuzzleBox
 
             DrawReferenceIcon(target);
         }
-
 
         [DrawGizmo(defaultGizmoType)]
         static void DrawPuzzleBoxGizmo(PuzzleBox.PuzzleBoxBehaviour target, GizmoType gizmoType)

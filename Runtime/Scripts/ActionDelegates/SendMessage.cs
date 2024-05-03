@@ -32,10 +32,30 @@ namespace PuzzleBox
             {
                 if (target.behaviour != null)
                 {
-                    target.behaviour.Invoke(message, sender, arguments);
+                    PuzzleBoxBehaviour behaviour = target.behaviour;
+                    PerformAction(() => behaviour.Invoke(message, sender, arguments));
+                    //if (delay > 0)
+                    //{
+                    //    StartCoroutine(InvokeWithDelay(target.behaviour, sender, delay));
+                    //}
+                    //else
+                    //{
+                    //    target.behaviour.Invoke(message, sender, arguments);
+                    //}
+                    
                 }
             }
         }
+
+        //private IEnumerator InvokeWithDelay(PuzzleBoxBehaviour targetBehaviour, GameObject sender, float delay)
+        //{
+        //    if (delay > 0)
+        //    {
+        //        yield return new WaitForSeconds(delay);
+        //    }
+
+        //    targetBehaviour.Invoke(message, sender, arguments);
+        //}
 
         public override string GetIcon()
         {

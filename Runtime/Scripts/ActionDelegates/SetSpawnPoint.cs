@@ -32,48 +32,24 @@ namespace PuzzleBox
 
         public override void Perform(GameObject sender)
         {
-            string json = JsonUtility.ToJson(transform.position);
-            switch (persistence)
-            {
-                case Persistence.Reload:
-                    LevelManager.saveState["PlayerSpawnPosition"] = json;
-                    break;
-                case Persistence.Session:
-                    LevelManager.saveState["PlayerSpawnPosition"] = json;
-                    Manager.saveState["PlayerSpawnPosition"] = json;
-                    break;
-                case Persistence.Save:
-                    LevelManager.saveState["PlayerSpawnPosition"] = json;
-                    Manager.saveState["PlayerSpawnPosition"] = json;
-                    PlayerPrefs.SetString("PlayerSpawnPosition", json);
-                    break;
-            }
-        }
-
-        GUIStyle guiStyle = new GUIStyle();
-
-        private void OnDrawGizmos()
-        {
-            Collider2D[] collision = Physics2D.OverlapBoxAll(transform.position, new Vector2(1, 0.01f), 0);
-            bool collided = false;
-            foreach (Collider2D collision2d in collision)
-            {
-                if (!collision2d.isTrigger && !collision2d.CompareTag("Player"))
+            PerformAction(() => {
+                string json = JsonUtility.ToJson(transform.position);
+                switch (persistence)
                 {
-                    collided = true;
-                    break;
+                    case Persistence.Reload:
+                        LevelManager.saveState["PlayerSpawnPosition"] = json;
+                        break;
+                    case Persistence.Session:
+                        LevelManager.saveState["PlayerSpawnPosition"] = json;
+                        Manager.saveState["PlayerSpawnPosition"] = json;
+                        break;
+                    case Persistence.Save:
+                        LevelManager.saveState["PlayerSpawnPosition"] = json;
+                        Manager.saveState["PlayerSpawnPosition"] = json;
+                        PlayerPrefs.SetString("PlayerSpawnPosition", json);
+                        break;
                 }
-            }
-
-            Color color = collided ? Color.red : Color.green;
-            Gizmos.color = color;
-            Gizmos.DrawLine(transform.position, transform.position + Vector3.up);
-            Gizmos.DrawLine(transform.position, transform.position + new Vector3(-0.25f, 0.25f));
-            Gizmos.DrawLine(transform.position, transform.position + new Vector3(0.25f, 0.25f));
-
-            guiStyle.normal.textColor = color;
-            guiStyle.alignment = TextAnchor.LowerCenter;
-            Handles.Label(transform.position + Vector3.up, "�X�|�[���ʒu" + (collided ? "�i�Փ˒��j" : ""), guiStyle);
+            });
         }
     }
 }

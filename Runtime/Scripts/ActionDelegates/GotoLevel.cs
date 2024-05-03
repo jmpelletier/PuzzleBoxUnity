@@ -25,33 +25,7 @@ namespace PuzzleBox
 
         public override void Perform(GameObject sender)
         {
-            LevelManager.LoadLevel(sceneName, spawnPointUID);
-        }
-
-
-        GUIStyle guiStyle = new GUIStyle();
-
-        private void OnDrawGizmos()
-        {
-            bool sceneIncluded = EditorUtilities.SceneIsIncludedInBuild(sceneName);
-
-            Color color = sceneIncluded ? Color.blue : Color.red;
-            Gizmos.color = color;
-            Gizmos.DrawLine(transform.position + Vector3.left * 0.5f, transform.position);
-            Gizmos.DrawLine(transform.position, transform.position + new Vector3(-0.25f, 0.25f));
-            Gizmos.DrawLine(transform.position, transform.position + new Vector3(-0.25f, -0.25f));
-
-            guiStyle.normal.textColor = color;
-            guiStyle.alignment = TextAnchor.MiddleLeft;
-
-            string labelText = sceneIncluded ? "���x���ړ��F" : "���x���ړ��iBuild���o�^�I�j�F";
-            labelText += sceneName;
-            if (spawnPointUID != "")
-            {
-                labelText += $" ({spawnPointUID})";
-            }
-
-            Handles.Label(transform.position + Vector3.right * 0.1f, labelText, guiStyle);
+            PerformAction(() => LevelManager.LoadLevel(sceneName, spawnPointUID));
         }
     }
 }
