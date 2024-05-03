@@ -297,7 +297,7 @@ namespace PuzzleBox
         void UpdateStateOnWall()
         {
 
-            if (!isGrabbing)
+            if (!isGrabbing || !canGrabWall)
             {
                 state = State.Falling;
             }
@@ -307,7 +307,7 @@ namespace PuzzleBox
             }
             else if (wallGrabTimer.isFinished && !isGrounded)
             {
-                state = State.WallSliding;
+                state = State.Falling;
             }
             else if (motionInput.y > SMALL_INPUT_THRESHOLD && wallClimbUpSpeed > 0)
             {
