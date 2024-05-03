@@ -248,7 +248,7 @@ namespace PuzzleBox
 
         #region DRAWING_LABELS
 
-        static private void DrawLabel(MonoBehaviour target, string text, TextAnchor anchor = TextAnchor.MiddleCenter, int index = 0)
+        static private void DrawLabel(MonoBehaviour target, string text, int index = 0, TextAnchor anchor = TextAnchor.MiddleCenter)
         {
             int fontSize = gizmoTextStyle.fontSize;
             Vector3 textSize = gizmoTextStyle.CalcSize(new GUIContent(text));
@@ -444,6 +444,26 @@ namespace PuzzleBox
             if (target.target != null)
             {
                 DrawConnections(position, new Transform[] { target.target.transform }, selected);
+            }
+        }
+
+        [DrawGizmo(defaultGizmoType)]
+        static void DrawPuzzleBoxGizmo(PuzzleBox.ParameterOverride target, GizmoType gizmoType)
+        {
+            if (target.hideGizmo) return;
+
+            Vector3 position = target.transform.position;
+            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
+
+            if (target.target.behaviour != null)
+            {
+                DrawConnections(position, new Transform[] { target.target.behaviour.transform }, selected);
+            }
+
+            if (!string.IsNullOrWhiteSpace(target.fieldName))
+            {
+                DrawLabel(target, target.fieldName, 0);
+                DrawLabel(target, target.value.ToString(), 1);
             }
         }
 
