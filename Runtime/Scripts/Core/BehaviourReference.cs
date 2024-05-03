@@ -138,7 +138,7 @@ namespace PuzzleBox
 
         public override void RestoreOverrides()
         {
-            if (puzzleBoxBehaviour != null)
+            if (puzzleBoxBehaviour != null) 
             {
                 puzzleBoxBehaviour.RestoreOverrides();
             }

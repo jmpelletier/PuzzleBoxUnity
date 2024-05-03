@@ -34,6 +34,12 @@ namespace PuzzleBox
                 else if (type == typeof(Vector3).Name) return vector3Value;
                 else return null;
             }
+
+            public override string ToString()
+            {
+                object obj = GetObject();
+                return obj != null ? obj.ToString() : string.Empty;
+            }
         }
 
         public ActionDelegate.Target target;
@@ -66,6 +72,11 @@ namespace PuzzleBox
             {
                 target.behaviour.RemoveOverride(this, fieldName);
             }
+        }
+
+        public override string GetIcon()
+        {
+            return "parameterOverrideIcon";
         }
     }
 }
