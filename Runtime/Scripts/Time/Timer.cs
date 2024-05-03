@@ -24,10 +24,16 @@ namespace PuzzleBox
 
         public ActionDelegate[] OnEnd;
 
+        [PuzzleBox.Action]
         public override void StartTimer()
         {
             base.StartTimer();
+            ResetTimer();
+        }
 
+        [PuzzleBox.Action]
+        public override void ResetTimer()
+        {
             if (countDirection == CountDirection.Down)
             {
                 time = duration;

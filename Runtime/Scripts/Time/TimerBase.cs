@@ -29,6 +29,7 @@ namespace PuzzleBox
             }
         }
 
+        [PuzzleBox.Action]
         public virtual void StartTimer()
         {
             Toggle(true);
@@ -36,13 +37,20 @@ namespace PuzzleBox
             ActionDelegate.Invoke(OnStart, gameObject);
         }
 
-        public void PauseTimer(bool paused)
+        [PuzzleBox.Action]
+        public virtual void PauseTimer()
         {
-            if (GetToggleState() == paused)
+            if (GetToggleState() == true)
             {
-                Toggle(!paused);
+                Toggle(false);
                 ActionDelegate.Invoke(OnPause, gameObject);
             }
+        }
+
+        [PuzzleBox.Action]
+        public virtual void ResetTimer()
+        {
+            time = 0;
         }
 
         protected virtual void UpdateTime(float deltaTime)
