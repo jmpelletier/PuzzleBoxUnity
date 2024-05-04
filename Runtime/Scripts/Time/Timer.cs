@@ -11,7 +11,7 @@ using UnityEngine.Events;
 namespace PuzzleBox
 {
     [AddComponentMenu("Puzzle Box/Time/Timer")]
-    public class Timer : TimerBase
+    public class Timer : PuzzleBoxBehaviour
     {
         public enum CountDirection
         {
@@ -21,18 +21,45 @@ namespace PuzzleBox
 
         public float duration = 10f;
         public CountDirection countDirection = CountDirection.Down;
+        public bool repeat = false;
 
+        public ActionDelegate[] OnStart;
+        public ActionDelegate[] OnUpdate;
+        public ActionDelegate[] OnPause;
         public ActionDelegate[] OnEnd;
 
-        [PuzzleBox.Action]
-        public override void StartTimer()
+        public bool useFixedUpdate = true;
+
+        public float time { get; protected set; }
+
+        private void Start()
         {
-            base.StartTimer();
-            ResetTimer();
+            if (GetToggleState())
+            {
+                StartTimer();
+            }
         }
 
         [PuzzleBox.Action]
-        public override void ResetTimer()
+        public void StartTimer()
+        {
+            Toggle(true);
+            ResetTimer();
+            ActionDelegate.Invoke(OnStart, gameObject);
+        }
+
+        [PuzzleBox.Action]
+        public virtual void PauseTimer()
+        {
+            if (GetToggleState() == true)
+            {
+                Toggle(false);
+                ActionDelegate.Invoke(OnPause, gameObject);
+            }
+        }
+
+        [PuzzleBox.Action]
+        public void ResetTimer()
         {
             if (countDirection == CountDirection.Down)
             {
@@ -44,7 +71,7 @@ namespace PuzzleBox
             }
         }
 
-        protected override void UpdateTime(float deltaTime)
+        protected void UpdateTime(float deltaTime)
         {
             if (GetToggleState())
             {
@@ -53,8 +80,8 @@ namespace PuzzleBox
                     time -= deltaTime;
                     if (time <= 0)
                     {
-                        time = 0;
-                        Toggle(false);
+                        time = duration;
+                        Toggle(repeat);
                         ActionDelegate.Invoke(OnEnd, gameObject);
                         return;
                     }
@@ -64,8 +91,8 @@ namespace PuzzleBox
                     time += deltaTime;
                     if (time >= duration)
                     {
-                        time = duration;
-                        Toggle(false);
+                        time = 0;
+                        Toggle(repeat);
                         ActionDelegate.Invoke(OnEnd, gameObject);
                         return;
                     }
@@ -75,6 +102,22 @@ namespace PuzzleBox
                 ActionDelegate.Invoke(OnUpdate, gameObject, time);
             }
 
+        }
+
+        private void Update()
+        {
+            if (!useFixedUpdate)
+            {
+                UpdateTime(Time.deltaTime);
+            }
+        }
+
+        private void FixedUpdate()
+        {
+            if (useFixedUpdate)
+            {
+                UpdateTime(Time.fixedDeltaTime);
+            }
         }
 
         public override string GetIcon()

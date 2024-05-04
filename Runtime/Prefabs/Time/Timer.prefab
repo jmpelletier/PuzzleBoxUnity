@@ -44,10 +44,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 905bae48a96d5694d89f91d88b4f36da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useFixedUpdate: 0
+  hideGizmo: 0
+  duration: 10
+  countDirection: 1
   OnStart: []
   OnUpdate: []
   OnPause: []
-  duration: 10
-  countDirection: 1
   OnEnd: []
+  useFixedUpdate: 1

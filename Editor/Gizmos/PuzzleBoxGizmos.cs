@@ -365,22 +365,6 @@ namespace PuzzleBox
         }
 
         [DrawGizmo(defaultGizmoType)]
-        static void DrawPuzzleBoxGizmo(PuzzleBox.Interval target, GizmoType gizmoType)
-        {
-            if (target.hideGizmo) return;
-
-            Vector3 position = target.transform.position;
-            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
-
-            DrawConnections(position, target.OnStart, selected);
-            DrawConnections(position, target.OnUpdate, selected);
-            DrawConnections(position, target.OnPause, selected);
-            DrawConnections(position, target.OnTick, selected);
-
-            DrawLabel(target, $"{target.interval:0.##} s");
-        }
-
-        [DrawGizmo(defaultGizmoType)]
         static void DrawPuzzleBoxGizmo(PuzzleBox.ColliderActions target, GizmoType gizmoType)
         {
             if (target.hideGizmo) return;
