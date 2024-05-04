@@ -46,6 +46,7 @@ namespace PuzzleBox
 
                     if (behaviourReference != null)
                     {
+                        // The target is a reference, get the fields from the referenced behaviour.
                         if (behaviourReference.behaviour != null)
                         {
                             fields = FieldAttribute.GetFields<OverridableAttribute>(behaviourReference.behaviour.GetClass());
@@ -57,6 +58,7 @@ namespace PuzzleBox
                     }
                     else
                     {
+                        // This isn't a reference, get the fields from the target behaviour
                         PuzzleBoxBehaviour behaviour = targetBehaviourProperty.objectReferenceValue as PuzzleBoxBehaviour;
                         if (behaviour != null)
                         {
@@ -70,18 +72,20 @@ namespace PuzzleBox
                     
                     if (fields != null && fields.Length > 0)
                     {
+                        // Display a popup list populated with the accessible field names
                         string[] fieldNames = fields.Select(f => f.Name).ToArray();
 
                         int selectedIndex = ArrayUtility.IndexOf(fieldNames, fieldNameProperty.stringValue);
 
                         selectedIndex = EditorGUILayout.Popup("Parameter", selectedIndex, fieldNames);
+
                         if (selectedIndex >= 0)
                         {
                             fieldNameProperty.stringValue = fieldNames[selectedIndex];
                             SerializedProperty typeProperty = valueProperty.FindPropertyRelative("type");
                             typeProperty.stringValue = fields[selectedIndex].FieldType.Name;
 
-                            EditorGUILayout.PropertyField(valueProperty);
+                            EditorGUILayout.PropertyField(valueProperty, new GUIContent("Value"));
                         }
                     }
                 }
