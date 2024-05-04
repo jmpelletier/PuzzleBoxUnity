@@ -85,6 +85,26 @@ namespace PuzzleBox
             }
         }
 
+
+        [PuzzleBox.Action]
+        public void TurnOn(GameObject sender)
+        {
+            Perform(sender, true);
+        }
+
+        [PuzzleBox.Action]
+        public void TurnOff(GameObject sender)
+        {
+            Perform(sender, false);
+        }
+
+        [PuzzleBox.Action]
+        public void Toggle(GameObject sender)
+        {
+            Perform(sender, !state);
+        }
+
+        [PuzzleBox.Action]
         public override void Perform(GameObject sender)
         {
             if (animator.runtimeAnimatorController != null)
