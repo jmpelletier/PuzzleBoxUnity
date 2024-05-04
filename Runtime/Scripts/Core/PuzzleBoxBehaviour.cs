@@ -55,11 +55,13 @@ namespace PuzzleBox
                 else if (parameters.Length == 1 &&
                         parameters[0].ParameterType == typeof(GameObject))
                 {
-                    return (sender, args) => { method.Invoke(this, new object[] { sender }); };
+                    Action<GameObject> action = (Action<GameObject>)method.CreateDelegate(typeof(Action<GameObject>), this);
+                    return (sender, args) => { action.Invoke(sender); };
                 }
                 else if (parameters.Length == 0)
                 {
-                    return (sender, args) => { method.Invoke(this, new object[] { }); };
+                    Action action = (Action)method.CreateDelegate(typeof(Action), this);
+                    return (sender, args) => { action.Invoke(); };
                 }
             }
 
@@ -257,7 +259,8 @@ namespace PuzzleBox
             return null;
         }
 
-        public virtual void Toggle()
+        [PuzzleBox.Action]
+        public virtual void Toggle(GameObject sender = null)
         {
             enabled = !enabled;
         }
@@ -273,27 +276,20 @@ namespace PuzzleBox
         }
 
         [PuzzleBox.Action]
-        public virtual void Enable()
+        public virtual void Enable(GameObject sender = null)
         {
             enabled = true;
         }
 
         [PuzzleBox.Action]
-        public virtual void Disable()
+        public virtual void Disable(GameObject sender = null)
         {
             enabled = false;
         }
 
         public virtual void Invoke(string message, GameObject sender, GameObject[] arguments)
         {
-            if (_actions.ContainsKey(message))
-            {
-                Action<GameObject, GameObject[]> action = _actions[message];
-                if (action != null)
-                {
-                    action.Invoke(sender, arguments);
-                }
-            }
+            _actions.GetValueOrDefault(message)?.Invoke(sender, arguments);
         }
 
         protected static void ForEach<T>(GameObject gameObject, Action<T> action)

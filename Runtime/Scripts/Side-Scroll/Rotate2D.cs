@@ -41,7 +41,7 @@ namespace PuzzleBox
             transform.Rotate(Vector3.forward, speed * Time.fixedDeltaTime);
         }
 
-        public override void Toggle()
+        public override void Toggle(GameObject sender = null)
         {
             moving = !moving;
         }

@@ -99,7 +99,7 @@ namespace PuzzleBox
         }
 
         [PuzzleBox.Action]
-        public void Toggle(GameObject sender)
+        public override void Toggle(GameObject sender)
         {
             Perform(sender, !state);
         }

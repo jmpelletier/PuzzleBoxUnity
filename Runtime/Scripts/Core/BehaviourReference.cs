@@ -57,7 +57,7 @@ namespace PuzzleBox
             }
         }
 
-        public override void Toggle()
+        public override void Toggle(GameObject sender = null)
         {
             if (puzzleBoxBehaviour != null)
             {
@@ -83,20 +83,20 @@ namespace PuzzleBox
         }
 
         [PuzzleBox.Action]
-        public override void Enable()
+        public override void Enable(GameObject sender = null)
         {
             if (puzzleBoxBehaviour != null)
             {
-                puzzleBoxBehaviour.Enable();
+                puzzleBoxBehaviour.Enable(sender);
             }
         }
 
         [PuzzleBox.Action]
-        public override void Disable()
+        public override void Disable(GameObject sender = null)
         {
             if (puzzleBoxBehaviour != null)
             {
-                puzzleBoxBehaviour.Disable();
+                puzzleBoxBehaviour.Disable(sender);
             }
         }
 
