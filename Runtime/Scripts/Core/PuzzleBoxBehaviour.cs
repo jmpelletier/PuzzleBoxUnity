@@ -74,19 +74,19 @@ namespace PuzzleBox
             public FieldInfo field;
             public object value;
             public object defaultValue;
+            public int priority;
 
-            public Override(MonoBehaviour owner, FieldInfo field, object value)
+            public static int Compare(Override a, Override b)
             {
-                this.owner = owner;
-                this.field = field;
-                this.value = value;
-                this.defaultValue = default;
+                if (a.owner == null) return b.owner == null ? 0 : 1;
+                else if (b.owner == null) return -1;
+                else return a.priority - b.priority;
             }
         }
 
         private const int MAX_OVERRIDES = 8;
 
-        public virtual void AddOverride(MonoBehaviour owner, string fieldName, object value)
+        public virtual void AddOverride(MonoBehaviour owner, string fieldName, object value, int priority)
         {
             // Make sure field can be overridden
             if (overrides.ContainsKey(fieldName))
@@ -131,8 +131,9 @@ namespace PuzzleBox
                         fieldOverrides[i].field = fieldInfo;
                         fieldOverrides[i].value = value;
                         fieldOverrides[i].defaultValue = defaultValue;
+                        fieldOverrides[i].priority = priority;
 
-                        return;
+                        break;
                     }
                     else
                     {
@@ -140,6 +141,11 @@ namespace PuzzleBox
                         defaultValue = fieldOverrides[i].defaultValue;
                     }
                 }
+
+                // Now sort according to priority
+                Array.Sort(fieldOverrides, Override.Compare);
+
+                ApplyOverrides();
             }
         }
 
@@ -174,6 +180,8 @@ namespace PuzzleBox
                         fieldOverrides[MAX_OVERRIDES - 1].owner = null;
                     }
                 }
+
+                ApplyOverrides();
             }
         }
 

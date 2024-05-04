@@ -112,11 +112,11 @@ namespace PuzzleBox
             return "referenceIcon";
         }
 
-        public override void AddOverride(MonoBehaviour owner, string fieldName, object value)
+        public override void AddOverride(MonoBehaviour owner, string fieldName, object value, int priority)
         {
             if (puzzleBoxBehaviour != null)
             {
-               puzzleBoxBehaviour.AddOverride(owner, fieldName, value);
+               puzzleBoxBehaviour.AddOverride(owner, fieldName, value, priority);
             }
         }
 

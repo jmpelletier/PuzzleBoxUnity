@@ -42,6 +42,8 @@ namespace PuzzleBox
             }
         }
 
+        public int priority = 0;
+
         public ActionDelegate.Target target;
 
         [HideInInspector]
@@ -61,8 +63,7 @@ namespace PuzzleBox
         {
             if (target.behaviour != null)
             {
-                target.behaviour.AddOverride(this, fieldName, value.GetObject());
-                target.behaviour.ApplyOverrides();
+                target.behaviour.AddOverride(this, fieldName, value.GetObject(), priority);
             }
         }
 
