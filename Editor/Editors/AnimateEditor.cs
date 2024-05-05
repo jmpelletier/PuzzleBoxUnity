@@ -17,6 +17,7 @@ namespace PuzzleBox
     public class AnimateEditor : PuzzleBoxBehaviourEditor
     {
         SerializedProperty mode;
+        SerializedProperty duration;
         SerializedProperty initialState;
         SerializedProperty onTurnOn;
         SerializedProperty onTurningOff;
@@ -27,6 +28,7 @@ namespace PuzzleBox
         private void OnEnable()
         {
             mode = serializedObject.FindProperty("mode");
+            duration = serializedObject.FindProperty("duration");
             initialState = serializedObject.FindProperty("initialState");
             onTurnOn = serializedObject.FindProperty("OnTurnOn");
             onTurningOff = serializedObject.FindProperty("OnTurningOff");
@@ -40,6 +42,8 @@ namespace PuzzleBox
             serializedObject.Update();
 
             Animate animateComponent = (Animate)target;
+
+            EditorGUILayout.PropertyField(duration);
 
             EditorGUILayout.PropertyField(mode);
 
@@ -85,7 +89,7 @@ namespace PuzzleBox
                 // Add the states
                 AnimatorStateMachine rootStateMachine = controller.layers[0].stateMachine;
                 rootStateMachine.anyStatePosition = new Vector3(400, -150, 0);
-                rootStateMachine.entryPosition = new Vector3(120, -150, 0);
+                rootStateMachine.entryPosition = new Vector3(-170, -230, 0);
 
                 AnimatorState onState = rootStateMachine.AddState("On", new Vector3(100, -60, 0));
                 onState.motion = onClip;
@@ -93,19 +97,22 @@ namespace PuzzleBox
                 offState.motion = offClip;
                 AnimatorState performState = rootStateMachine.AddState("Perform", new Vector3(380, -60, 0));
                 performState.motion = performClip;
-                AnimatorState doneState = rootStateMachine.AddState("Done", new Vector3(380, 40, 0));
+                AnimatorState routeState = rootStateMachine.AddState("Route", new Vector3(-190, -160, 0));
 
                 // Connect
-                rootStateMachine.defaultState = onState;
+                rootStateMachine.defaultState = routeState;
                 AnimatorStateTransition performTransition = rootStateMachine.AddAnyStateTransition(performState);
-                AnimatorStateTransition doneTransition = performState.AddTransition(doneState);
                 AnimatorStateTransition onOffTransition = onState.AddTransition(offState);
                 AnimatorStateTransition offOnTransition = offState.AddTransition(onState);
+                AnimatorStateTransition routeOnTransition = routeState.AddTransition(onState);
+                AnimatorStateTransition routeOffTransition = routeState.AddTransition(offState);
 
                 // Set conditions
                 performTransition.AddCondition(AnimatorConditionMode.If, 0, "Perform");
                 onOffTransition.AddCondition(AnimatorConditionMode.IfNot, 0, "State");
                 offOnTransition.AddCondition(AnimatorConditionMode.If, 0, "State");
+                routeOnTransition.AddCondition(AnimatorConditionMode.If, 0, "State");
+                routeOffTransition.AddCondition(AnimatorConditionMode.IfNot, 0, "State");
 
                 // Add behaviours
                 AnimateStateBehaviour onStateBehaviour = onState.AddStateMachineBehaviour<AnimateStateBehaviour>();
@@ -117,16 +124,22 @@ namespace PuzzleBox
 
                 // Adjust transitions
                 performTransition.hasFixedDuration = true;
-                performTransition.canTransitionToSelf = false;
+                performTransition.canTransitionToSelf = true;
                 performTransition.duration = 0f;
                 performTransition.exitTime = 1f;
                 performTransition.hasExitTime = false;
 
-                doneTransition.hasFixedDuration = true;
-                doneTransition.canTransitionToSelf = false;
-                doneTransition.duration = 0f;
-                doneTransition.exitTime = 1f;
-                doneTransition.hasExitTime = true;
+                routeOnTransition.hasFixedDuration = true;
+                routeOnTransition.canTransitionToSelf = false;
+                routeOnTransition.duration = 0f;
+                routeOnTransition.exitTime = 1f;
+                routeOnTransition.hasExitTime = false;
+
+                routeOffTransition.hasFixedDuration = true;
+                routeOffTransition.canTransitionToSelf = false;
+                routeOffTransition.duration = 0f;
+                routeOffTransition.exitTime = 1f;
+                routeOffTransition.hasExitTime = false;
 
                 onOffTransition.hasFixedDuration = true;
                 onOffTransition.canTransitionToSelf = false;

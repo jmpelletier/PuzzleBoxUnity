@@ -29,6 +29,7 @@ namespace PuzzleBox
         }
         public Mode mode = Mode.OneShot;
         public bool initialState = true;
+        public float duration = 1;
 
         [Header("Actions")]
         public ActionDelegate[] OnTurnOn;
@@ -49,6 +50,7 @@ namespace PuzzleBox
             if (animator.runtimeAnimatorController != null)
             {
                 animator.SetBool("State", initialState);
+                animator.speed = duration > 0 ? 1f / duration : 1f/60;
             }
                 
             state = initialState;
@@ -116,7 +118,7 @@ namespace PuzzleBox
                 }
                 else
                 {
-                    PerformAction(() => animator.SetBool("Perform", state));
+                    PerformAction(() => animator.SetTrigger("Perform"));
                 }
             }
             else
