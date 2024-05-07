@@ -23,6 +23,7 @@ namespace PuzzleBox
                 else
                 {
                     Debug.Log("Game Clear!");
+                    LevelManager.ClearSaveState();
                     SceneTransition.ReloadCurrentScene();
                 }
             });

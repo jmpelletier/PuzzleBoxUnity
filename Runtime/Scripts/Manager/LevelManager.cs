@@ -197,6 +197,11 @@ namespace PuzzleBox
             }
         }
 
+        public static void ClearSaveState()
+        {
+            saveState.Clear();
+        }
+
         public static void LoadLevel(string sceneName, string spawnPointUID = "", bool clearState = true)
         {
             if (string.IsNullOrEmpty(mainScene))
