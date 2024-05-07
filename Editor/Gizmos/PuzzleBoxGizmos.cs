@@ -284,17 +284,21 @@ namespace PuzzleBox
             Vector3 position = target.transform.position;
 
             string displayText = "";
-            foreach (GameObject prefab in target.prefabs)
+            if (target.prefabs != null)
             {
-                if (prefab != null)
+                foreach (GameObject prefab in target.prefabs)
                 {
-                    if (!string.IsNullOrEmpty(displayText))
+                    if (prefab != null)
                     {
-                        displayText += "\n";
+                        if (!string.IsNullOrEmpty(displayText))
+                        {
+                            displayText += "\n";
+                        }
+                        displayText += prefab.name;
                     }
-                    displayText += prefab.name;
                 }
             }
+           
 
             DrawLabel(target, displayText);
         }

@@ -103,30 +103,34 @@ namespace PuzzleBox
             return enabled && !collision.isTrigger && (targetTag == "" || collision.tag == targetTag) && (layerMask.value & (1 << collision.gameObject.layer)) > 0;
         }
 
+        private static bool IsAboutEqual(float a, float b)
+        {
+            float d = Mathf.Abs(a - b);
+            return d < 0.003f;
+        }
+
         bool IsValidContactPoint(Collider2D coll, Vector3 contact)
         {
-            Vector3 center = coll.bounds.center;
-            Vector3 delta = contact - center;
-            if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+            if (coll is BoxCollider2D || coll is PolygonCollider2D)
             {
-                if (contact.x > center.x && right)
-                {
-                    return true;
-                }
-                else if (contact.x < center.x && left)
-                {
-                    return true;
-                }
+                if (IsAboutEqual(contact.y, coll.bounds.max.y) && top) return true;
+                if (IsAboutEqual(contact.y, coll.bounds.min.y) && bottom) return true;
+                if (IsAboutEqual(contact.x, coll.bounds.max.x) && right) return true;
+                if (IsAboutEqual(contact.x, coll.bounds.min.x) && left) return true;
             }
-            else
+            else if (coll is CircleCollider2D)
             {
-                if (contact.y > center.y && top)
+                Vector3 center = coll.bounds.center;
+                Vector3 delta = contact - center;
+                if (Mathf.Abs(delta.y) > Mathf.Abs(delta.x))
                 {
-                    return true;
+                    if (delta.y > 0 && top) return true;
+                    if (delta.y < 0 && bottom) return true;
                 }
-                else if (contact.y < center.y && bottom)
+                else
                 {
-                    return true;
+                    if (delta.x > 0 && right) return true;
+                    if (delta.y < 0 && left) return true;
                 }
             }
 
