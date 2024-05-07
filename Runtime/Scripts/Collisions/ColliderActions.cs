@@ -82,7 +82,7 @@ namespace PuzzleBox
                 }
             }
 
-            if (coll.isTrigger == false && coll != null)
+            if (Application.isPlaying && coll.isTrigger == false && coll != null)
             {
                 // Fake contacts
                 fakeCollisionCollider = CloneCollider(coll, coll.gameObject, 0.05f);
