@@ -13,6 +13,7 @@ namespace PuzzleBox
     public class GotoPosition : ActionDelegate
     {
         public Transform position;
+        public GameObject target;
         public Vector3 offset = Vector3.zero;
         public bool keepVelocity = true;
 
@@ -22,11 +23,21 @@ namespace PuzzleBox
 
         }
 
-        public override void Perform(GameObject sender, GameObject target)
+        public override void Perform(GameObject sender)
         {
             PerformAction(() => {
                 if (target != null && position != null)
                 {
+                    PuzzleBox.ObjectReference reference = target.GetComponent<PuzzleBox.ObjectReference>();
+                    if (reference != null)
+                    {
+                        target = reference.referencedObject;
+                        if (target == null)
+                        {
+                            return;
+                        }
+                    }
+
                     target.transform.position = position.position + offset;
 
                     if (!keepVelocity)
