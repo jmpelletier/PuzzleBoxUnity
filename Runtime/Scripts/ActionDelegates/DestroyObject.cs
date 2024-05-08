@@ -17,6 +17,7 @@ namespace PuzzleBox
             if (target)
             {
                 Destroy(target);
+                target.SendMessage("WasDestroyed", null, SendMessageOptions.DontRequireReceiver);
             }
         }
     }

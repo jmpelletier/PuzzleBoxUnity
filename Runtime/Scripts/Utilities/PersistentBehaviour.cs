@@ -35,6 +35,10 @@ namespace PuzzleBox
         [HideInInspector]
         private bool componentEnabled = true;
 
+        [SerializeField]
+        [HideInInspector]
+        protected bool deleted = false;
+
         // 状態をいつまで維持するか？
         public enum Persistence
         {
@@ -113,8 +117,15 @@ namespace PuzzleBox
             {
                 JsonUtility.FromJsonOverwrite(json, this);
 
-                enabled = componentEnabled;
-                gameObject.SetActive(gameObjectActive);
+                if (deleted)
+                {
+                    Destroy(gameObject);
+                }
+                else
+                {
+                    enabled = componentEnabled;
+                    gameObject.SetActive(gameObjectActive);
+                }
             }
         }
 
@@ -145,6 +156,12 @@ namespace PuzzleBox
                     }
                     break;
             }
+        }
+
+        protected virtual void WasDestroyed()
+        {
+            deleted = true;
+            SaveState();
         }
     }
 }

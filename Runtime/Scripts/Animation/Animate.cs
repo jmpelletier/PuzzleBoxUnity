@@ -77,14 +77,24 @@ namespace PuzzleBox
             switch (state)
             {
                 case State.On:
+                    ActionDelegate.Invoke(OnTurnedOff, gameObject);
                     break;
                 case State.Off:
-                    ActionDelegate.Invoke(OnTurnedOff, gameObject);
                     break;
                 case State.Perform:
                     ActionDelegate.Invoke(OnFinishedPerforming, gameObject);
                     break;
             }
+        }
+
+        public void OnLoopStart(State state)
+        {
+            // Nothing
+        }
+
+        public void OnLoopEnd(State state)
+        {
+
         }
 
 
