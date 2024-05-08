@@ -425,6 +425,27 @@ namespace PuzzleBox
         }
 
         [DrawGizmo(defaultGizmoType)]
+        static void DrawPuzzleBoxGizmo(PuzzleBox.GotoPosition target, GizmoType gizmoType)
+        {
+            if (target.hideGizmo) return;
+
+            Vector3 position = target.transform.position;
+            bool selected = EditorUtilities.IsInSelectedHierarchy(target.gameObject);
+
+            if (target.target != null)
+            {
+                DrawRelationshipLine(position, target.target.transform.position);
+            }
+
+            if (target.position != null)
+            {
+                DrawConnections(position, new Transform[] { target.position }, selected);
+            }
+
+            DrawLabel(target, "Go to");
+        }
+
+        [DrawGizmo(defaultGizmoType)]
         static void DrawPuzzleBoxGizmo(PuzzleBox.TargetObject target, GizmoType gizmoType)
         {
             if (target.hideGizmo) return;
