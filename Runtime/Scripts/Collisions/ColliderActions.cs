@@ -4,13 +4,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
+
 using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.UIElements;
 
 namespace PuzzleBox
 {
@@ -43,6 +38,9 @@ namespace PuzzleBox
         public bool deactivateOnEnter = false;
         public bool deactivateOnExit = false;
         public bool deactivateOnCollision = false;
+
+        [Space]
+        public float skinDepth = 0.1f;
 
         [Header("Editor")]
         public Color strokeColor = new Color(0, 1, 0, 1);
@@ -85,7 +83,7 @@ namespace PuzzleBox
             if (Application.isPlaying && coll.isTrigger == false && coll != null)
             {
                 // Fake contacts
-                fakeCollisionCollider = CloneCollider(coll, coll.gameObject, 0.05f);
+                fakeCollisionCollider = CloneCollider(coll, coll.gameObject, skinDepth);
                 fakeCollisionCollider.isTrigger = true;
             }
         }
@@ -103,20 +101,40 @@ namespace PuzzleBox
             return enabled && !collision.isTrigger && (targetTag == "" || collision.tag == targetTag) && (layerMask.value & (1 << collision.gameObject.layer)) > 0;
         }
 
-        private static bool IsAboutEqual(float a, float b)
+        private bool IsAboutEqual(float a, float b)
         {
+            Debug.Log($"{a:0.00000} == {b:0.00000}");
             float d = Mathf.Abs(a - b);
-            return d < 0.003f;
+            return d <= skinDepth;
         }
 
         bool IsValidContactPoint(Collider2D coll, Vector3 contact)
         {
             if (coll is BoxCollider2D || coll is PolygonCollider2D)
             {
-                if (IsAboutEqual(contact.y, coll.bounds.max.y) && top) return true;
-                if (IsAboutEqual(contact.y, coll.bounds.min.y) && bottom) return true;
-                if (IsAboutEqual(contact.x, coll.bounds.max.x) && right) return true;
-                if (IsAboutEqual(contact.x, coll.bounds.min.x) && left) return true;
+                float d_top = Mathf.Abs(contact.y - coll.bounds.max.y);
+                float d_bottom = Mathf.Abs(contact.y - coll.bounds.min.y);
+                float d_left = Mathf.Abs(contact.x- coll.bounds.max.x);
+                float d_right = Mathf.Abs(contact.x - coll.bounds.min.x);
+
+                float min = d_top;
+                int i = 0;
+
+                if (d_bottom < min) { min = d_bottom; i = 1; }
+                if (d_left < min) { min = d_bottom; i = 2; }
+                if (d_right < min) { min = d_bottom; i = 3; }
+
+                switch(i)
+                {
+                    case 0:
+                        return top;
+                    case 1:
+                        return bottom;
+                    case 2:
+                        return left;
+                    case 3:
+                        return right;
+                }
             }
             else if (coll is CircleCollider2D)
             {
@@ -331,9 +349,123 @@ namespace PuzzleBox
             return false;
         }
 
+        private static bool LineSegmentsIntersect(Vector2 aStart, Vector2 aEnd, Vector2 bStart, Vector2 bEnd, out Vector2 intersection)
+        {
+            intersection = Vector2.zero;
+
+            float tNumerator = (bStart.x - aStart.x) * (bEnd.y - bStart.y) - (bStart.y - aStart.y) * (bEnd.x - bStart.x);
+            float uNumerator = (aStart.y - aEnd.y) * (aStart.x - bStart.x) + (aEnd.x - aStart.x) * (aStart.y - bStart.y);
+            float denominator = (bEnd.y - bStart.y) * (aEnd.x - aStart.x) - (bEnd.x - bStart.x) * (aEnd.y - aStart.y);
+
+            if (Mathf.Approximately(denominator, 0.0f))
+            {
+                // Lines are parallel
+                return false;
+            }
+
+            float t = tNumerator / denominator;
+            float u = uNumerator / denominator;
+
+            if ((t >= 0.0f && t <= 1.0f) && (u >= 0.0f && u <= 1.0f))
+            {
+                // Segments intersect
+                intersection = aStart + t * (aEnd - aStart);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool LineSegmentIntersectsCircle(Vector2 aStart, Vector2 aEnd, Vector2 center, float radius, out Vector2 intersection)
+        {
+            intersection = Vector2.zero;
+
+            // Calculate the direction vector of the line segment
+            Vector2 dir = aEnd - aStart;
+
+            // Calculate the difference between the start of the line segment and the circle center
+            Vector2 diff = aStart - center;
+
+            // Calculate parameters for the quadratic equation
+            float a = dir.sqrMagnitude;
+            float b = 2 * Vector2.Dot(diff, dir);
+            float c = diff.sqrMagnitude - radius * radius;
+
+            // Calculate the discriminant of the quadratic equation
+            float discriminant = b * b - 4 * a * c;
+
+            if (discriminant < 0)
+            {
+                // No intersection
+                return false;
+            }
+            else
+            {
+                // Calculate the t values where the line intersects the circle
+                float sqrtDiscriminant = Mathf.Sqrt(discriminant);
+                float t1 = (-b - sqrtDiscriminant) / (2 * a);
+                float t2 = (-b + sqrtDiscriminant) / (2 * a);
+
+                if ((t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1))
+                {
+                    // At least one intersection point is within the line segment
+                    // Calculate the intersection point
+                    if (t1 >= 0 && t1 <= 1)
+                    {
+                        intersection = aStart + t1 * dir;
+                    }
+                    else
+                    {
+                        intersection = aStart + t2 * dir;
+                    }
+                    return true;
+                }
+                else
+                {
+                    // Both intersection points are outside the line segment
+                    return false;
+                }
+            }
+        }
+
+        public static void TransformPath(Vector2[] path, Transform parent)
+        {
+            for (int i = 0; i < path.Length; i++)
+            {
+                path[i] = parent.TransformPoint(path[i]);
+            }
+        }
+
+
         public static bool GetContactPoint(BoxCollider2D first, PolygonCollider2D second, out Vector3 point)
         {
-            throw new NotImplementedException();
+            if (first != null && second != null)
+            {
+                Vector2 topLeft = new Vector2(first.bounds.min.x, first.bounds.max.y);
+                Vector2 topRight = first.bounds.max;
+                Vector2 bottomRight = new Vector2(first.bounds.max.x, first.bounds.min.y);
+                Vector2 bottomLeft = first.bounds.min;
+
+                Vector2[] boxPath = new Vector2[] {
+                    bottomRight, topRight, topLeft, bottomLeft
+                };
+
+                Vector2 intersect;
+                for (int p = 0; p < second.pathCount; p++)
+                {
+                    Vector2[] path = second.GetPath(p);
+                    TransformPath(path, second.transform);
+
+                    if (IntersectPaths(boxPath, path, out intersect))
+                    {
+                        point = intersect;
+                        return true;
+                    }
+                }
+            }
+
+            point = Vector3.zero;
+            return false;
         }
 
         public static bool GetContactPoint(CircleCollider2D first, CircleCollider2D second, out Vector3 point)
@@ -352,15 +484,146 @@ namespace PuzzleBox
 
         public static bool GetContactPoint(CircleCollider2D first, PolygonCollider2D second, out Vector3 point)
         {
-            throw new NotImplementedException();
+            if (first != null && second != null)
+            {
+                Vector2 intersect;
+                for (int p = 0; p < second.pathCount; p++)
+                {
+                    Vector2[] path = second.GetPath(p);
+                    TransformPath(path, second.transform);
+
+                    int pathLength = path.Length;
+                    for (int i = pathLength - 1; i >= 0; i--)
+                    {
+                        Vector2 p1 = path[i];
+                        Vector2 p2 = i > 0 ? path[i - 1] : path[pathLength - 1];
+
+                        if (LineSegmentIntersectsCircle(p1, p2, first.bounds.center, first.radius, out intersect))
+                        {
+                            point = intersect;
+                            return true;
+                        }
+
+                    }
+                }
+            }
+
+            point = Vector3.zero;
+            return false;
+        }
+
+        public static bool IntersectPaths(Vector2[] path1, Vector2[] path2, out Vector2 intersect)
+        {
+            intersect = Vector2.zero;
+
+            int path1Length = path1.Length;
+            int path2Length = path2.Length;
+
+            for (int i = path1Length - 1; i >= 0; i--)
+            {
+                Vector2 p1 = path1[i];
+                Vector2 p2 = i > 0 ? path1[i - 1] : path1[path1Length - 1];
+
+                for (int j = path2Length - 1; j >= 0; j--)
+                {
+                    Vector2 p3 = path2[i];
+                    Vector2 p4 = j > 0 ? path2[j - 1] : path2[path1Length - 1];
+
+                    if (LineSegmentsIntersect(p1, p2, p3, p4, out intersect))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public static bool GetContactPoint(PolygonCollider2D first, PolygonCollider2D second, out Vector3 point)
         {
-            throw new NotImplementedException();
+            if (first != null && second != null)
+            {
+                Vector2 intersect;
+
+                for (int i = 0; i < first.pathCount; i++)
+                {
+                    Vector2[] path1 = first.GetPath(i);
+                    TransformPath(path1, first.transform);
+
+                    for (int j = 0; j < second.pathCount; j++)
+                    {
+                        Vector2[] path2 = second.GetPath(j);
+                        TransformPath(path2, second.transform);
+
+                        if (IntersectPaths(path1, path2, out intersect))
+                        {
+                            point = intersect;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            point = Vector3.zero;
+            return false;
         }
 
-        public static Collider2D CloneCollider(Collider2D coll, GameObject gameObject, float sizeChange = 0)
+        private static Vector2 PathPointNormal(Vector2 previous, Vector2 point, Vector2 next)
+        {
+            Vector2 center = (previous + point + next) * (1f/3f);
+            Vector2 delta = point - center;
+            return delta.normalized;
+        }
+
+        private static Vector2 ExpandPointAlongNormal(Vector2 previous, Vector2 point, Vector2 next, float distance)
+        {
+            Vector2 normal = PathPointNormal(previous, point, next);
+            return point + normal * distance;
+        }
+
+        public static Vector2[] ExpandPath(Vector2[] path, float distance)
+        {
+            int count = path.Length;
+            if (count > 2)
+            {
+                Vector2[] newPath = new Vector2[count * 2];
+                Vector2 center = Vector2.zero;
+                foreach(Vector2 p in path)
+                {
+                    center.x += p.x;
+                    center.y += p.y;
+                }
+                center /= count;
+
+                int j = 0;
+                Vector2 p1;
+                Vector2 p2;
+                Vector2 halfPoint;
+                Vector2 delta;
+                for (int i = 0; i < count - 1; i++, j += 2)
+                {
+                    p1 = path[i];
+                    p2 = path[i + 1];
+                    halfPoint = (p1 + p2) * 0.5f;
+                    delta = (halfPoint - center).normalized * distance;
+                    newPath[j] = p1 + delta;
+                    newPath[j + 1] = p2 + delta;
+                }
+
+                p1 = path[count - 1];
+                p2 = path[0];
+                halfPoint = (p1 + p2) * 0.5f;
+                delta = (halfPoint - center).normalized * distance;
+                newPath[j] = p1 + delta;
+                newPath[j + 1] = p2 + delta;
+
+                return newPath;
+            }
+
+            return path;
+        }
+
+        public static Collider2D CloneCollider(Collider2D coll, GameObject gameObject, float sizeChange)
         {
             Collider2D newColl = null;
 
@@ -391,13 +654,32 @@ namespace PuzzleBox
                 PolygonCollider2D polygon = (PolygonCollider2D)coll;
                 PolygonCollider2D newPolygon = gameObject.AddComponent<PolygonCollider2D>();
                 newPolygon.autoTiling = polygon.autoTiling;
-                newPolygon.pathCount = polygon.pathCount;
-                newPolygon.points = (Vector2[])polygon.points.Clone();
                 newPolygon.useDelaunayMesh = polygon.useDelaunayMesh;
-                for (int i = 0; i < newPolygon.points.Length; i++)
+
+                Vector2[] points = new Vector2[polygon.points.Length];
+
+                Vector2 center = Vector2.zero;
+                for (int i = 0; i < points.Length; i++)
                 {
-                    newPolygon.points[i] = newPolygon.points[i].normalized * (newPolygon.points[i].magnitude + sizeChange);
+                    points[i] = polygon.points[i].normalized * (polygon.points[i].magnitude + sizeChange);
+                    center.x += polygon.points[i].x;
+                    center.y += polygon.points[i].y;
                 }
+
+                if (points.Length > 0)
+                {
+                    center.x /= points.Length;
+                    center.y /= points.Length;
+                }
+
+                newPolygon.pathCount = polygon.pathCount;
+
+                for (int i = 0; i < polygon.pathCount; i++)
+                {
+                    Vector2[] pathPoints = ExpandPath(polygon.GetPath(i), sizeChange);
+                    newPolygon.SetPath(i, pathPoints);
+                }
+                
                 newColl = newPolygon;
             }
 
