@@ -112,7 +112,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hideGizmo: 0
-  uid: 2df8b5dd-726e-4003-b1ae-db706498ebd2
+  uid: 3a1f5903-5af2-42fb-b400-1c5f94fe6e31
 --- !u!114 &4848435924729813497
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -128,12 +128,12 @@ MonoBehaviour:
   hideGizmo: 1
   gameObjectActive: 1
   componentEnabled: 1
+  deleted: 0
   persistence: 0
-  triggerEnterTargets: []
   triggerEnterActions: []
   triggerExitActions: []
   collisionActions:
-  - {fileID: 413319038122079382, guid: 27fac93905f0bdc429dced58f0a6be96, type: 3}
+  - {fileID: 170062021815598659}
   targetTag: Player
   layerMask:
     serializedVersion: 2
@@ -143,9 +143,11 @@ MonoBehaviour:
   bottom: 1
   left: 1
   otherObjectReference: {fileID: 1446337814734528126}
+  useParentCollider: 0
   deactivateOnEnter: 0
   deactivateOnExit: 0
   deactivateOnCollision: 0
+  skinDepth: 0.1
   strokeColor: {r: 0, g: 1, b: 0, a: 1}
   fillColor: {r: 0, g: 1, b: 0, a: 0.1}
   triggerCount: 0
@@ -194,7 +196,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hideGizmo: 1
-  referencedObject: {fileID: 0}
+  referenceChildBehaviours: 1
+  referencedBehaviours: []
 --- !u!1001 &567534898357095125
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -207,6 +210,18 @@ PrefabInstance:
       propertyPath: hideGizmo
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 413319038122079382, guid: 27fac93905f0bdc429dced58f0a6be96, type: 3}
+      propertyPath: targets.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 413319038122079382, guid: 27fac93905f0bdc429dced58f0a6be96, type: 3}
+      propertyPath: targets.Array.data[0].target
+      value: 
+      objectReference: {fileID: 6269896509591290337}
+    - target: {fileID: 413319038122079382, guid: 27fac93905f0bdc429dced58f0a6be96, type: 3}
+      propertyPath: targets.Array.data[0].behaviour
+      value: 
+      objectReference: {fileID: 1446337814734528126}
     - target: {fileID: 489903641999827970, guid: 27fac93905f0bdc429dced58f0a6be96, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -261,3 +276,14 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 489903641999827970, guid: 27fac93905f0bdc429dced58f0a6be96, type: 3}
   m_PrefabInstance: {fileID: 567534898357095125}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &170062021815598659 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 413319038122079382, guid: 27fac93905f0bdc429dced58f0a6be96, type: 3}
+  m_PrefabInstance: {fileID: 567534898357095125}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d83f3f21d0925e41af52acbf1f0beeb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
