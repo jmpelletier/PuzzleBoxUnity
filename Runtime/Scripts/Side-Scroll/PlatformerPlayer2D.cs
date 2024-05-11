@@ -1305,6 +1305,7 @@ namespace PuzzleBox
             if (!isKilled)
             {
                 //isKilled = true;
+                SetUserInputEnabled(false);
                 if (animationController != null)
                 {
                     animationController.SetTrigger("Die");
