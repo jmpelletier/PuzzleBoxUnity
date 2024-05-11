@@ -101,13 +101,6 @@ namespace PuzzleBox
             return enabled && !collision.isTrigger && (targetTag == "" || collision.tag == targetTag) && (layerMask.value & (1 << collision.gameObject.layer)) > 0;
         }
 
-        private bool IsAboutEqual(float a, float b)
-        {
-            Debug.Log($"{a:0.00000} == {b:0.00000}");
-            float d = Mathf.Abs(a - b);
-            return d <= skinDepth;
-        }
-
         bool IsValidContactPoint(Collider2D coll, Vector3 contact)
         {
             if (coll is BoxCollider2D || coll is PolygonCollider2D)
@@ -676,7 +669,7 @@ namespace PuzzleBox
 
                 for (int i = 0; i < polygon.pathCount; i++)
                 {
-                    Vector2[] pathPoints = ExpandPath(polygon.GetPath(i), sizeChange);
+                    Vector2[] pathPoints = Geometry.OffsetPath(polygon.GetPath(i), sizeChange);
                     newPolygon.SetPath(i, pathPoints);
                 }
                 
