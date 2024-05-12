@@ -16,6 +16,7 @@ namespace PuzzleBox
     {
         private UnityEngine.InputSystem.InputValue _value;
         private InputAction.CallbackContext _context;
+        private object _object;
 
         public static implicit operator InputValue(UnityEngine.InputSystem.InputValue value)
         {
@@ -80,21 +81,49 @@ namespace PuzzleBox
             _context = context;
         }
 
+        public InputValue(object obj)
+        {
+            _object = obj;
+        }
+
         public object Get()
         {
-            return _value != null ? _value.Get() : (_context.ReadValueAsObject());
+            return _value != null ? _value.Get() :
+                (_object == null ? _context.ReadValueAsObject() : _object);
         }
 
         public TValue Get<TValue>() where TValue : struct
         {
-            return _value != null ? _value.Get<TValue>() : _context.ReadValue<TValue>();
+            if (_value != null)
+            {
+                return _value.Get<TValue>();
+            }
+            else if (_object != null && _object is TValue)
+            {
+                return (TValue)_object;
+            }
+            else
+            {
+                return _context.ReadValue<TValue>();
+            }
         }
 
         public bool isPressed
         {
             get
             {
-                return _value != null ? _value.isPressed : _context.ReadValueAsButton();
+                if (_value != null)
+                {
+                    return _value.isPressed;
+                }
+                else if (_object != null && _object is bool)
+                {
+                    return (bool)_object;
+                }
+                else
+                {
+                    return _context.ReadValueAsButton();
+                }
             }
         }
     }
