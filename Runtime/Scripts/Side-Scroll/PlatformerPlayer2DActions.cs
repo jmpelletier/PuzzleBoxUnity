@@ -127,6 +127,7 @@ namespace PuzzleBox
 
                     if (perform)
                     {
+                        action.Perform(player.gameObject);
                         action.Perform(player.gameObject, speed);
                     }
                     else
