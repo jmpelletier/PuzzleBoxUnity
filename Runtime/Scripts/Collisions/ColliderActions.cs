@@ -13,7 +13,6 @@ namespace PuzzleBox
     [RequireComponent(typeof(UniqueID))]
     public class ColliderActions : PersistentBehaviour
     {
-
         [Space]
         public ActionDelegate[] triggerEnterActions;
         public ActionDelegate[] triggerExitActions;
@@ -21,6 +20,7 @@ namespace PuzzleBox
 
         [Space]
         public string targetTag = "";
+        public string ignoreTag = "";
         public LayerMask layerMask = ~0;
 
         [Header("Collision Direction")]
@@ -98,7 +98,11 @@ namespace PuzzleBox
 
         bool processTriggerEvent(Collider2D collision)
         {
-            return enabled && !collision.isTrigger && (targetTag == "" || collision.tag == targetTag) && (layerMask.value & (1 << collision.gameObject.layer)) > 0;
+            return enabled &&
+                !collision.isTrigger &&
+                (targetTag == "" || collision.tag == targetTag) &&
+                (ignoreTag == "" || collision.tag != ignoreTag) &&
+                (layerMask.value & (1 << collision.gameObject.layer)) > 0;
         }
 
         bool IsValidContactPoint(Collider2D coll, Vector3 contact)
