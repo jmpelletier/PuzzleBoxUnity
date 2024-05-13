@@ -128,6 +128,27 @@ namespace PuzzleBox
             Send("OnJump", inputValue);
             jumpTimer.active = false;
         }
+
+        [PuzzleBox.Action]
+        public void Run()
+        {
+            PuzzleBox.InputValue inputValue = new PuzzleBox.InputValue(true);
+            Send("OnRun", inputValue);
+        }
+
+        [PuzzleBox.Action]
+        public void Walk()
+        {
+            PuzzleBox.InputValue inputValue = new PuzzleBox.InputValue(false);
+            Send("OnRun", inputValue);
+        }
+
+        [PuzzleBox.Action]
+        public void Dash()
+        {
+            PuzzleBox.InputValue inputValue = new PuzzleBox.InputValue(true);
+            Send("OnDash", inputValue);
+        }
     }
 
 }
