@@ -37,12 +37,19 @@ namespace PuzzleBox
 
             private void OnTriggerEnter2D(Collider2D collision)
             {
-                parent?.EnteredTrigger(this);
+                if (parent != null && !collision.isTrigger)
+                {
+                    parent.EnteredTrigger(this, collision);
+                }
+                
             }
 
             private void OnTriggerExit2D(Collider2D collision)
             {
-                parent?.ExitedTrigger(this);
+                if (parent != null && !collision.isTrigger)
+                {
+                    parent.ExitedTrigger(this, collision);
+                }
             }
 
             Collider2D[] contacts = new Collider2D[8];
@@ -88,8 +95,10 @@ namespace PuzzleBox
             PerformActions();
         }
 
-        private void PerformActions()
+        IEnumerator DoPerformActions()
         {
+            yield return new WaitForFixedUpdate();
+
             if (conditionStatus && trueActions != null)
             {
                 foreach (ActionDelegate action in trueActions)
@@ -106,6 +115,14 @@ namespace PuzzleBox
             }
         }
 
+        private void PerformActions()
+        {
+            if (conditionStatus)
+            {
+                StartCoroutine(DoPerformActions());
+            }
+        }
+
         private bool CheckCount()
         {
             bool status = noContactCount == 0 && contactCount > 0;
@@ -119,7 +136,7 @@ namespace PuzzleBox
             return status;
         }
 
-        private void EnteredTrigger(ColliderActionListener collision)
+        private void EnteredTrigger(ColliderActionListener collision, Collider2D collider)
         {
             if (collision.contactMode == ContactMode.Contact)
             {
@@ -133,7 +150,7 @@ namespace PuzzleBox
             CheckCount();
         }
 
-        private void ExitedTrigger(ColliderActionListener collision)
+        private void ExitedTrigger(ColliderActionListener collision, Collider2D collider)
         {
             if (collision.contactMode == ContactMode.Contact)
             {
