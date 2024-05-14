@@ -19,8 +19,8 @@ namespace PuzzleBox
         public ActionDelegate[] collisionActions;
 
         [Space]
-        public string targetTag = "";
-        public string ignoreTag = "";
+        public string targetTag = string.Empty;
+        public string ignoreTag = string.Empty;
         public LayerMask layerMask = ~0;
 
         [Header("Collision Direction")]

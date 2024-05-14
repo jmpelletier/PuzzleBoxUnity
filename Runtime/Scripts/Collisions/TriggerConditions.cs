@@ -12,14 +12,23 @@ namespace PuzzleBox
 {
     public class TriggerConditions2D : PuzzleBoxBehaviour
     {
-
+        [Space]
         public GameObject[] contactTriggers;
         public GameObject[] noContactTriggers;
 
+        [Space]
         public ActionDelegate[] trueActions;
         public ActionDelegate[] falseActions;
 
+        [Space]
+        public string targetTag = string.Empty;
+        public string ignoreTag = string.Empty;
+        public LayerMask layerMask = ~0;
+
+        [System.NonSerialized]
         public int contactCount = 0;
+
+        [System.NonSerialized]
         public int noContactCount = 0;
 
         bool conditionStatus = false;
@@ -37,7 +46,7 @@ namespace PuzzleBox
 
             private void OnTriggerEnter2D(Collider2D collision)
             {
-                if (parent != null && !collision.isTrigger)
+                if (parent != null && parent.ShouldProcessCollision(collision))
                 {
                     parent.EnteredTrigger(this, collision);
                 }
@@ -46,7 +55,7 @@ namespace PuzzleBox
 
             private void OnTriggerExit2D(Collider2D collision)
             {
-                if (parent != null && !collision.isTrigger)
+                if (parent != null && parent.ShouldProcessCollision(collision))
                 {
                     parent.ExitedTrigger(this, collision);
                 }
@@ -72,6 +81,15 @@ namespace PuzzleBox
             }
         }
 
+        public bool ShouldProcessCollision(Collider2D collision)
+        {
+            return collision != null &&
+                !collision.isTrigger &&
+                (string.IsNullOrWhiteSpace(targetTag) || collision.CompareTag(targetTag)) &&
+                (string.IsNullOrWhiteSpace(ignoreTag) || !collision.CompareTag(ignoreTag)) &&
+                (layerMask == (layerMask | 1 << collision.gameObject.layer));
+        }
+
         void ListenToColliders(GameObject[] objects, ContactMode mode)
         {
             foreach (GameObject obj in objects)
@@ -95,22 +113,39 @@ namespace PuzzleBox
             PerformActions();
         }
 
+        [PuzzleBox.Action]
+        public override void Enable(GameObject sender = null)
+        {
+            base.Enable(sender);
+
+            PerformActions();
+        }
+
+        [PuzzleBox.Action]
+        public override void Disable(GameObject sender = null)
+        {
+            base.Disable(sender);
+        }
+
         IEnumerator DoPerformActions()
         {
             yield return new WaitForFixedUpdate();
 
-            if (conditionStatus && trueActions != null)
+            if (isActiveAndEnabled)
             {
-                foreach (ActionDelegate action in trueActions)
+                if (conditionStatus && trueActions != null)
                 {
-                    action?.Perform(gameObject);
+                    foreach (ActionDelegate action in trueActions)
+                    {
+                        action?.Perform(gameObject);
+                    }
                 }
-            }
-            else if (falseActions != null)
-            {
-                foreach (ActionDelegate action in falseActions)
+                else if (falseActions != null)
                 {
-                    action?.Perform(gameObject);
+                    foreach (ActionDelegate action in falseActions)
+                    {
+                        action?.Perform(gameObject);
+                    }
                 }
             }
         }
