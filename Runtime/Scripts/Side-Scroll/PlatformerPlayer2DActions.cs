@@ -114,9 +114,9 @@ namespace PuzzleBox
                         case PlatformerPlayer2D.State.WallSliding:
                             perform = slide;
                             break;
-                        case PlatformerPlayer2D.State.ClimbingUp:
-                        case PlatformerPlayer2D.State.ClimbingDown:
-                        case PlatformerPlayer2D.State.ClimbingOver:
+                        case PlatformerPlayer2D.State.ClimbingWallUp:
+                        case PlatformerPlayer2D.State.ClimbingWallDown:
+                        case PlatformerPlayer2D.State.ClimbingWallOver:
                         case PlatformerPlayer2D.State.Grabbing:
                             perform = climb;
                             break;

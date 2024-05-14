@@ -19,7 +19,7 @@ namespace PuzzleBox
     public class PlatformerPlayer2D : KinematicMotion2D
     {
         [Header("移動")]
-        
+
         public float walkSpeed = 3f;
         public float walkAcceleration = 10f;
 
@@ -43,7 +43,7 @@ namespace PuzzleBox
         [Space]
         [Tooltip("プレーヤー入力の方向を反転したい場合、こちらの該当する軸を「-1」にする。")]
         public Vector2 movementInputScaling = Vector2.one;
-        
+
 
         [Header("ジャンプ")]
         // ジャンプの最小の高さ。プレーヤーがジャンプボタンを一瞬で離した場合、
@@ -64,7 +64,7 @@ namespace PuzzleBox
         // 助走によるジャンプ高さの調整
         public float jumpHeightSpeedBoost = 2f;
 
-        
+
 
         // enumを定義するとインスペクターでドロップダウンメニューを表示させる事ができます。
         // ここは、ジャンプの動作を切り替えるようにしておきます。
@@ -119,6 +119,14 @@ namespace PuzzleBox
 
         [PuzzleBox.Overridable]
         public float grabJumpHorizontalVelocity = 1f;
+
+        [Space]
+        [PuzzleBox.Overridable]
+        public bool canJumpWhenClimbing = true;
+
+        [PuzzleBox.Overridable]
+        public float climbJumpHeightRatio = 1f;
+
 
         [Header("壁")]
         public Collider2D[] wallCheckSensors = new Collider2D[2];
@@ -181,6 +189,22 @@ namespace PuzzleBox
         [Tooltip("ダッシュしている時の重力補正")]
         [PuzzleBox.Overridable]
         public float dashGravityRatio = 0f;
+
+        [Header("登り")]
+        [PuzzleBox.Overridable]
+        public bool canClimb = false;
+
+        [PuzzleBox.Overridable]
+        public float climbSpeedUp = 2f;
+
+        [PuzzleBox.Overridable]
+        public float climbSpeedDown = 3f;
+
+        [PuzzleBox.Overridable]
+        public float climbSpeedSide = 2f;
+
+        public float climbAcceleration = 20f;
+        public float climbBreakingForce = 50f;
 
 
         public Action OnDestroyed;
@@ -251,9 +275,10 @@ namespace PuzzleBox
             WallJumping,
             Falling,
             WallSliding,
-            ClimbingUp,
-            ClimbingDown,
-            ClimbingOver,
+            ClimbingWallUp,
+            ClimbingWallDown,
+            ClimbingWallOver,
+            Climbing,
             Grabbing
         }
 
@@ -274,7 +299,7 @@ namespace PuzzleBox
             inputFreezeTimer.OnEnd += () => { acceptInput = true; motionInput = rawMotionInput; };
 
             // 壁感知のコライダの初期設定を行う
-            foreach(Collider2D coll in wallCheckSensors)
+            foreach (Collider2D coll in wallCheckSensors)
             {
                 if (coll != null)
                 {
@@ -311,11 +336,11 @@ namespace PuzzleBox
             }
             else if (motionInput.y > SMALL_INPUT_THRESHOLD && wallClimbUpSpeed > 0)
             {
-                state = State.ClimbingUp;
+                state = State.ClimbingWallUp;
             }
             else if (motionInput.y < -SMALL_INPUT_THRESHOLD && wallClimbDownSpeed > 0)
             {
-                state = State.ClimbingDown;
+                state = State.ClimbingWallDown;
             }
         }
 
@@ -336,6 +361,10 @@ namespace PuzzleBox
                 {
                     TryGrabbingWall();
                 }
+                else if(canClimb && motionInput.y > SMALL_INPUT_THRESHOLD)
+                {
+                    state = State.Climbing;
+                }
                 else if (isRunning)
                 {
                     state = State.Running;
@@ -351,11 +380,22 @@ namespace PuzzleBox
         {
             if (!isGrounded)
             {
-                if (isTouchingWall)
+                if (state == State.Climbing)
+                {
+                    if (!canClimb)
+                    {
+                        state = State.Falling;
+                    }
+                }
+                else if (isTouchingWall)
                 {
                     if (isGrabbing && canGrabWall)
                     {
                         TryGrabbingWall();
+                    }
+                    else if (canClimb && motionInput.y > 0)
+                    {
+                        state = State.Climbing;
                     }
                     else if (velocity.y < 0)
                     {
@@ -368,7 +408,11 @@ namespace PuzzleBox
                 }
                 else if (isJumping)
                 {
-                    if (velocity.y < 0)
+                    if (canClimb && motionInput.y > 0)
+                    {
+                        state = State.Climbing;
+                    }
+                    else if (velocity.y < 0)
                     {
                         state = State.Falling;
                     }
@@ -379,7 +423,14 @@ namespace PuzzleBox
                 }
                 else
                 {
-                    state = State.Falling;
+                    if (canClimb && motionInput.y > 0)
+                    {
+                        state = State.Climbing;
+                    }
+                    else
+                    {
+                        state = State.Falling;
+                    }
                 }
             }
         }
@@ -402,7 +453,7 @@ namespace PuzzleBox
                 wallGrabTimer.Reset(maxWallGrabTime);
             }
 
-            if (state == State.Grabbing || state == State.ClimbingUp || state == State.ClimbingDown)
+            if (state == State.Grabbing || state == State.ClimbingWallUp || state == State.ClimbingWallDown)
             {
                 if (!isGrounded)
                 {
@@ -420,6 +471,7 @@ namespace PuzzleBox
 
                 case State.Walking:
                 case State.Running:
+                case State.Climbing:
                     if (isGrounded)
                     {
                         UpdateStateOnGround();
@@ -431,7 +483,7 @@ namespace PuzzleBox
                     break;
 
                 case State.Dashing:
-                    
+
                     dashTimer.Tick(Time.fixedDeltaTime);
 
                     if (velocity.magnitude <= minDashSpeed)
@@ -490,11 +542,11 @@ namespace PuzzleBox
                     }
                     break;
 
-                case State.ClimbingUp:
+                case State.ClimbingWallUp:
                     if (!isTouchingWall)
                     {
                         ClimbOverEdge();
-                        state = State.ClimbingOver;
+                        state = State.ClimbingWallOver;
                     }
                     else
                     {
@@ -502,11 +554,11 @@ namespace PuzzleBox
                     }
                     break;
 
-                case State.ClimbingDown:
+                case State.ClimbingWallDown:
                     UpdateStateOnWall();
                     break;
 
-                case State.ClimbingOver:
+                case State.ClimbingWallOver:
                     if (isGrounded)
                     {
                         UpdateStateOnGround();
@@ -527,7 +579,7 @@ namespace PuzzleBox
         {
             if (acceptInput)
             {
-                if (state == State.Grabbing || state == State.ClimbingUp || state == State.ClimbingDown)
+                if (state == State.Grabbing || state == State.ClimbingWallUp || state == State.ClimbingWallDown)
                 {
                     facingDirection = Vector2.right * wallDirection;
                 }
@@ -544,7 +596,7 @@ namespace PuzzleBox
                         defaultFacingDirection = motionInput.x < -SMALL_INPUT_THRESHOLD ? Vector2.left : (motionInput.x > SMALL_INPUT_THRESHOLD ? Vector2.right : defaultFacingDirection);
                     }
                 }
-                
+
                 if (animationController != null)
                 {
                     if (motionInput.magnitude > SMALL_INPUT_THRESHOLD)
@@ -554,7 +606,7 @@ namespace PuzzleBox
                     }
                 }
             }
-            
+
         }
 
         protected override void FixedUpdate()
@@ -609,7 +661,7 @@ namespace PuzzleBox
                 animationController.SetBool("IsGrounded", isGrounded);
                 animationController.SetBool("IsRunning", state == State.Running);
                 animationController.SetBool("IsDashing", state == State.Dashing);
-                animationController.SetBool("IsClimbing", state == State.Grabbing || state == State.ClimbingDown || state == State.ClimbingUp);
+                animationController.SetBool("IsClimbing", state == State.Grabbing || state == State.ClimbingWallDown || state == State.ClimbingWallUp);
                 animationController.SetBool("IsJumping", state == State.Jumping);
                 animationController.SetBool("IsWallSliding", state == State.WallSliding);
 
@@ -655,7 +707,7 @@ namespace PuzzleBox
                         if (coll.bounds.center.x < transform.position.x)
                         {
                             lineDirection = Vector3.left;
-                            guiStyle.alignment = TextAnchor.MiddleRight;                            
+                            guiStyle.alignment = TextAnchor.MiddleRight;
                         }
                         else
                         {
@@ -710,7 +762,7 @@ namespace PuzzleBox
                 playerInput.enabled = enabled;
             }
         }
-        
+
         #endregion
 
         #region Motion
@@ -722,7 +774,7 @@ namespace PuzzleBox
             isTouchingWall = false;
 
             bool touchingRight = false;
-            bool touchingLeft = false;  
+            bool touchingLeft = false;
 
             foreach (Collider2D coll in wallCheckSensors)
             {
@@ -731,7 +783,7 @@ namespace PuzzleBox
                     int count = coll.OverlapCollider(contactFilter, wallHits);
                     if (count > 0)
                     {
-                        for(int i = 0; i < count; i++)
+                        for (int i = 0; i < count; i++)
                         {
                             if (wallHits[i].gameObject != gameObject)
                             {
@@ -828,12 +880,12 @@ namespace PuzzleBox
         {
             gravityMultiplier = 0;
 
-            if (state == State.ClimbingUp)
+            if (state == State.ClimbingWallUp)
             {
                 velocity.y = motionInput.y * wallClimbUpSpeed;
             }
 
-            else if (state == State.ClimbingDown)
+            else if (state == State.ClimbingWallDown)
             {
                 velocity.y = motionInput.y * wallClimbDownSpeed;
             }
@@ -841,6 +893,43 @@ namespace PuzzleBox
             else if (state == State.Grabbing)
             {
                 velocity = Vector2.zero;
+            }
+        }
+
+        void ApplyClimbingMotion()
+        {
+            gravityMultiplier = 0f;
+
+            if (Mathf.Abs(motionInput.x) > SMALL_INPUT_THRESHOLD)
+            {
+                velocity.x += motionInput.x * climbAcceleration * Time.fixedDeltaTime;
+                velocity.x = Mathf.Clamp(velocity.x, -climbSpeedSide, climbSpeedSide);
+            }
+            else
+            {
+                float breakDirection = -Mathf.Sign(velocity.x);
+                float deltaV = breakDirection * climbBreakingForce * Time.fixedDeltaTime;
+                velocity.x += deltaV;
+                if (Mathf.Sign(velocity.x) == breakDirection)
+                {
+                    velocity.x = 0;
+                }
+            }
+
+            if (Mathf.Abs(motionInput.y) > SMALL_INPUT_THRESHOLD)
+            {
+                velocity.y += motionInput.y * climbAcceleration * Time.fixedDeltaTime;
+                velocity.y = Mathf.Clamp(velocity.y, -climbSpeedDown, climbSpeedUp);
+            }
+            else
+            {
+                float breakDirection = -Mathf.Sign(velocity.y);
+                float deltaV = breakDirection * climbBreakingForce * Time.fixedDeltaTime;
+                velocity.y += deltaV;
+                if (Mathf.Sign(velocity.y) == breakDirection)
+                {
+                    velocity.y = 0;
+                }
             }
         }
 
@@ -926,12 +1015,12 @@ namespace PuzzleBox
                 MoveInAir();
             }
 
-            else if (state == State.Grabbing || state == State.ClimbingUp || state == State.ClimbingDown)
+            else if (state == State.Grabbing || state == State.ClimbingWallUp || state == State.ClimbingWallDown)
             {
                 ApplyWallMotion();
             }
 
-            else if (state == State.ClimbingOver)
+            else if (state == State.ClimbingWallOver)
             {
                 gravityMultiplier = normalGravityMultiplier;
                 velocity.x = climbOverHorizontalVelocity * wallDirection;
@@ -944,6 +1033,11 @@ namespace PuzzleBox
                 {
                     gravityMultiplier = wallSlideGravityRatio * normalGravityMultiplier;
                 }
+            }
+
+            else if (state == State.Climbing)
+            {
+                ApplyClimbingMotion();
             }
 
             switch(state)
@@ -967,7 +1061,7 @@ namespace PuzzleBox
             // 重力の加減は通常に戻します。
             gravityMultiplier = normalGravityMultiplier;
 
-            if (state == State.Grabbing || state == State.ClimbingUp || state == State.ClimbingDown)
+            if (state == State.Grabbing || state == State.ClimbingWallUp || state == State.ClimbingWallDown)
             {
                 ApplyWallMotion();
             }
@@ -1012,6 +1106,10 @@ namespace PuzzleBox
             {
                 velocity = CalculateDashVelocity();
             }
+            else if (state == State.Climbing)
+            {
+                ApplyClimbingMotion();
+            }
         }
 
         #endregion
@@ -1024,6 +1122,7 @@ namespace PuzzleBox
         bool isAirJump = false;
         bool isWallJump = false;
         bool isGrabJump = false;
+        bool isClimbJump = false;
 
         // 通常の重力の度合い
         float normalGravityMultiplier = 1f;
@@ -1039,6 +1138,7 @@ namespace PuzzleBox
             isWallJump = false;
             isAirJump = false;
             isGrabJump = false;
+            isClimbJump = false;
 
             if (minJumpHeight <= 0 || maxJumpHeight <= 0)
             {
@@ -1052,10 +1152,14 @@ namespace PuzzleBox
                     return true;
 
                 case State.Grabbing:
-                case State.ClimbingUp:
-                case State.ClimbingDown:
+                case State.ClimbingWallUp:
+                case State.ClimbingWallDown:
                     isGrabJump = canJumpWhenGrabbing;
                     return isGrabJump;
+
+                case State.Climbing:
+                    isClimbJump = canJumpWhenClimbing;
+                    return isClimbJump;
                 
                 case State.WallSliding:
                     isWallJump = canWallJump;
@@ -1183,6 +1287,15 @@ namespace PuzzleBox
                         velocity.y = v.y;
 
                         state = State.WallJumping;
+                    }
+                    else if (isClimbJump)
+                    {
+                        Vector2 v = CalculateJumpVector(jumpAngle * -Mathf.Sign(facingDirection.x), jumpVelocity * climbJumpHeightRatio);
+
+                        velocity.x += v.x;
+                        velocity.y = v.y;
+
+                        state = State.Jumping;
                     }
                     else
                     {
