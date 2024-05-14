@@ -63,8 +63,30 @@ namespace PuzzleBox
                             options[i] = behaviours[i].GetType().Name;
                         }
 
+                        string[] displayOptions = new string[behaviours.Length];
+                        for (int i = 0; i < behaviours.Length; i++)
+                        {
+                            int count = 0;
+                            for (int j = 0; j < i; j++)
+                            {
+                                if (string.Equals(options[i], options[j]))
+                                {
+                                    count++;
+                                }
+                            }
+
+                            if (count == 0)
+                            {
+                                displayOptions[i] = behaviours[i].GetType().Name;
+                            }
+                            else
+                            {
+                                displayOptions[i] = $"{behaviours[i].GetType().Name} ({count})";
+                            }
+                        }
+
                         int selectedIndex = System.Array.IndexOf(behaviours, behaviourProperty.objectReferenceValue);
-                        selectedIndex = EditorGUI.Popup(behaviourRect, selectedIndex, options);
+                        selectedIndex = EditorGUI.Popup(behaviourRect, selectedIndex, displayOptions);
                         if (selectedIndex >= 0)
                         {
                             behaviourProperty.objectReferenceValue = behaviours[selectedIndex];
