@@ -287,7 +287,7 @@ namespace PuzzleBox
             }
         }
 
-        private void Update()
+        protected override void PerformUpdate(float deltaSeconds)
         {
             foreach (MoveAction action in moveActions)
             {

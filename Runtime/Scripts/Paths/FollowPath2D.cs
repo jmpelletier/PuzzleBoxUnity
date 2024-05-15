@@ -8,8 +8,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using UnityEditor;
 using UnityEngine;
 
@@ -131,7 +129,7 @@ namespace PuzzleBox
         }
 
         // Update is called once per frame
-        void FixedUpdate()
+        protected override void PerformFixedUpdate(float deltaSeconds)
         {
             if (waypoints.Length == 0 || !moving)
             {

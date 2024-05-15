@@ -27,7 +27,7 @@ namespace PuzzleBox
         }
 
         // Update is called once per frame
-        void FixedUpdate()
+        protected override void PerformFixedUpdate(float deltaSeconds)
         {
             if (moving)
             {

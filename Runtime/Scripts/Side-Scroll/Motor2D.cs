@@ -29,7 +29,7 @@ namespace PuzzleBox
             motion2D = GetComponent<KinematicMotion2D>();
         }
 
-        void FixedUpdate()
+        protected override void PerformFixedUpdate(float deltaSeconds)
         {
             if (!moveOnlyWhenGrounded || motion2D.isGrounded)
             {

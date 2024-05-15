@@ -14,6 +14,13 @@ namespace PuzzleBox
 {
     public abstract class PuzzleBoxBehaviour : MonoBehaviour
     {
+        public System.Action<PuzzleBoxBehaviour> OnEnableActions;
+        public System.Action<PuzzleBoxBehaviour> OnDisableActions;
+        public System.Action<PuzzleBoxBehaviour> OnPreUpdateActions;
+        public System.Action<PuzzleBoxBehaviour> OnPostUpdateActions;
+        public System.Action<PuzzleBoxBehaviour> OnPreFixedUpdateActions;
+        public System.Action<PuzzleBoxBehaviour> OnPostFixedUpdateActions;
+
         [PuzzleBox.Overridable]
         public bool hideGizmo = false;
 
@@ -252,6 +259,57 @@ namespace PuzzleBox
         void Start()
         {
 
+        }
+
+        private void OnEnable()
+        {
+            OnEnableActions?.Invoke(this);
+        }
+
+        private void OnDisable()
+        {
+            OnDisableActions?.Invoke(this);
+        }
+
+        protected virtual void PerformUpdate(float deltaSeconds)
+        {
+            // Nothing
+        }
+
+        protected virtual void PerformFixedUpdate(float deltaSeconds)
+        {
+            // Nothing
+        }
+
+#if UNITY_EDITOR
+        public void ForceUpdate(float deltaSeconds)
+        {
+            OnPreUpdateActions?.Invoke(this);
+            PerformUpdate(deltaSeconds);
+            OnPostUpdateActions?.Invoke(this);
+        }
+
+        public void ForceFixedUpdate(float deltaSeconds)
+        {
+            OnPreFixedUpdateActions?.Invoke(this);
+            PerformFixedUpdate(deltaSeconds);
+            OnPostFixedUpdateActions?.Invoke(this);
+        }
+#endif
+
+        protected void Update()
+        {
+            OnPreUpdateActions?.Invoke(this);
+            PerformUpdate(Time.deltaTime);
+            OnPostUpdateActions?.Invoke(this);
+
+        }
+
+        protected void FixedUpdate()
+        {
+            OnPreFixedUpdateActions?.Invoke(this);
+            PerformFixedUpdate(Time.fixedDeltaTime);
+            OnPostFixedUpdateActions?.Invoke(this);
         }
 
         public virtual string GetIcon()

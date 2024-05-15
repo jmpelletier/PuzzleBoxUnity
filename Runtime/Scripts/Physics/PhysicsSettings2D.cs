@@ -26,7 +26,7 @@ namespace PuzzleBox
             SetGravity(gravity);
         }
 
-        void FixedUpdate()
+        protected override void PerformFixedUpdate(float deltaSeconds)
         {
             SetGravity(gravity);
         }

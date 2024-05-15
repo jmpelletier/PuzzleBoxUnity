@@ -104,7 +104,7 @@ namespace PuzzleBox
 
         }
 
-        private void Update()
+        protected override void PerformUpdate(float deltaSeconds)
         {
             if (!useFixedUpdate)
             {
@@ -112,7 +112,7 @@ namespace PuzzleBox
             }
         }
 
-        private void FixedUpdate()
+        protected override void PerformFixedUpdate(float deltaSeconds)
         {
             if (useFixedUpdate)
             {

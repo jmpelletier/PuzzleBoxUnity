@@ -65,7 +65,7 @@ namespace PuzzleBox
             jumpTimer.OnEnd += EndJump;
         }
 
-        private void Update()
+        protected override void PerformUpdate(float deltaSeconds)
         {
             jumpTimer.Tick(Time.deltaTime);
 

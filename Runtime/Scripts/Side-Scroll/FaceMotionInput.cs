@@ -42,7 +42,7 @@ namespace PuzzleBox
         }
 
         // Update is called once per frame
-        void Update()
+        protected override void PerformUpdate(float deltaSeconds)
         {
             if (platformerPlayer2D != null)
             {

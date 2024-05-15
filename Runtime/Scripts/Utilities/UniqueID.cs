@@ -82,7 +82,7 @@ namespace PuzzleBox
         }
 
 #if UNITY_EDITOR
-        private void Update()
+        protected override void PerformUpdate(float deltaSeconds)
         {
             if (!Application.isPlaying)
             {
