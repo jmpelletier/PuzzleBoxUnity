@@ -205,6 +205,7 @@ namespace PuzzleBox
 
         public float climbAcceleration = 20f;
         public float climbBreakingForce = 50f;
+        public LayerMask climbCollisionMask = ~0;
 
 
         public Action OnDestroyed;
@@ -442,6 +443,14 @@ namespace PuzzleBox
             velocity.x = climbOverHorizontalVelocity * wallDirection;
         }
 
+        public void StopClimbing()
+        {
+            if (state == State.Climbing)
+            {
+                state = State.Falling;
+            }
+        }
+
         void UpdateState()
         {
             // タイマーの更新
@@ -609,7 +618,7 @@ namespace PuzzleBox
 
         }
 
-        protected override void FixedUpdate()
+        protected override void PerformFixedUpdate(float deltaSeconds)
         {
             UpdateState();
 
@@ -624,7 +633,7 @@ namespace PuzzleBox
                 ApplyAirMotion();
             }
 
-            base.FixedUpdate();
+            base.PerformFixedUpdate(deltaSeconds);
 
             UpdateWallTouchingState();
 
@@ -654,7 +663,7 @@ namespace PuzzleBox
             SendMessage("DidLand", SendMessageOptions.DontRequireReceiver);
         }
 
-        protected override void Update()
+        protected override void PerformUpdate(float deltaSeconds)
         {
             if (animationController != null)
             {
@@ -675,7 +684,7 @@ namespace PuzzleBox
                 animationController.SetFloat("WallDirection", wallDirection);
             }
 
-            base.Update();
+            base.PerformUpdate(deltaSeconds);
         }
 
         GUIStyle guiStyle = new GUIStyle();
@@ -780,6 +789,10 @@ namespace PuzzleBox
             {
                 if (coll != null && coll.enabled)
                 {
+                    contactFilter.layerMask = GetCollisionMask(); // 衝突するとしないUnityのレイヤーを準備します。
+                    contactFilter.useLayerMask = true;
+                    contactFilter.useTriggers = false;
+
                     int count = coll.OverlapCollider(contactFilter, wallHits);
                     if (count > 0)
                     {
@@ -1084,7 +1097,7 @@ namespace PuzzleBox
 
                 Vector2 v = groundRight * Vector2.Dot(groundRight, velocity);
                 float speed = velocity.magnitude;
-                float maxSpeed = 0f;
+                float maxSpeed;
 
                 if (isRunning)
                 {
@@ -1375,6 +1388,11 @@ namespace PuzzleBox
             }
 
             return false;
+        }
+
+        protected override LayerMask GetCollisionMask()
+        {
+            return state == State.Climbing ? climbCollisionMask : collisionMask;
         }
 
         protected override float ProcessCollision(RaycastHit2D hit, Vector2 direction, float distanceRemaining)

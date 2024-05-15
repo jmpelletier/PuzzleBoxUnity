@@ -93,6 +93,9 @@ namespace PuzzleBox
         //[HideInInspector] // インスペクターで隠す。
         public Vector2 velocity; // 移動の速度。基本的に他のコンポーネントがコードで変えます。
 
+        [System.NonSerialized]
+        public Vector2 externalForces = Vector2.zero;
+
         [HideInInspector] // インスペクターで隠す。
         public Vector2 lastGroundVelocity; // 地面に最後に接触していた時の速度。
 
@@ -160,6 +163,31 @@ namespace PuzzleBox
             set
             {
                 rigidbody.position = value;
+            }
+        }
+
+        public Bounds bounds
+        {
+            get
+            {
+                Bounds totalBounds = new Bounds();
+                bool init = false;
+                foreach(Collider2D coll in colliders)
+                {
+                    if (!coll.isTrigger)
+                    {
+                        if (init)
+                        {
+                            totalBounds.Encapsulate(coll.bounds);
+                        }
+                        else
+                        {
+                            totalBounds = coll.bounds;
+                        }
+                    }
+                }
+
+                return totalBounds;
             }
         }
 
@@ -234,6 +262,11 @@ namespace PuzzleBox
 
         protected Vector2 positionAdjustment = Vector2.zero;
 
+        protected virtual LayerMask GetCollisionMask()
+        {
+            return collisionMask;
+        }
+
 
         protected virtual float ProcessCollision(RaycastHit2D hit, Vector2 direction, float distanceRemaining)
         {
@@ -243,6 +276,12 @@ namespace PuzzleBox
         public void MoveBy(Vector2 delta)
         {
             Slide(delta);
+        }
+
+        public void Accelerate(Vector2 force, bool useMass = true)
+        {
+            float scale = useMass && rigidbody.mass > 0 ? 1f * rigidbody.mass : 1f;
+            externalForces += force * scale;
         }
 
         // このメソッドはKinematicMotion2Dの肝心な処理を行います。
@@ -375,7 +414,7 @@ namespace PuzzleBox
             bool collided = false; // 衝突したか？初期値はfalseに。
 
             hit = new RaycastHit2D(); // 衝突がなかった時にhitは初期のままにします。
-            contactFilter.layerMask = collisionMask; // 衝突するとしないUnityのレイヤーを準備します。
+            contactFilter.layerMask = GetCollisionMask(); // 衝突するとしないUnityのレイヤーを準備します。
             contactFilter.useLayerMask = true;
             contactFilter.useTriggers = false;
 
@@ -520,6 +559,10 @@ namespace PuzzleBox
         {
             if (contactCount < contacts.Length)
             {
+                contactFilter.layerMask = GetCollisionMask(); // 衝突するとしないUnityのレイヤーを準備します。
+                contactFilter.useLayerMask = true;
+                contactFilter.useTriggers = false;
+
                 int hitCount = RigidbodyCast(direction, contactFilter, hits, margin);
                 int ndx = contactCount;
                 for (int i = 0; i < hitCount && ndx < contacts.Length; i++, ndx++)
@@ -633,12 +676,13 @@ namespace PuzzleBox
 
         private Action<Vector2> OnMoved;
 
-        public void PerformUpdate(float deltaSeconds)
+        protected override void PerformFixedUpdate(float deltaSeconds)
         {
             if (!simulatePhysics)
             {
                 return;
             }
+
             gravityModifier = 1f;
 
             // 地面に立っているかどうかの状態を更新します。
@@ -660,6 +704,10 @@ namespace PuzzleBox
                 // 前回FixedUpdateが実行された時から経過した時間を記憶しています。
                 velocity += Physics2D.gravity * deltaSeconds * gravityMultiplier * gravityModifier;
             }
+
+            velocity += externalForces * deltaSeconds;
+
+            externalForces = Vector2.zero;
 
             // 最大速度を超えていないかを確認します。
             if (Mathf.Abs(velocity.x) > maxSpeedSide)
@@ -707,17 +755,11 @@ namespace PuzzleBox
             UpdateContacts();
         }
 
-        // RigidbodyまたはRigidbody2Dを使うと移動をUpdateではなく、等間隔で実行される
-        // FixedUpdateで行わなければなりません。
-        protected virtual void FixedUpdate()
-        {
-            PerformUpdate(Time.fixedDeltaTime);
-        }
 
         // オブジェクトを動かす処理は物理演算に影響が出る可能性があるので、FixedUpdateで行います。
         // しかし、アニメーションの更新はUpdateと同期しているので、アニメーター関連の処理はここで
         // 行います。
-        protected virtual void Update()
+        protected override void PerformUpdate(float deltaSeconds)
         {
             // アニメーターコンポーネントがなければ何もしません。
             if (animationController != null)
@@ -741,6 +783,10 @@ namespace PuzzleBox
             {
                 return false;
             }
+
+            contactFilter.layerMask = GetCollisionMask(); // 衝突するとしないUnityのレイヤーを準備します。
+            contactFilter.useLayerMask = true;
+            contactFilter.useTriggers = false;
 
             // Rigidbody2Dにキャストしてもらいます。
             int hitCount = RigidbodyCast(direction, contactFilter, hits, distance + margin);
