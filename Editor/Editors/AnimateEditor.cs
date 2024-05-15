@@ -99,6 +99,15 @@ namespace PuzzleBox
                 performState.motion = performClip;
                 AnimatorState routeState = rootStateMachine.AddState("Route", new Vector3(-190, -160, 0));
 
+                // Add the state behaviours
+                AnimateStateBehaviour onBehaviour = onState.AddStateMachineBehaviour<AnimateStateBehaviour>();
+                onBehaviour.state = Animate.State.On;
+                AnimateStateBehaviour offBehaviour = offState.AddStateMachineBehaviour<AnimateStateBehaviour>();
+                offBehaviour.state = Animate.State.Off;
+                AnimateStateBehaviour performBehaviour = performState.AddStateMachineBehaviour<AnimateStateBehaviour>();
+                performBehaviour.state = Animate.State.Perform;
+
+
                 // Connect
                 rootStateMachine.defaultState = routeState;
                 AnimatorStateTransition performTransition = rootStateMachine.AddAnyStateTransition(performState);
