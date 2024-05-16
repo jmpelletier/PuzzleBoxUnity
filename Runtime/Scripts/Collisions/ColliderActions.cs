@@ -111,8 +111,8 @@ namespace PuzzleBox
             {
                 float d_top = Mathf.Abs(contact.y - coll.bounds.max.y);
                 float d_bottom = Mathf.Abs(contact.y - coll.bounds.min.y);
-                float d_left = Mathf.Abs(contact.x- coll.bounds.max.x);
-                float d_right = Mathf.Abs(contact.x - coll.bounds.min.x);
+                float d_left = Mathf.Abs(contact.x - coll.bounds.min.x);
+                float d_right = Mathf.Abs(contact.x - coll.bounds.max.x);
 
                 float min = d_top;
                 int i = 0;
@@ -145,7 +145,7 @@ namespace PuzzleBox
                 else
                 {
                     if (delta.x > 0 && right) return true;
-                    if (delta.y < 0 && left) return true;
+                    if (delta.x < 0 && left) return true;
                 }
             }
 
@@ -523,8 +523,8 @@ namespace PuzzleBox
 
                 for (int j = path2Length - 1; j >= 0; j--)
                 {
-                    Vector2 p3 = path2[i];
-                    Vector2 p4 = j > 0 ? path2[j - 1] : path2[path1Length - 1];
+                    Vector2 p3 = path2[j];
+                    Vector2 p4 = j > 0 ? path2[j - 1] : path2[path2Length - 1];
 
                     if (LineSegmentsIntersect(p1, p2, p3, p4, out intersect))
                     {
@@ -692,8 +692,6 @@ namespace PuzzleBox
                 newColl.layerOverridePriority = coll.layerOverridePriority;
                 newColl.offset = coll.offset;
                 newColl.sharedMaterial = coll.sharedMaterial;
-                newColl.usedByComposite = coll.usedByComposite;
-                newColl.usedByEffector = coll.usedByEffector;
             }
 
             return newColl;
