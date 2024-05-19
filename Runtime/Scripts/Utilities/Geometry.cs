@@ -15,6 +15,94 @@ namespace PuzzleBox
         public const float EPSILON = 0.0005f;
 
         /**
+         * Returns the overlap between two bounds. If there is no overlap,
+         * will return a zero-size Bounds.
+         */
+        public static Bounds Overlap(Bounds b1, Bounds b2)
+        {
+            Bounds ret = new Bounds();
+            ret.size = Vector3.zero;
+
+            if (b1.Intersects(b2))
+            {
+                Vector3 min = new Vector3(
+                    Mathf.Max(b1.min.x, b2.min.x),
+                    Mathf.Max(b1.min.y, b2.min.y),
+                    Mathf.Max(b1.min.z, b2.min.z));
+
+                Vector3 max = new Vector3(
+                    Mathf.Min(b1.max.x, b2.max.x),
+                    Mathf.Min(b1.max.y, b2.max.y),
+                    Mathf.Min(b1.max.z, b2.max.z));
+
+                ret.min = min;
+                ret.max = max;
+            }
+
+            return ret;
+        }
+
+        /**
+         * Returns the distance from a ray to the edge of a bounds.
+         * If the ray does not intersect the bounds, float.PositiveInfinity
+         * is returned. 
+         * Bounds.IntersectRay exists, but for some reason, the distance 
+         * returns if a ray originates from inside the bounds is very
+         * counter-intuitive. This method makes no such distinction, and will
+         * return a positive value regardless of whether the ray originates from
+         * inside the bounds or not.
+         */
+        public static float Intersect(Bounds bounds, Ray ray)
+        {
+            float distance;
+            if (bounds.Contains(ray.origin))
+            {
+                // For some reason, when the ray originates from
+                // inside the bounds, we need to use the *reverse*
+                // direction...
+                ray.direction *= -1f;
+                if (bounds.IntersectRay(ray, out distance))
+                {
+                    return - distance;
+                }
+            }
+            else if (bounds.IntersectRay(ray, out distance))
+            {
+                return distance;
+            }
+
+            return float.PositiveInfinity;
+        }
+
+        /**
+         * Given two potentially overlapping bounds, move targetBounds in the given direction so that the two
+         * bounds are separated by at least offset.
+         */
+        public static Bounds Separate(Bounds targetBounds, Bounds obstacleBounds, Vector3 direction, float offset)
+        {
+            Bounds ret = new Bounds(targetBounds.center, targetBounds.size);
+            if (targetBounds.Intersects(obstacleBounds))
+            {
+                Ray ray = new Ray(targetBounds.center, direction * -1f);
+                float distance = Intersect(targetBounds, ray);
+                if (distance != float.PositiveInfinity)
+                {
+                    Vector3 checkPoint = targetBounds.center + ray.direction * distance;
+                    ray.origin = checkPoint;
+                    ray.direction = direction;
+
+                    distance = Intersect(obstacleBounds, ray);
+                    if (distance != float.PositiveInfinity)
+                    {
+                        ret.center += direction * (distance + offset);
+                    }
+                }
+            }
+
+            return ret;
+        }
+
+        /**
          * Check whether a point lies on a segment defined by segmentStart and segmentEnd.
          */
         public static bool PointIsOnLineSegment(Vector2 point, Vector2 segmentStart, Vector2 segmentEnd)
