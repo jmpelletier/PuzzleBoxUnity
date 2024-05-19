@@ -16,7 +16,7 @@ namespace PuzzleBox
     {
         [Space]
         public float angle = 0f;
-        public float force = 10f;
+        public float speed = 10f;
 
         [Space]
         public string targetTag = string.Empty;
@@ -44,9 +44,10 @@ namespace PuzzleBox
             if (motion != null)
             {
                 float theta = Mathf.Deg2Rad * angle;
-                Vector2 vec = new Vector2(Mathf.Cos(theta), Mathf.Sin(theta)) * force;
+                float distance = speed * Time.fixedDeltaTime;
+                Vector2 vec = new Vector2(Mathf.Cos(theta) * distance, Mathf.Sin(theta) * distance);
 
-                motion.Accelerate(vec);
+                motion.MoveBy(vec);
             }
         }
 
@@ -57,7 +58,7 @@ namespace PuzzleBox
                 KinematicMotion2D motion = collision.GetComponent<KinematicMotion2D>();
                 if (motion != null)
                 {
-                    motion.OnPreFixedUpdateActions += AddWindForce;
+                    motion.OnPostFixedUpdateActions += AddWindForce;
                 }
             }
         }
@@ -69,7 +70,7 @@ namespace PuzzleBox
                 KinematicMotion2D motion = collision.GetComponent<KinematicMotion2D>();
                 if (motion != null)
                 {
-                    motion.OnPreFixedUpdateActions -= AddWindForce;
+                    motion.OnPostFixedUpdateActions -= AddWindForce;
                 }
             }
         }
