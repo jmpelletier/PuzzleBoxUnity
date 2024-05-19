@@ -4,7 +4,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
- 
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -22,10 +22,47 @@ namespace PuzzleBox
 
         private static Dictionary<string, Texture> _iconTextures = new Dictionary<string, Texture>();
 
-        private static string _iconsPath = "Packages/com.jmpelletier.puzzlebox/Runtime/Images/Icons/";
-        private static string _logosPath = "Packages/com.jmpelletier.puzzlebox/Runtime/Images/Logos/";
+        public static PuzzleBox.Asset<Texture> logo = new PuzzleBox.Asset<Texture>(LogosPath + "PuzzleBox_Logo_Small.png");
 
-        public static PuzzleBox.Asset<Texture> logo = new PuzzleBox.Asset<Texture>(_logosPath + "PuzzleBox_Logo_Small.png");
+        private static string _puzzleBoxPath = string.Empty;
+        public static string PuzzleBoxPath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_puzzleBoxPath))
+                {
+                    System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                    UnityEditor.PackageManager.PackageInfo packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(assembly);
+                    if (packageInfo != null)
+                    {
+                        _puzzleBoxPath = "Packages/" + packageInfo.name + "/";
+                    }
+                    else
+                    {
+                        // For now, there's probably a better way...
+                        _puzzleBoxPath = "Assets/com.jmpelletier.puzzlebox/";
+                    }
+                }
+
+                return _puzzleBoxPath;
+            }
+        }
+
+        public static string IconsPath
+        {
+            get
+            {
+                return PuzzleBoxPath + "Runtime/Images/Icons/";
+            }
+        }
+
+        public static string LogosPath
+        {
+            get
+            {
+                return PuzzleBoxPath + "Runtime/Images/Logos/";
+            }
+        }
 
         public static Texture GetIconTexture(string iconName)
         {
@@ -34,7 +71,7 @@ namespace PuzzleBox
                 return _iconTextures[iconName];
             }
 
-            Texture tex = AssetDatabase.LoadAssetAtPath<Texture>(_iconsPath + iconName + ".png");
+            Texture tex = AssetDatabase.LoadAssetAtPath<Texture>(IconsPath + iconName + ".png");
             if (tex != null)
             {
                 _iconTextures[iconName] = tex;
@@ -85,7 +122,7 @@ namespace PuzzleBox
             {
                 if (_puzzleBoxIconTexture == null)
                 {
-                    _puzzleBoxIconTexture = AssetDatabase.LoadAssetAtPath<Texture>(_iconsPath + "PuzzleBoxIconSmall.png");
+                    _puzzleBoxIconTexture = AssetDatabase.LoadAssetAtPath<Texture>(IconsPath + "PuzzleBoxIconSmall.png");
                 }
 
                 return _puzzleBoxIconTexture;
@@ -236,7 +273,7 @@ namespace PuzzleBox
 
                 Vector3 labelScreenPosition = Camera.current.WorldToScreenPoint(worldPosition);
                 Vector3 rectPosition = labelScreenPosition;
-                switch(textStyle.alignment)
+                switch (textStyle.alignment)
                 {
                     case TextAnchor.UpperLeft:
                         rectPosition.x += textSize.x * 0.5f - textStyle.padding.left;
@@ -333,7 +370,7 @@ namespace PuzzleBox
                 {
                     DrawArrowhead(to + direction * arrowHeadLength, to, arrowHeadLength * 0.5f, color);
                 }
-                
+
                 return true;
             }
             return false;

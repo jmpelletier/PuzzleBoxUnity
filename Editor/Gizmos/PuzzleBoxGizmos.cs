@@ -10,6 +10,7 @@ using UnityEditor;
 using System.IO;
 using System.Linq;
 using UnityEngine.UIElements;
+using System.Reflection;
 
 namespace PuzzleBox
 {
@@ -20,10 +21,23 @@ namespace PuzzleBox
 
         const GizmoType defaultGizmoType = GizmoType.Active | GizmoType.Pickable | GizmoType.NonSelected | GizmoType.NotInSelectionHierarchy | GizmoType.InSelectionHierarchy;
 
-        private const string _gizmosPath  = "Packages/com.jmpelletier.puzzlebox/Gizmos/";
-        private const string _texturesPath = "Packages/com.jmpelletier.puzzlebox/Editor/Images/";
+        private static string GizmosPath
+        {
+            get
+            {
+                return EditorUtilities.PuzzleBoxPath + "Gizmos/";
+            }
+        }
 
-        public static Asset<Texture2D> bezierConnectionTexture = new PuzzleBox.Asset<Texture2D>(_texturesPath + "BezierConnectionTexture.png");
+        private static string TexturesPath
+        {
+            get
+            {
+                return EditorUtilities.PuzzleBoxPath + "Editor/Images/";
+            }
+        }
+
+        public static Asset<Texture2D> bezierConnectionTexture = new PuzzleBox.Asset<Texture2D>(TexturesPath + "BezierConnectionTexture.png");
 
         #endregion // BASIC_SETTINGS
 
@@ -222,7 +236,7 @@ namespace PuzzleBox
         {
             if (type != null && type != typeof(object))
             {
-                string path = $"{_gizmosPath}{type.Name}Gizmo.png";
+                string path = $"{GizmosPath}{type.Name}Gizmo.png";
                 if (File.Exists(path))
                 {
                     Gizmos.DrawIcon(position, path, true);
@@ -244,14 +258,14 @@ namespace PuzzleBox
 
         static private void DrawReferenceIcon(MonoBehaviour target)
         {
-            const string path = _gizmosPath + "ReferenceBadgeGizmo.png";
+            string path = GizmosPath + "ReferenceBadgeGizmo.png";
 
             DrawBadge(target, path);
         }
 
         static private void DrawTimerIcon(MonoBehaviour target)
         {
-            const string path = _gizmosPath + "DelayBadgeGizmo.png";
+             string path = GizmosPath + "DelayBadgeGizmo.png";
 
             DrawBadge(target, path);
         }
@@ -457,6 +471,25 @@ namespace PuzzleBox
             {
                 DrawConnections(position, new Transform[] { target.target.transform }, selected);
             }
+        }
+
+        [DrawGizmo(defaultGizmoType)]
+        static void DrawPuzzleBoxGizmo(PuzzleBox.WindArea target, GizmoType gizmoType)
+        {
+            if (target.hideGizmo) return;
+
+            Vector3 position = target.transform.position;
+            float radians = target.angle * Mathf.Deg2Rad;
+            Vector3 delta = new Vector3(Mathf.Cos(radians), Mathf.Sin(radians));
+            Vector3 arrowDelta = new Vector3(-delta.y, delta.x, delta.z);
+
+            float arrowheadLength = 0.4f;
+            float arrowLength = arrowheadLength + target.speed;
+            delta *= arrowLength;
+
+            EditorUtilities.DrawArrow(position - arrowDelta * 0.25f, position + delta - arrowDelta * 0.25f, 0.1f, 0.1f, arrowheadLength, Color.white);
+            EditorUtilities.DrawArrow(position, position + delta, 0.1f, 0.1f, 0.4f, Color.white);
+            EditorUtilities.DrawArrow(position + arrowDelta * 0.25f, position + delta + arrowDelta * 0.25f, 0.1f, 0.1f, arrowheadLength, Color.white);
         }
 
         [DrawGizmo(defaultGizmoType)]
