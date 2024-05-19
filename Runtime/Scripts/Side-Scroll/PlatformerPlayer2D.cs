@@ -10,9 +10,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UIElements;
-using UnityEngine.Windows;
-
 
 namespace PuzzleBox
 {
@@ -22,7 +19,6 @@ namespace PuzzleBox
 
         public float walkSpeed = 3f;
         public float walkAcceleration = 10f;
-
 
         [PuzzleBox.Overridable]
         public float runSpeed = 10f;
@@ -1354,9 +1350,15 @@ namespace PuzzleBox
                 isJumping = false;
             }
         }
-        
+
         #endregion
 
+        //protected override bool CanPush(KinematicMotion2D otherMotion, Vector2 delta)
+        //{
+        //    bool canPush = base.CanPush(otherMotion, delta);
+            
+        //    return otherMotion.pushable && canPush;
+        //}
 
         bool AvoidPlatformEdge(Vector2 avoidDirection, float distanceX, float distanceY)
         {

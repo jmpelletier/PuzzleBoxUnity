@@ -7,7 +7,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace PuzzleBox
@@ -62,6 +61,16 @@ namespace PuzzleBox
         public float groundCheckDistance = 0.01f;
 
         public bool pushable = false;
+
+        // When two non-pushable, or two pushable objects are
+        // moving in opposite direction and collide, we use this value
+        // to decide what will happen. If one of the object's pushPriority
+        // is lower, then it will be pushed out of the way even if
+        // pushable is set to false. The object with the highest
+        // pushPriority will always continue to its intended destination.
+        // If both pushPriority values are the same, then both objects
+        // will stop at the point of contact.
+        public int pushPriority = 0;
 
 
         [Min(0f)]
@@ -191,18 +200,16 @@ namespace PuzzleBox
             }
         }
 
-        protected bool CanPush(KinematicMotion2D otherMotion, Vector2 delta)
+        protected virtual bool CanPush(KinematicMotion2D otherMotion, Vector2 delta)
         {
             if (otherMotion.groundMotion == this)
             {
                 // こちらが地面なら衝突相手を押さない。必要な処理はGroundMovedで行われます。
                 return false;
             }
-            else if (delta.y > 0)
+            if (otherMotion.pushable == pushable)
             {
-                // 上へ移動している場合、衝突相手が押せなくても、処理を許します。次のフレームでは
-                // こちらが地面になるので、上への移動を優先します。
-                return true;
+                return pushPriority > otherMotion.pushPriority;
             }
             else return otherMotion.pushable;
         }
@@ -254,6 +261,8 @@ namespace PuzzleBox
         // 効率をよくするために、メソッドの外で宣言しておきます。
         protected RaycastHit2D[] hits = new RaycastHit2D[8];
         protected RaycastHit2D[] colliderHits = new RaycastHit2D[8];
+        protected Collider2D[] overlapColliders = new Collider2D[8];
+        protected Collider2D[] overlaps = new Collider2D[8];
         protected ContactFilter2D contactFilter = new ContactFilter2D();
 
         protected Collider2D[] colliders;
@@ -309,6 +318,12 @@ namespace PuzzleBox
             if (collided) // 衝突しました...
             {
                 float contactDistance = hit.distance; // 衝突した位置までの距離
+
+                if (contactDistance <= 0 && Vector2.Dot(hit.normal, delta) < 0)
+                {
+                    return;
+                }
+
                 // スライドできるようですので、まだ残っている移動距離を計算します。
                 float distanceRemaining = distance - contactDistance;
 
@@ -316,7 +331,7 @@ namespace PuzzleBox
                 MoveRigidbody(direction * contactDistance);
 
                 distanceRemaining = ProcessCollision(hit, direction, distanceRemaining);
-                
+
                 if (distanceRemaining == 0)
                 {
                     return;
@@ -329,6 +344,7 @@ namespace PuzzleBox
                     {
                         KinematicMotion2D otherMotion = hit.rigidbody.gameObject.GetComponent<KinematicMotion2D>();
                         Vector2 remainingDelta = direction * distanceRemaining;
+
                         if (otherMotion != null && CanPush(otherMotion, remainingDelta))
                         {
                             Vector2 startPosition = hit.rigidbody.position;
@@ -382,6 +398,28 @@ namespace PuzzleBox
                 // transformではなく、Rigidbody2Dコンポーネント経由で動かします。
                 MoveRigidbody(delta);
             }
+        }
+
+        protected int RigidbodyOverlap(ContactFilter2D contactFilter, Collider2D[] overlaps)
+        {
+            int totalHits = 0;
+            foreach (Collider2D coll in colliders)
+            {
+                if (coll != null && !coll.isTrigger)
+                {
+                    int count = coll.OverlapCollider(contactFilter, overlapColliders);
+                    for (int i = 0; i < count; i++)
+                    {
+                        overlaps[totalHits] = overlapColliders[i];
+                        totalHits++;
+                        if (totalHits >= overlaps.Length)
+                        {
+                            return overlaps.Length;
+                        }
+                    }
+                }
+            }
+            return totalHits;
         }
 
         protected int RigidbodyCast(Vector2 direction, ContactFilter2D contactFilter, RaycastHit2D[] hits, float distance)
@@ -453,21 +491,29 @@ namespace PuzzleBox
                         // 今まで確認した接触の中で最も近いですので、詳細を覚えておきます。
                         hit = hits[i]; // 衝突の詳細情報を記憶します。
                         hit.distance -= margin; // 移動距離からマージンを引いて、衝突からオブジェクトを離します。
-
-                        // 以下の調整はUnityの衝突判定の実装による誤差の補正です。Unityの2D物理演算は裏でオープンソースライブラリの「Box2D」を使用している。
-                        // Box2Dに「b2_polygonRadius」という値があって衝突判定に使われています。
-                        // https://github.com/erincatto/Box2D/blob/ef96a4f17f1c5527d20993b586b400c2617d6ae1/Box2D/Common/b2Settings.h#L81
-                        // Unityでは、プロジェクト設定の「Default Contact Offset」でそのパラメータが調整できるそうです。
-                        // https://forum.unity.com/threads/what-is-default-contact-offset.750872/
-                        // しかし、2Dでは「Default Contact Offset」が無効のようで、変えてもBox2Dの「b2_polygonRadius」が使われるようです。
-                        // その値は「0.01f」ですので、ここでその半分を足して衝突があったより正確な位置を求めます。
-                        hit.distance += 0.005f;
+                        
                         collided = true; // 衝突したことを記憶します。
                     }
                 }
             }
 
             return collided; // 衝突したかどうかを返します。
+        }
+
+        public static float maximumContactOffset
+        {
+            get
+            {
+                // 以下の調整はUnityの衝突判定の実装による誤差の補正です。Unityの2D物理演算は裏でオープンソースライブラリの「Box2D」を使用している。
+                // Box2Dに「b2_polygonRadius」という値があって衝突判定に使われています。
+                // https://github.com/erincatto/Box2D/blob/ef96a4f17f1c5527d20993b586b400c2617d6ae1/Box2D/Common/b2Settings.h#L81
+                // Unityでは、プロジェクト設定の「Default Contact Offset」でそのパラメータが調整できるそうです。
+                // https://forum.unity.com/threads/what-is-default-contact-offset.750872/
+                // しかし、2Dでは「Default Contact Offset」が無効のようで、変えてもBox2Dの「b2_polygonRadius」が使われるようです。
+                // その値は「0.01f」ですので、ここでその半分を足して衝突があったより正確な位置を求めます。
+
+                return 0.005f;
+            }
         }
 
         // このメソッドで渡された法線を持つ面が地面に該当するかどうかを返します。
@@ -664,17 +710,27 @@ namespace PuzzleBox
 
         private void MoveRigidbody(Vector2 delta)
         {
+            WillMove?.Invoke(delta);
             rb.position += delta;
-            OnMoved?.Invoke(delta);
         }
 
-        private void GroundMoved(Vector2 delta)
+        private void GroundWillMove(Vector2 delta)
         {
-            // 地面が移動していれば、離れないように動きます。
-            MoveRigidbody(delta);
+            // If the ground is moving downwards, we can't slide or we
+            // would collide with the ground (which hasn't moved yet)
+            if (delta.y < 0)
+            {
+                MoveRigidbody(new Vector2(0, delta.y));
+                MoveBy(new Vector2(delta.x, 0));
+            }
+            else
+            {
+                // We can safely slide into position
+                MoveBy(delta);
+            }
         }
 
-        private Action<Vector2> OnMoved;
+        private Action<Vector2> WillMove;
 
         protected override void PerformFixedUpdate(float deltaSeconds)
         {
@@ -682,6 +738,8 @@ namespace PuzzleBox
             {
                 return;
             }
+
+            ProcessOverlaps();
 
             gravityModifier = 1f;
 
@@ -719,7 +777,6 @@ namespace PuzzleBox
             velocity.y = Mathf.Clamp(velocity.y, -Mathf.Abs(maxSpeedDown), maxSpeedUp);
 
            
-
             // この１フレームで移動する距離を計算します。
             Vector2 motion = velocity * deltaSeconds;
 
@@ -770,6 +827,71 @@ namespace PuzzleBox
                 animationController.SetFloat("VelocityX", velocity.x);
                 animationController.SetFloat("VelocityY", velocity.y);
                 animationController.SetFloat("Speed", velocity.magnitude); 
+            }
+        }
+
+        private static void Separate(KinematicMotion2D objectToMove, Bounds boundsToExit)
+        {
+            Bounds selfBounds = objectToMove.bounds;
+            float speed = objectToMove.velocity.magnitude;
+            Vector2 direction;
+
+            if (speed < 0.001f)
+            {
+                Vector2 delta = objectToMove.position - (Vector2)boundsToExit.center;
+                if (delta.magnitude > 0.1f)
+                {
+                    direction = delta.normalized;
+                }
+                else
+                {
+                    direction = Vector2.up;
+                }
+            }
+            else
+            {
+                direction = objectToMove.velocity.normalized * -1f;
+            }
+
+            Bounds newBounds = Geometry.Separate(selfBounds, boundsToExit, direction, objectToMove.margin);
+            objectToMove.MoveRigidbody(newBounds.center - selfBounds.center);
+        }
+
+        protected void ProcessOverlaps(int iterations = 0)
+        {
+            if (iterations > maxIterations)
+            {
+                return;
+            }
+
+            contactFilter.layerMask = GetCollisionMask(); // 衝突するとしないUnityのレイヤーを準備します。
+            contactFilter.useLayerMask = true;
+            contactFilter.useTriggers = false;
+
+            int hitCount = RigidbodyOverlap(contactFilter, overlaps);
+            for (int i = 0; i < hitCount; i++)
+            {
+                KinematicMotion2D otherMotion = overlaps[i].GetComponent<KinematicMotion2D>();
+
+                if (otherMotion != null)
+                {
+                    if (otherMotion.pushPriority < pushPriority)
+                    {
+                        Separate(otherMotion, bounds);
+                    }
+                    else
+                    {
+                        Separate(this, otherMotion.bounds);
+                        ProcessOverlaps(iterations + 1);
+                        break;
+                    }
+                }
+                else
+                {
+                    Separate(this, overlaps[i].bounds);
+                    ProcessOverlaps(iterations + 1);
+                    break;
+                }
             }
         }
 
@@ -827,13 +949,13 @@ namespace PuzzleBox
             {
                  if (motion == null)
                 {
-                    groundMotion.OnMoved -= GroundMoved;
+                    groundMotion.WillMove -= GroundWillMove;
                     groundMotion = null;
                 }
                 else
                 {
                     groundMotion = motion;
-                    groundMotion.OnMoved += GroundMoved;
+                    groundMotion.WillMove += GroundWillMove;
                 }
             }
         }
