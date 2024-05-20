@@ -5,12 +5,10 @@
  */
 
 
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.TextCore.Text;
-using UnityEngine.UIElements;
 
 namespace PuzzleBox
 {
@@ -31,6 +29,7 @@ namespace PuzzleBox
             {
                 if (string.IsNullOrEmpty(_puzzleBoxPath))
                 {
+
                     System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
                     UnityEditor.PackageManager.PackageInfo packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(assembly);
                     if (packageInfo != null)
@@ -39,8 +38,33 @@ namespace PuzzleBox
                     }
                     else
                     {
-                        // For now, there's probably a better way...
-                        _puzzleBoxPath = "Assets/com.jmpelletier.puzzlebox/";
+                        string[] guids = AssetDatabase.FindAssets("package", new[] { "Assets" });
+                        foreach (string guid in guids)
+                        {
+                            string path = AssetDatabase.GUIDToAssetPath(guid);
+                            string name = Path.GetFileName(path);
+                            if (string.Equals(name, "package.json"))
+                            {
+                                string json = File.ReadAllText(path);
+                                if (!string.IsNullOrEmpty(json))
+                                {
+                                    if (json.IndexOf("\"name\": \"com.jmpelletier.puzzlebox\"") >= 0 || json.IndexOf("\"name\":\"com.jmpelletier.puzzlebox\"") >= 0)
+                                    {
+                                        _puzzleBoxPath = Path.GetDirectoryName(path) + "/";
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (string.IsNullOrEmpty(_puzzleBoxPath))
+                        {
+                            Debug.LogWarning("Could not find PuzzleBox package.json");
+
+                            // For now, there's probably a better way...
+                            _puzzleBoxPath = "Assets/com.jmpelletier.puzzlebox/";
+                        }
+                        
                     }
                 }
 
