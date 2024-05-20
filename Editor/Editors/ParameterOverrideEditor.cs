@@ -8,7 +8,6 @@ using UnityEngine;
 using UnityEditor;
 using System.Linq;
 using System.Reflection;
-using static UnityEngine.InputSystem.OnScreen.OnScreenStick;
 
 namespace PuzzleBox
 {

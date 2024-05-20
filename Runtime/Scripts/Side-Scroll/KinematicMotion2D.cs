@@ -102,9 +102,6 @@ namespace PuzzleBox
         //[HideInInspector] // インスペクターで隠す。
         public Vector2 velocity; // 移動の速度。基本的に他のコンポーネントがコードで変えます。
 
-        [System.NonSerialized]
-        public Vector2 externalForces = Vector2.zero;
-
         [HideInInspector] // インスペクターで隠す。
         public Vector2 lastGroundVelocity; // 地面に最後に接触していた時の速度。
 
@@ -287,11 +284,6 @@ namespace PuzzleBox
             Slide(delta);
         }
 
-        public void Accelerate(Vector2 force, bool useMass = true)
-        {
-            float scale = useMass && rigidbody.mass > 0 ? 1f * rigidbody.mass : 1f;
-            externalForces += force * scale;
-        }
 
         // このメソッドはKinematicMotion2Dの肝心な処理を行います。
         // 「delta」パラメータで指定した距離までオブジェクトを移動します。
@@ -762,10 +754,6 @@ namespace PuzzleBox
                 // 前回FixedUpdateが実行された時から経過した時間を記憶しています。
                 velocity += Physics2D.gravity * deltaSeconds * gravityMultiplier * gravityModifier;
             }
-
-            velocity += externalForces * deltaSeconds;
-
-            externalForces = Vector2.zero;
 
             // 最大速度を超えていないかを確認します。
             if (Mathf.Abs(velocity.x) > maxSpeedSide)
