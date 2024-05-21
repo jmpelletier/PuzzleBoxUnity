@@ -12,11 +12,20 @@ namespace PuzzleBox
     {
         public override void Perform(GameObject sender)
         {
-            if (target)
+            GameObject destroyTarget = target;
+            PuzzleBox.ObjectReference reference = target.GetComponent<PuzzleBox.ObjectReference>();
+            if (reference != null)
             {
-                Destroy(target);
-                target.SendMessage("WasDestroyed", null, SendMessageOptions.DontRequireReceiver);
+                destroyTarget = reference.referencedObject;
             }
+
+           PerformAction(() => {
+               if (destroyTarget != null)
+               {
+                   Destroy(destroyTarget);
+                   destroyTarget.SendMessage("WasDestroyed", null, SendMessageOptions.DontRequireReceiver);
+               }
+            });
         }
     }
 }

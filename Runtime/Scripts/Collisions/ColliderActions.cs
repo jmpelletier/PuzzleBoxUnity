@@ -13,6 +13,15 @@ namespace PuzzleBox
     [RequireComponent(typeof(UniqueID))]
     public class ColliderActions : PersistentBehaviour
     {
+        public enum TriggerMode
+        {
+            Any,
+            All
+        }
+
+        [Space]
+        public TriggerMode triggerMode = TriggerMode.Any;
+
         [Space]
         public ActionDelegate[] triggerEnterActions;
         public ActionDelegate[] triggerExitActions;
@@ -185,7 +194,7 @@ namespace PuzzleBox
             {
                 triggerCount++;
 
-                if (triggerCount == 1)
+                if (triggerMode == TriggerMode.Any && triggerCount == 1 || triggerMode == TriggerMode.All)
                 {
                     if (otherObjectReference != null)
                     {
@@ -217,7 +226,7 @@ namespace PuzzleBox
             {
                 triggerCount--;
                 
-                if (triggerCount == 0)
+                if (triggerMode == TriggerMode.Any && triggerCount == 0 || triggerMode == TriggerMode.All)
                 {
                     foreach (ActionDelegate action in triggerExitActions)
                     {
