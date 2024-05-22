@@ -693,9 +693,8 @@ namespace PuzzleBox
                 CapsuleCollider2D capsule = (CapsuleCollider2D)coll;
 
                 CapsuleCollider2D newCapsule = gameObject.AddComponent<CapsuleCollider2D>();
-                Vector2 right = capsule.transform.InverseTransformVector(capsule.transform.right * sizeChange);
-                Vector2 up = capsule.transform.InverseTransformVector(capsule.transform.up * sizeChange);
-                newCapsule.size = capsule.size + new Vector2(right.magnitude, up.magnitude);
+                Vector2 s = capsule.transform.InverseTransformVector(new Vector2(sizeChange, sizeChange));
+                newCapsule.size = capsule.size + new Vector2(s.x * 2, s.y * 2);
                 newColl = newCapsule;
             }
             else if (coll is EdgeCollider2D)
