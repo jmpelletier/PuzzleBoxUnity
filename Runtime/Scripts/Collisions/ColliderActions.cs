@@ -688,7 +688,26 @@ namespace PuzzleBox
                 
                 newColl = newPolygon;
             }
+            else if (coll is CapsuleCollider2D)
+            {
+                CapsuleCollider2D capsule = (CapsuleCollider2D)coll;
 
+                CapsuleCollider2D newCapsule = gameObject.AddComponent<CapsuleCollider2D>();
+                Vector2 right = capsule.transform.InverseTransformVector(capsule.transform.right * sizeChange);
+                Vector2 up = capsule.transform.InverseTransformVector(capsule.transform.up * sizeChange);
+                newCapsule.size = capsule.size + new Vector2(right.magnitude, up.magnitude);
+                newColl = newCapsule;
+            }
+            else if (coll is EdgeCollider2D)
+            {
+                EdgeCollider2D edge = (EdgeCollider2D)coll;
+                EdgeCollider2D newEdge = gameObject.AddComponent<EdgeCollider2D>();
+                newEdge.points = edge.points;
+                newEdge.edgeRadius = edge.edgeRadius + sizeChange;
+                newEdge.useAdjacentEndPoint = edge.useAdjacentEndPoint;
+                newEdge.useAdjacentStartPoint = edge.useAdjacentStartPoint;
+                newColl = newEdge;
+            }
             if (newColl != null && coll != null)
             {
                 newColl.callbackLayers = coll.callbackLayers;

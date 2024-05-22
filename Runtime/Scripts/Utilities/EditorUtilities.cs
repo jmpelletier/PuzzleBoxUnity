@@ -437,6 +437,59 @@ namespace PuzzleBox
                 Handles.color = strokeColor;
                 Handles.DrawAAPolyLine(points);
             }
+            else if (coll is CapsuleCollider2D)
+            {
+                CapsuleCollider2D capsule = (CapsuleCollider2D)coll;
+
+                Vector2 boxHalfSize = capsule.size * 0.5f;
+                Vector3 radius;
+                
+                if (capsule.direction == CapsuleDirection2D.Horizontal)
+                {
+                    radius = capsule.transform.TransformVector(Vector2.up * capsule.size.y * 0.5f);
+                    if (capsule.size.y > capsule.size.x)
+                    {
+                        boxHalfSize.y = 0;
+                    }
+                }
+                else
+                {
+                    radius = capsule.transform.TransformVector(Vector2.right * capsule.size.x * 0.5f);
+                    if (capsule.size.x > capsule.size.y)
+                    {
+                        boxHalfSize.x = 0;
+                    }
+                }
+
+                radius.z = 0;
+                Vector3 offset = new Vector3(-radius.y, radius.x, 0);
+                
+                Vector3[] vertices = new Vector3[4] {
+                    capsule.transform.TransformPoint(boxHalfSize + capsule.offset) - offset,
+                    capsule.transform.TransformPoint(new Vector2(boxHalfSize.x, -boxHalfSize.y)  + capsule.offset) + offset,
+                    capsule.transform.TransformPoint(boxHalfSize * -1f + capsule.offset) + offset,
+                    capsule.transform.TransformPoint(new Vector2(-boxHalfSize.x, boxHalfSize.y) + capsule.offset) - offset
+                };
+
+                vertices[0].z = capsule.transform.position.z;
+                vertices[1].z = capsule.transform.position.z;
+                vertices[2].z = capsule.transform.position.z;
+                vertices[3].z = capsule.transform.position.z;
+
+                float r = radius.magnitude;
+
+                Handles.color = fillColor;
+                Handles.DrawAAConvexPolygon(vertices);
+                Handles.DrawSolidArc((vertices[0] + vertices[3]) * 0.5f, Vector3.forward, radius, 180, r);
+                Handles.DrawSolidArc((vertices[1] + vertices[2]) * 0.5f, Vector3.forward, radius, -180, r);
+
+                Handles.color = strokeColor;
+                Handles.DrawLine(vertices[0], vertices[1]);
+                Handles.DrawLine(vertices[2], vertices[3]);
+                Handles.DrawWireArc((vertices[0] + vertices[3]) * 0.5f, Vector3.forward, radius, 180, r);
+                Handles.DrawWireArc((vertices[1] + vertices[2]) * 0.5f, Vector3.forward, radius, -180, r);
+
+            }
             else
             {
                 Handles.DrawSolidRectangleWithOutline(new Rect(coll.bounds.min, coll.bounds.size), fillColor, Color.clear);
