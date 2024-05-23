@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 namespace PuzzleBox
 {
@@ -876,9 +877,15 @@ namespace PuzzleBox
                 }
                 else
                 {
-                    Separate(this, overlaps[i].bounds);
-                    ProcessOverlaps(iterations + 1);
-                    break;
+                    // Hack for now...
+                    TilemapCollider2D tilemapCollider = overlaps[i].GetComponent<TilemapCollider2D>();
+                    if (tilemapCollider == null)
+                    {
+                        Separate(this, overlaps[i].bounds);
+                        ProcessOverlaps(iterations + 1);
+                        break;
+                    }
+                    
                 }
             }
         }
