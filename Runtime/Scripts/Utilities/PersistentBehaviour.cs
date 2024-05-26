@@ -71,6 +71,11 @@ namespace PuzzleBox
         {
             string key = persistenceKey;
 
+            if (LevelManager.temporarySaveState.ContainsKey(key))
+            {
+                LevelManager.temporarySaveState.Remove(key);
+            }
+
             if (LevelManager.saveState.ContainsKey(key))
             {
                 LevelManager.saveState.Remove(key);
@@ -87,75 +92,84 @@ namespace PuzzleBox
             }
         }
 
-        public void SaveState()
+        public static void Save(string key, MonoBehaviour behaviour, Persistence persistence)
         {
-            string state = JsonUtility.ToJson(this);
-            string key = persistenceKey;
-
-            componentEnabled = enabled;
-            gameObjectActive = gameObject.activeSelf;
-
-            switch (persistence)
+            if (behaviour != null)
             {
-                case Persistence.None:
-                    break;
-                case Persistence.Level:
-                    LevelManager.saveState[key] = state;
-                    break;
-                case Persistence.Session:
-                    Manager.saveState[key] = state;
-                    break;
-                case Persistence.Save:
-                    PlayerPrefs.SetString(key, state);
-                    break;
+                string state = JsonUtility.ToJson(behaviour);
+
+                switch (persistence)
+                {
+                    case Persistence.None:
+                        LevelManager.temporarySaveState.Set(key, state);
+                        break;
+                    case Persistence.Level:
+                        LevelManager.saveState.Set(key, state);
+                        break;
+                    case Persistence.Session:
+                        Manager.saveState.Set(key, state);
+                        break;
+                    case Persistence.Save:
+                        Manager.WriteToSaveGame(key, state);
+                        break;
+                }
             }
         }
 
-        public void LoadState(string json)
+        public static void Load(string key, MonoBehaviour behaviour)
         {
-            if (json != null && json != "")
+            if (behaviour != null)
             {
-                JsonUtility.FromJsonOverwrite(json, this);
+                string json = null;
 
-                if (deleted)
+                if (LevelManager.temporarySaveState.ContainsKey(key))
                 {
-                    Destroy(gameObject);
+                    json = LevelManager.temporarySaveState.Get<string>(key);
+                }
+                else if (LevelManager.saveState.ContainsKey(key))
+                {
+                    json = LevelManager.saveState.Get<string>(key);
+                }
+                else if (Manager.saveState.ContainsKey(key))
+                {
+                    json = Manager.saveState.Get<string>(key);
+                }
+
+                if (!string.IsNullOrEmpty(json))
+                {
+                    JsonUtility.FromJsonOverwrite(json, behaviour);
+                }
+            }
+        }
+
+        public static void Load(string key, PersistentBehaviour behaviour)
+        {
+            if (behaviour != null)
+            {
+                Load(key, (MonoBehaviour)behaviour);
+                if (behaviour.deleted)
+                {
+                    Destroy(behaviour.gameObject);
                 }
                 else
                 {
-                    enabled = componentEnabled;
-                    gameObject.SetActive(gameObjectActive);
+                    behaviour.enabled = behaviour.componentEnabled;
+                    behaviour.gameObject.SetActive(behaviour.gameObjectActive);
                 }
             }
+        }
+
+        public void SaveState()
+        {
+            componentEnabled = enabled;
+            gameObjectActive = gameObject.activeSelf;
+
+            Save(persistenceKey, this, persistence);
         }
 
         public void LoadState()
         {
-            string key = persistenceKey;
-
-            switch (persistence)
-            {
-                case Persistence.None:
-                    return;
-                case Persistence.Level:
-                    if (LevelManager.saveState.ContainsKey(key))
-                    {
-                        LoadState(LevelManager.saveState[key]);
-                    }
-                    break;
-                case Persistence.Session:
-                    if (Manager.saveState.ContainsKey(key))
-                    {
-                        LoadState(Manager.saveState[key]);
-                    }
-                    break;
-                case Persistence.Save:
-                    if (PlayerPrefs.HasKey(key))
-                    {
-                        LoadState(PlayerPrefs.GetString(key));
-                    }
-                    break;
-            }
+            Load(persistenceKey, this);
         }
 
         protected virtual void WasDestroyed()

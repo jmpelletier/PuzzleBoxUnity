@@ -14,11 +14,13 @@ using UnityEngine.SceneManagement;
 
 namespace PuzzleBox
 {
+    [DefaultExecutionOrder(int.MinValue + 2)]
     public class LevelManager : PuzzleBoxBehaviour
     {
         public GameObject player;
 
-        public static Dictionary<string, string> saveState = new Dictionary<string, string>();
+        public static DynamicDictionary saveState = new DynamicDictionary();
+        public static DynamicDictionary temporarySaveState = new DynamicDictionary();
 
         public static string mainScene = "";
         public static string subScene = "";
@@ -63,6 +65,10 @@ namespace PuzzleBox
 
         protected virtual void Awake()
         {
+            if (string.IsNullOrEmpty(subScene))
+            {
+                subScene = gameObject.scene.name;
+            }
             instances.Add(this);
         }
 
@@ -73,14 +79,19 @@ namespace PuzzleBox
 
         protected string GetSaveState(string key)
         {
+            if (temporarySaveState.ContainsKey(key))
+            {
+                return temporarySaveState.Get<string>(key);
+            }
+
             if (saveState.ContainsKey(key))
             {
-                return saveState[key];
+                return saveState.Get<string>(key);
             }
 
             if (Manager.saveState.ContainsKey(key))
             {
-                return Manager.saveState[key];
+                return Manager.saveState.Get<string>(key);
             }
 
             if (PlayerPrefs.HasKey(key))
@@ -99,11 +110,7 @@ namespace PuzzleBox
                 player = GameObject.FindGameObjectWithTag("Player");
             }
 
-            if (player == null)
-            {
-                Debug.LogError("プレーヤーオブジェクトが見つかりません。シーンに「Player」タグが付いているゲームオブジェクトが必要です。");
-            }
-            else
+            if (player != null)
             {
                 SetupPlayer();
             }
@@ -119,10 +126,7 @@ namespace PuzzleBox
 
             if (player != null)
             {
-                if (player != null)
-                {
-                    player.SendMessage("SetUserInputEnabled", false);
-                }
+                player.SendMessage("SetUserInputEnabled", false);
             }
         }
 
@@ -178,6 +182,8 @@ namespace PuzzleBox
 
         public void ReloadLevel()
         {
+            temporarySaveState.Clear();
+
             if (string.IsNullOrEmpty(mainScene))
             {
                 SceneTransition.ReloadCurrentScene();
@@ -192,7 +198,7 @@ namespace PuzzleBox
         {
             if (!string.IsNullOrEmpty(spawnPointUID))
             {
-                saveState.Add("SpawnPointUid", spawnPointUID);
+                saveState.Set("SpawnPointUid", spawnPointUID);
             }
         }
 

@@ -37,7 +37,12 @@ namespace PuzzleBox
                 {
                     animationController = GetComponent<Animator>();
                 }
-                animationController.SetBool("Loading", _loading);
+
+                if (animationController.runtimeAnimatorController != null)
+                {
+                    animationController.SetBool("Loading", _loading);
+                }
+                
             }
             get { return _loading; }
         }
@@ -131,8 +136,12 @@ namespace PuzzleBox
                 {
                     animationController = GetComponent<Animator>();
                 }
-                animationController.SetTrigger("Show");
 
+                if (animationController.runtimeAnimatorController != null)
+                {
+                    animationController.SetTrigger("Show");
+                }
+                
                 ready?.Invoke();
             });
         }

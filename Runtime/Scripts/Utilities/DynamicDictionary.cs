@@ -33,7 +33,7 @@ namespace PuzzleBox
         }
 
         // Returns true if the key exists
-        public bool Contains(string key)
+        public bool ContainsKey(string key)
         {
             return _dictionary.ContainsKey(key);
         }
@@ -81,6 +81,12 @@ namespace PuzzleBox
             {
                 _callbacks[key] -= callback;
             }
+        }
+
+        // Clear all keys and values
+        public void Clear()
+        {
+            _dictionary.Clear();
         }
     }
 }

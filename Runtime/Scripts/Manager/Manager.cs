@@ -3,24 +3,25 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
- 
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace PuzzleBox
 {
+    [DefaultExecutionOrder(int.MinValue + 1)]
     public class Manager : MonoBehaviour
     {
         public static Manager instance;
 
-        public static Dictionary<string, string> saveState = new Dictionary<string, string>();
+        public static DynamicDictionary saveState = new DynamicDictionary();
 
         void Awake()
         {
             if (instance != null)
             {
-                Debug.LogWarning("余分のManagerを削除する。");
                 Destroy(gameObject);
             }
             else
@@ -28,6 +29,99 @@ namespace PuzzleBox
                 instance = this;
                 LevelManager.mainScene = gameObject.scene.name;
             }
+        }
+
+        public static string Serialize(object obj)
+        {
+            if (obj == null)
+            {
+                return string.Empty;
+            }
+
+            if (obj.GetType().IsPrimitive)
+            {
+                return obj.ToString();
+            }
+
+            else
+            {
+                return JsonUtility.ToJson(obj);
+            }
+        }
+
+        public static T Parse<T>(string str) where T : struct
+        {
+            if (!string.IsNullOrEmpty(str))
+            {
+                if (typeof(T).IsPrimitive)
+                {
+                    try
+                    {
+                        return (T)Convert.ChangeType(str, typeof(T));
+                    }
+                    catch
+                    {
+                        return default(T);
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        return JsonUtility.FromJson<T>(str);
+                    }
+                    catch (Exception)
+                    {
+                        return default(T);
+                    }
+                }
+
+            }
+            return default(T);
+        }
+
+        public static void WriteToSaveGame(string key, string value)
+        {
+            saveState.Set(key, value);
+            PlayerPrefs.SetString(key, value);
+        }
+
+        public static T ReadFromSaveGame<T>(string key) where T : struct
+        {
+            if (saveState.ContainsKey(key))
+            {
+                return saveState.Get<T>(key);
+            }
+            else if (PlayerPrefs.HasKey(key))
+            {
+                string str = PlayerPrefs.GetString(key);
+                return Parse<T>(str);
+            }
+            else
+            {
+                string typedKey = MakeTypedKey(key, typeof(T));
+                if (PlayerPrefs.HasKey(typedKey))
+                {
+                    string str = PlayerPrefs.GetString(typedKey);
+                    return Parse<T>(str);
+                }
+            }
+
+            return default(T);
+        }
+
+        private static string MakeTypedKey(string key, Type type)
+        {
+            return $"{type.Name}::{key}";
+        }
+
+
+        public static void WriteToSaveGame(string key, object value)
+        {
+            saveState.Set(key, value);
+            string typedKey = MakeTypedKey(key, value.GetType());
+            string str = Serialize(value);
+            PlayerPrefs.SetString(typedKey, str);
         }
 
         public virtual void ConfirmQuitGame()
@@ -75,6 +169,8 @@ namespace PuzzleBox
         {
 
         }
+
+        
     }
 }
 

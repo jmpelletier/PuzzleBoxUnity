@@ -33,16 +33,13 @@ namespace PuzzleBox
                 switch (persistence)
                 {
                     case Persistence.Reload:
-                        LevelManager.saveState["PlayerSpawnPosition"] = json;
+                        LevelManager.saveState.Set("PlayerSpawnPosition", json);
                         break;
                     case Persistence.Session:
-                        LevelManager.saveState["PlayerSpawnPosition"] = json;
-                        Manager.saveState["PlayerSpawnPosition"] = json;
+                        Manager.saveState.Set("PlayerSpawnPosition", json);
                         break;
                     case Persistence.Save:
-                        LevelManager.saveState["PlayerSpawnPosition"] = json;
-                        Manager.saveState["PlayerSpawnPosition"] = json;
-                        PlayerPrefs.SetString("PlayerSpawnPosition", json);
+                        Manager.WriteToSaveGame("PlayerSpawnPosition", json);
                         break;
                 }
             });
