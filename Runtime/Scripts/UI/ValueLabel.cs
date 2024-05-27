@@ -22,14 +22,14 @@ namespace PuzzleBox
         // Start is called before the first frame update
         void Start()
         {
-            label = GetComponent<TextMeshProUGUI>();
+            
         }
 
         private void OnEnable()
         {
             if (value != null)
             {
-                value.OnValueChanged += UpdateLabel;
+                value.Subscribe(UpdateLabel);
             }
         }
 
@@ -37,12 +37,17 @@ namespace PuzzleBox
         {
             if (value != null)
             {
-                value.OnValueChanged -= UpdateLabel;
+                value.Unsubscribe(UpdateLabel);
             }
         }
 
         private void UpdateLabel()
         {
+            if (label == null)
+            {
+                label = GetComponent<TextMeshProUGUI>();
+            }
+
             if (label != null)
             {
                 if (value != null)

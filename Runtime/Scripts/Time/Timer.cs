@@ -30,10 +30,12 @@ namespace PuzzleBox
 
         public bool useFixedUpdate = true;
 
-        public float time { get; protected set; }
+        public ObservableFloat time = new ObservableFloat();
+        public ObservableInt repetitions = new ObservableInt();
 
         private void Start()
         {
+            repetitions.Set(0);
             if (GetToggleState())
             {
                 StartTimer();
@@ -61,13 +63,14 @@ namespace PuzzleBox
         [PuzzleBox.Action]
         public void ResetTimer()
         {
+            repetitions.Set(0);
             if (countDirection == CountDirection.Down)
             {
-                time = duration;
+                time.Set(duration);
             }
             else
             {
-                time = 0;
+                time.Set(0);
             }
         }
 
@@ -77,23 +80,31 @@ namespace PuzzleBox
             {
                 if (countDirection == CountDirection.Down)
                 {
-                    time -= deltaTime;
+                    time.Set(time -  deltaTime);
                     if (time <= 0)
                     {
-                        time = duration;
+                        time.Set(duration);
                         Toggle(repeat);
                         ActionDelegate.Invoke(OnEnd, gameObject);
+                        if (repeat)
+                        {
+                            repetitions.Set(repetitions + 1);
+                        }
                         return;
                     }
                 }
                 else
                 {
-                    time += deltaTime;
+                    time.Set(time + deltaTime);
                     if (time >= duration)
                     {
-                        time = 0;
+                        time.Set(0);
                         Toggle(repeat);
                         ActionDelegate.Invoke(OnEnd, gameObject);
+                        if (repeat)
+                        {
+                            repetitions.Set(repetitions + 1);
+                        }
                         return;
                     }
                 }

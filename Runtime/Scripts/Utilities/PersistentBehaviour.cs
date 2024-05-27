@@ -60,7 +60,7 @@ namespace PuzzleBox
             }
         }
 
-        protected void Awake()
+        protected virtual void Awake()
         {
             uid = GetComponent<UniqueID>().uid;
 

@@ -14,8 +14,9 @@ namespace PuzzleBox
     {
         public float value;
 
-        public void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
             Set(value);
         }
 
@@ -23,11 +24,34 @@ namespace PuzzleBox
         {
             value = newValue;
             OnValueChanged?.Invoke();
+            Save(value);
+        }
+
+        public void Set(int newValue)
+        {
+            value = newValue;
+            OnValueChanged?.Invoke();
+            Save(value);
         }
 
         public override string ToString()
         {
             return value.ToString();
+        }
+
+        public override void ValueChanged(int value)
+        {
+            Set(value);
+        }
+
+        public override void ValueChanged(float value)
+        {
+            Set(value);
+        }
+
+        protected override void InitializeTarget()
+        {
+            Initialize<float>();
         }
     }
 }

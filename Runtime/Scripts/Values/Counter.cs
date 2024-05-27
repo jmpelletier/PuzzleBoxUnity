@@ -10,7 +10,8 @@ namespace PuzzleBox
 {
     public class Counter : ValueBase
     {
-        public int count = 0;
+        public ObservableInt count = new ObservableInt();
+        public int startCount = 0;
         public int minimumValue = 0;
         public int maximumValue = 10;
         public int increment = 1;
@@ -25,14 +26,15 @@ namespace PuzzleBox
 
         private void Start()
         {
-            SetCount(count);
+            //SetCount(startCount);
         }
 
-        private void OnEnable()
+        protected override void OnEnable()
         {
+            base.OnEnable();
             if (referencedValue != null)
             {
-                count = (int)referencedValue.value;
+                count.Set((int)referencedValue.value);
             }
         }
 
@@ -68,7 +70,7 @@ namespace PuzzleBox
 
                 if (count >= maximumValue)
                 {
-                    count = maximumValue;
+                    SetCount(maximumValue);
                     foreach (ActionDelegate action in reachedMaximumActions)
                     {
                         if (action != null)
@@ -80,7 +82,7 @@ namespace PuzzleBox
 
                 if (count <= minimumValue)
                 {
-                    count = minimumValue;
+                    SetCount(minimumValue);
                     foreach (ActionDelegate action in reachedMinimumActions)
                     {
                         if (action != null)
@@ -99,7 +101,10 @@ namespace PuzzleBox
                 referencedValue.Set(newCount);
             }
 
-            count = newCount;
+            if (count != newCount)
+            {
+                count.Set(newCount);
+            }
 
             OnValueChanged?.Invoke();
         }
@@ -119,7 +124,7 @@ namespace PuzzleBox
         [PuzzleBox.Action]
         public void Reset()
         {
-            SetCount(minimumValue);
+            SetCount(startCount);
         }
 
         public override string GetIcon()
@@ -130,6 +135,11 @@ namespace PuzzleBox
         public override string ToString()
         {
             return count.ToString();
+        }
+
+        protected override void InitializeTarget()
+        {
+            Initialize<int>();
         }
     }
 }

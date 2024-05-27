@@ -49,7 +49,7 @@ namespace PuzzleBox
             }
         }
 
-        public static T Parse<T>(string str) where T : struct
+        public static T Parse<T>(string str, T defaultValue = default(T)) where T : struct
         {
             if (!string.IsNullOrEmpty(str))
             {
@@ -61,7 +61,7 @@ namespace PuzzleBox
                     }
                     catch
                     {
-                        return default(T);
+                        return defaultValue;
                     }
                 }
                 else
@@ -72,12 +72,12 @@ namespace PuzzleBox
                     }
                     catch (Exception)
                     {
-                        return default(T);
+                        return defaultValue;
                     }
                 }
 
             }
-            return default(T);
+            return defaultValue;
         }
 
         public static void WriteToSaveGame(string key, string value)
@@ -86,16 +86,16 @@ namespace PuzzleBox
             PlayerPrefs.SetString(key, value);
         }
 
-        public static T ReadFromSaveGame<T>(string key) where T : struct
+        public static T ReadFromSaveGame<T>(string key, T defaultValue = default(T)) where T : struct
         {
             if (saveState.ContainsKey(key))
             {
-                return saveState.Get<T>(key);
+                return saveState.Get<T>(key, defaultValue);
             }
             else if (PlayerPrefs.HasKey(key))
             {
                 string str = PlayerPrefs.GetString(key);
-                return Parse<T>(str);
+                return Parse<T>(str, defaultValue);
             }
             else
             {
@@ -103,11 +103,33 @@ namespace PuzzleBox
                 if (PlayerPrefs.HasKey(typedKey))
                 {
                     string str = PlayerPrefs.GetString(typedKey);
-                    return Parse<T>(str);
+                    return Parse<T>(str, defaultValue);
                 }
             }
 
-            return default(T);
+            return defaultValue;
+        }
+
+        public static string ReadStringFromSaveGame(string key, string defaultValue = default(string))
+        {
+            if (saveState.ContainsKey(key))
+            {
+                return saveState.Get<string>(key, defaultValue);
+            }
+            else if (PlayerPrefs.HasKey(key))
+            {
+                return PlayerPrefs.GetString(key);
+            }
+            else
+            {
+                string typedKey = MakeTypedKey(key, typeof(string));
+                if (PlayerPrefs.HasKey(typedKey))
+                {
+                    return PlayerPrefs.GetString(typedKey);
+                }
+            }
+
+            return defaultValue;
         }
 
         private static string MakeTypedKey(string key, Type type)

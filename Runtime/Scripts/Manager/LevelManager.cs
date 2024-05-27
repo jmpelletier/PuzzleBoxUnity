@@ -76,6 +76,36 @@ namespace PuzzleBox
             instances.Remove(this);
         }
 
+        public static string GetSavedString(string key, string defaultValue = default(string))
+        {
+            if (temporarySaveState.ContainsKey(key))
+            {
+                return temporarySaveState.Get<string>(key, defaultValue);
+            }
+
+            if (saveState.ContainsKey(key))
+            {
+                return saveState.Get<string>(key, defaultValue);
+            }
+
+            return Manager.ReadStringFromSaveGame(key, defaultValue);
+        }
+
+        public static T GetSavedValue<T>(string key, T defaultValue = default(T)) where T : struct
+        {
+            if (temporarySaveState.ContainsKey(key))
+            {
+                return temporarySaveState.Get<T>(key, defaultValue);
+            }
+
+            if (saveState.ContainsKey(key))
+            {
+                return saveState.Get<T>(key, defaultValue);
+            }
+
+            return Manager.ReadFromSaveGame<T>(key, defaultValue);
+        }
+
         protected string GetSaveState(string key)
         {
             if (temporarySaveState.ContainsKey(key))

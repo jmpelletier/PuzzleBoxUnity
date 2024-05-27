@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Linq;
+using System.Reflection;
 
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,10 +13,105 @@ using System;
 
 namespace PuzzleBox
 {
-    [RequireComponent(typeof(PuzzleBox.UniqueID))]
-    public abstract class ValueBase : PuzzleBoxBehaviour
+    public abstract class ValueBase : PersistentBehaviour, IValueObserver
     {
-        public Action OnValueChanged; 
+        [Space]
+        public ObservableProperty source;
+
+        protected Action OnValueChanged;
+
+        private PuzzleBox.IObservable _target = null;
+
+        public void Subscribe(Action callback)
+        {
+            OnValueChanged += callback;
+            callback();
+        }
+
+        public void Unsubscribe(Action callback)
+        {
+            OnValueChanged -= callback;
+        }
+
+        protected void Initialize<T>() where T : struct
+        {
+            if (_target != null)
+            {
+                T val = LevelManager.GetSavedValue<T>(persistenceKey);
+                _target.Initialize(val);
+            }
+        }
+
+        protected void Save<T>(T val)
+        {
+            switch(persistence)
+            {
+                case Persistence.None:
+                    LevelManager.temporarySaveState.Set(persistenceKey, val);
+                    break;
+                case Persistence.Level:
+                    LevelManager.saveState.Set(persistenceKey, val);
+                    break;
+                case Persistence.Session:
+                    Manager.saveState.Set(persistenceKey, val);
+                    break;
+                case Persistence.Save:
+                    Manager.WriteToSaveGame(persistenceKey, val);
+                    break;
+            }
+        }
+
+        protected void InitializeString()
+        {
+            if (_target != null)
+            {
+                string val = LevelManager.GetSavedString(persistenceKey);
+                _target.Initialize(val);
+            }
+        }
+
+        protected virtual void OnEnable()
+        {
+            if (_target == null)
+            {
+                if (source.behaviour != null && !string.IsNullOrEmpty(source.propertyName))
+                {
+                    var fields = source.behaviour.GetType().GetFields().Where(f => typeof(PuzzleBox.IObservable).IsAssignableFrom(f.FieldType));
+                    foreach (FieldInfo field in fields)
+                    {
+                        if (source.propertyName.Equals(field.Name))
+                        {
+                            _target = field.GetValue(source.behaviour) as PuzzleBox.IObservable;
+                            InitializeTarget();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (_target != null)
+            {
+                _target.Subscribe(this);
+            }
+        }
+
+        protected virtual void OnDisable()
+        {
+            if (_target != null)
+            {
+                _target.Unsubscribe(this);
+            }
+        }
+
+        protected abstract void InitializeTarget();
+
+        public virtual void ValueChanged(int value) { }
+        public virtual void ValueChanged(float value) { }
+        public virtual void ValueChanged(bool value) { }
+        public virtual void ValueChanged(string value) { }
+        public virtual void ValueChanged(Vector2 value) { }
+        public virtual void ValueChanged(Vector3 value) { }
+        public virtual void ValueChanged(object value) { }
     }
 }
 
