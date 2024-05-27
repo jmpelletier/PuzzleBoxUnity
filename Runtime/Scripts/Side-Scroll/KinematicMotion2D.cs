@@ -960,9 +960,14 @@ namespace PuzzleBox
             if (isGrounded)
             {
                 // 地面に立っているので地面の向きを覚えておきます。
-                groundNormal = groundHit.normal;
-                groundDistance = groundHit.distance;
-
+                if (oldState)
+                {
+                    // We only update the ground normal, the frame *after* we become grounded.
+                    // This is to avoid sliding down slopes when landing.
+                    groundNormal = groundHit.normal;
+                    groundDistance = groundHit.distance;
+                }
+                
                 // ここで、KinematicMotion2Dコンポーネントを持っているオブジェクトの上に立っているかどうかを確認します。
                 // 立っているなら、その動きの影響を受けます。
                 if (useGroundMotion)
