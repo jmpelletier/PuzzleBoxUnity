@@ -4,7 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
  
-using PuzzleBox;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -164,10 +163,11 @@ namespace PuzzleBox
         {
             if (player != null)
             {
-                LifetimeActions lifetimeActions = player.GetComponent<LifetimeActions>();
-                if (lifetimeActions != null)
+                LifetimeActions[] lifetimeActions = player.GetComponentsInChildren<LifetimeActions>();
+                foreach(LifetimeActions actions in lifetimeActions)
                 {
-                    lifetimeActions.OnKilled += obj => ReloadLevel();
+                    // Should we check for Player tag here?
+                    actions.OnKilled += obj => ReloadLevel();
                 }
             }
         }
