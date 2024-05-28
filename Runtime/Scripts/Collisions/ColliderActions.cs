@@ -355,7 +355,7 @@ namespace PuzzleBox
             return false;
         }
 
-        private static bool LineSegmentsIntersect(Vector2 aStart, Vector2 aEnd, Vector2 bStart, Vector2 bEnd, out Vector2 intersection)
+        private static bool LineSegmentsIntersect(Vector2 aStart, Vector2 aEnd, Vector2 bStart, Vector2 bEnd, out Vector2 intersection, float margin = 0f)
         {
             intersection = Vector2.zero;
 
@@ -372,7 +372,7 @@ namespace PuzzleBox
             float t = tNumerator / denominator;
             float u = uNumerator / denominator;
 
-            if ((t >= 0.0f && t <= 1.0f) && (u >= 0.0f && u <= 1.0f))
+            if ((t >= -margin && t <= 1.0f + margin) && (u >= -margin && u <= 1.0f + margin))
             {
                 // Segments intersect
                 intersection = aStart + t * (aEnd - aStart);
@@ -535,7 +535,7 @@ namespace PuzzleBox
                     Vector2 p3 = path2[j];
                     Vector2 p4 = j > 0 ? path2[j - 1] : path2[path2Length - 1];
 
-                    if (LineSegmentsIntersect(p1, p2, p3, p4, out intersect))
+                    if (LineSegmentsIntersect(p1, p2, p3, p4, out intersect, 0.05f))
                     {
                         return true;
                     }
