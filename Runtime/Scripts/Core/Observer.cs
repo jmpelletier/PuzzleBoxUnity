@@ -48,7 +48,7 @@ using UnityEngine;
 
         public abstract void Initialize(object initialValue);
 
-        protected void NotifyAll()
+        public void NotifyAll()
         {
             foreach(IValueObserver observer in _observers)
             {

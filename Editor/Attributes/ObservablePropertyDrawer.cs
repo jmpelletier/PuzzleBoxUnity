@@ -13,6 +13,21 @@ using UnityEngine.InputSystem;
 
 namespace PuzzleBox
 {
+    [CustomPropertyDrawer(typeof(ObservableInt))]
+    [CustomPropertyDrawer(typeof(ObservableFloat))]
+    [CustomPropertyDrawer(typeof(ObservableBool))]
+    [CustomPropertyDrawer(typeof(ObservableString))]
+    [CustomPropertyDrawer(typeof(ObservableVector2))]
+    [CustomPropertyDrawer(typeof(ObservableVector3))]
+    public class ObservableValueDrawer : PropertyDrawer
+    {
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            SerializedProperty valueProperty = property.FindPropertyRelative("_value");
+            EditorGUI.PropertyField(position, valueProperty, label);
+        }
+    }
+
     [CustomPropertyDrawer(typeof(ObservableProperty))]
     public class ObservablePropertyDrawer : PropertyDrawer
     {
