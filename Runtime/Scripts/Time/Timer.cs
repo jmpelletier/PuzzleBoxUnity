@@ -38,7 +38,8 @@ namespace PuzzleBox
             repetitions.Set(0);
             if (GetToggleState())
             {
-                StartTimer();
+                Toggle(true);
+                ActionDelegate.Invoke(OnStart, gameObject);
             }
         }
 

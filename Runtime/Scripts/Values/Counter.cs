@@ -8,12 +8,12 @@ using UnityEngine;
 
 namespace PuzzleBox
 {
-    public class Counter : ValueBase
+    public class Counter : PuzzleBoxBehaviour
     {
         public ObservableInt count = new ObservableInt();
         public int startCount = 0;
         public int minimumValue = 0;
-        public int maximumValue = 10;
+        public int maximumValue = int.MaxValue;
         public int increment = 1;
         public bool cycle = false;
 
@@ -29,9 +29,8 @@ namespace PuzzleBox
             //SetCount(startCount);
         }
 
-        protected override void OnEnable()
+        protected void OnEnable()
         {
-            base.OnEnable();
             if (referencedValue != null)
             {
                 count.Set((int)referencedValue.value);
@@ -105,8 +104,6 @@ namespace PuzzleBox
             {
                 count.Set(newCount);
             }
-
-            OnValueChanged?.Invoke();
         }
 
         [PuzzleBox.Action]
@@ -135,11 +132,6 @@ namespace PuzzleBox
         public override string ToString()
         {
             return count.ToString();
-        }
-
-        protected override void InitializeTarget()
-        {
-            Initialize<int>();
         }
     }
 }
