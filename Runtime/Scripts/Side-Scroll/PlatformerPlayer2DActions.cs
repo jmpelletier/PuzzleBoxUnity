@@ -240,11 +240,14 @@ namespace PuzzleBox
 
         protected override void WasKilled()
         {
-            base.WasKilled();
-
-            foreach (ActionDelegate action in dieActions)
+            if (!killed)
             {
-                action?.Perform(player.gameObject);
+                base.WasKilled();
+
+                foreach (ActionDelegate action in dieActions)
+                {
+                    action?.Perform(player.gameObject);
+                }
             }
         }
 

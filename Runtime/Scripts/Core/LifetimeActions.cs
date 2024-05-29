@@ -16,7 +16,7 @@ namespace PuzzleBox
         public Action<GameObject> OnDestroyed;
         public Action<GameObject> OnKilled;
 
-        private bool killed = false;
+        protected bool killed = false;
 
         // Start is called before the first frame update
         void Start()
