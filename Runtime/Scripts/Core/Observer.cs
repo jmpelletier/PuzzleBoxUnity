@@ -113,6 +113,11 @@ using UnityEngine;
                 _value = (int)(float)initialValue;
             }
         }
+
+        public override string ToString()
+        {
+            return _value.ToString();
+        }
     }
 
     [System.Serializable]
@@ -145,6 +150,11 @@ using UnityEngine;
             {
                 _value = (float)initialValue;
             }
+        }
+
+        public override string ToString()
+        {
+            return _value.ToString();
         }
     }
 
@@ -179,6 +189,11 @@ using UnityEngine;
                 _value = (bool)initialValue;
             }
         }
+
+        public override string ToString()
+        {
+            return _value.ToString();
+        }
     }
 
     [System.Serializable]
@@ -211,6 +226,11 @@ using UnityEngine;
             {
                 _value = (string)initialValue;
             }
+        }
+
+        public override string ToString()
+        {
+            return _value;
         }
     }
 
@@ -245,6 +265,11 @@ using UnityEngine;
                 _value = (Vector2)initialValue;
             }
         }
+
+        public override string ToString()
+        {
+            return _value.ToString();
+        }
     }
 
     [System.Serializable]
@@ -277,6 +302,11 @@ using UnityEngine;
             {
                 _value = (Vector3)initialValue;
             }
+        }
+
+        public override string ToString()
+        {
+            return _value.ToString();
         }
     }
 
