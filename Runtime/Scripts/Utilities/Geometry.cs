@@ -219,6 +219,14 @@ namespace PuzzleBox
         }
 
         /**
+         * Vector projection on a plane defined by a normal.
+         */
+        public static Vector3 ProjectVectorOnPlane(Vector3 vector, Vector3 planeNormal)
+        {
+            return Vector3.Cross(planeNormal, Vector3.Cross(vector, planeNormal));
+        }
+
+        /**
          * Returns the signed area of a polygon defined by the ordered
          * vertices provided. See:
          * https://en.wikipedia.org/wiki/Signed_area
