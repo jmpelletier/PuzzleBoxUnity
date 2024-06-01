@@ -4,8 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace PuzzleBox
@@ -13,28 +11,45 @@ namespace PuzzleBox
     [PuzzleBox.HideInEnumeration]
     public class PhysicsSettings : PuzzleBoxBehaviour
     {
-        public Vector3 gravity = new Vector3 (0, -9.8f, 0);
+        [Min(0)]
+        [Tooltip("The absolute gravity force in m/s^2")]
+        public float gravityForce = 9.8f;
 
-        public void SetGravity(float g)
+        [Tooltip("The direction of gravity. By default, this points towards (0, -1, 0).")]
+        public Vector3 gravityAngle = Vector3.zero;
+
+
+        private ObservableVector3 gravity = new ObservableVector3();
+
+        public void SetGravity(float force)
         {
-            SetGravity(new Vector3(0, g, 0));
+            SetGravity(force, gravityAngle);
         }
 
-        public void SetGravity(Vector3 g)
+        public void SetGravity(float force, Vector3 angle)
         {
-            gravity = g;
-            Physics2D.gravity = (Vector2)gravity;
+            gravityForce = force;
+            gravityAngle = angle;
+            Quaternion rotation = Quaternion.Euler(angle);
+            gravity.Set(rotation * Vector3.down * gravityForce);
             Physics.gravity = gravity;
+        }
+
+        public void SetGravity(Vector3 angle)
+        {
+            SetGravity(gravityForce, angle);
         }
 
         private void Awake()
         {
-            SetGravity(gravity);
+            SetGravity(gravityForce, gravityAngle);
         }
 
         protected override void PerformFixedUpdate(float deltaSeconds)
         {
+            #if UNITY_EDITOR
             SetGravity(gravity);
+            #endif
         }
     }
 } // namespace
