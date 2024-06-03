@@ -48,7 +48,7 @@ namespace PuzzleBox
         protected override void PerformFixedUpdate(float deltaSeconds)
         {
             #if UNITY_EDITOR
-            SetGravity(gravity);
+            SetGravity(gravityForce, gravityAngle);
             #endif
         }
     }
