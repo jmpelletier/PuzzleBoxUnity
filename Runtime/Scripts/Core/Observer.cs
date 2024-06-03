@@ -79,7 +79,7 @@ using UnityEngine;
     }
 
     [System.Serializable]
-    public class ObservableInt : ObservableValue
+    public class ObservableInt : ObservableValue, IEquatable<int>
     {
         [SerializeField]
         private int _value;
@@ -118,10 +118,15 @@ using UnityEngine;
         {
             return _value.ToString();
         }
+
+        public bool Equals(int other)
+        {
+            return _value.Equals(other);
+        }
     }
 
     [System.Serializable]
-    public class ObservableFloat : ObservableValue
+    public class ObservableFloat : ObservableValue, IEquatable<float>
     {
         [SerializeField]
         private float _value;
@@ -156,10 +161,15 @@ using UnityEngine;
         {
             return _value.ToString();
         }
+
+        public bool Equals(float other)
+        {
+            return _value.Equals(other);
+        }
     }
 
     [System.Serializable]
-    public class ObservableBool : ObservableValue
+    public class ObservableBool : ObservableValue, IEquatable<bool>
     {
         [SerializeField]
         private bool _value;
@@ -194,10 +204,15 @@ using UnityEngine;
         {
             return _value.ToString();
         }
+
+        public bool Equals(bool other)
+        {
+            return _value.Equals(other);
+        }
     }
 
     [System.Serializable]
-    public class ObservableString : ObservableValue
+    public class ObservableString : ObservableValue, IEquatable<string>
     {
         [SerializeField]
         private string _value;
@@ -232,10 +247,15 @@ using UnityEngine;
         {
             return _value;
         }
+
+        public bool Equals(string other)
+        {
+            return _value != null ? _value.Equals(other) : other == null;
+        }
     }
 
     [System.Serializable]
-    public class ObservableVector2 : ObservableValue
+    public class ObservableVector2 : ObservableValue, IEquatable<Vector2>
     {
         [SerializeField]
         private Vector2 _value;
@@ -270,10 +290,15 @@ using UnityEngine;
         {
             return _value.ToString();
         }
+
+        public bool Equals(Vector2 other)
+        {
+            return _value.Equals(other);
+        }
     }
 
     [System.Serializable]
-    public class ObservableVector3 : ObservableValue
+    public class ObservableVector3 : ObservableValue, IEquatable<Vector3>
     {
         [SerializeField]
         private Vector3 _value;
@@ -307,6 +332,11 @@ using UnityEngine;
         public override string ToString()
         {
             return _value.ToString();
+        }
+
+        public bool Equals(Vector3 other)
+        {
+            return _value.Equals(other);
         }
     }
 
