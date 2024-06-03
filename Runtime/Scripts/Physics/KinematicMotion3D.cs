@@ -4,9 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -39,6 +36,12 @@ namespace PuzzleBox
         [Min(0f)]
         public float maxGroundAngle = 45f;
 
+        [Min(0f)]
+        public float maxCeilingAngle = 45f;
+
+        [Min(0)]
+        public int maxIterations = 2;
+
         [Header("Speed")]
         [Min(0)]
         public float maxSpeedUp = 100f;
@@ -50,6 +53,11 @@ namespace PuzzleBox
         public float maxSpeedSide = 100f;
 
         public ObservableVector3 velocity = new ObservableVector3();
+
+        [HideInInspector]
+        public Vector3 externalVelocity = Vector3.zero;
+
+        public float timeInAir { get; private set; }
 
         #endregion
 
@@ -80,6 +88,11 @@ namespace PuzzleBox
 
         #endregion
 
+        #region PRIVATE_PROPERTIES
+        // The distance traveled in a single frame.
+        private float distanceTraveled = 0f;
+
+        #endregion
 
         #region MONOBEHAVIOUR
 
@@ -88,6 +101,11 @@ namespace PuzzleBox
             rb = GetComponent<Rigidbody>();
             rb.isKinematic = true;
 
+            FindColliders();
+        }
+
+        private void FindColliders()
+        {
             colliders = GetComponentsInChildren<Collider>().Where(c => !c.isTrigger).ToArray();
         }
 
@@ -100,13 +118,24 @@ namespace PuzzleBox
             ApplyGravity(deltaSeconds);
             LimitVelocity();
 
+            distanceTraveled = 0f;
             Vector3 newPosition = CalculateNewPosition(deltaSeconds);
             Vector3 delta = newPosition - rb.position;
+            //Vector3 actualVelocity = delta.normalized * distanceTraveled / deltaSeconds;
             Vector3 actualVelocity = delta / deltaSeconds;
 
             MoveRigidbodyToPosition(newPosition);
 
             UpdateGroundedState();
+
+            if (!isGrounded)
+            {
+                timeInAir += deltaSeconds;
+            }
+            else
+            {
+                timeInAir = 0f;
+            }
 
             velocity.Set(actualVelocity);
         }
@@ -115,9 +144,13 @@ namespace PuzzleBox
 
         #region UTILITIES
 
-        protected Bounds GetBounds()
+        public Bounds GetBounds()
         {
             Bounds bounds = default;
+            if (colliders == null || colliders.Length == 0)
+            {
+                FindColliders();
+            }
 
             if (colliders.Length > 0)
             {
@@ -132,10 +165,21 @@ namespace PuzzleBox
             return bounds;
         }
 
+        public Vector3 position
+        {
+            get
+            {
+                if (rb == null)
+                {
+                    rb = GetComponent<Rigidbody>();
+                }
+                return rb.position;
+            }
+        }
+
         protected void ResolveOverlaps(int iterations = 0)
         {
-            const int MAX_ITERATIONS = 2;
-            if (iterations > MAX_ITERATIONS) return;
+            if (iterations > maxIterations) return;
 
             Bounds bounds = GetBounds();
             int count = Physics.OverlapBoxNonAlloc(bounds.center, bounds.extents, collidedColliders);
@@ -168,8 +212,14 @@ namespace PuzzleBox
             return angle <= maxGroundAngle;
         }
 
-        #endregion
+        bool IsCeilingNormal(Vector3 normal)
+        {
+            float dot = Vector3.Dot(normal, Physics.gravity.normalized);
+            float angle = Mathf.Abs(Mathf.Acos(dot) * Mathf.Rad2Deg);
+            return angle <= maxCeilingAngle;
+        }
 
+        #endregion
 
         #region PHYSICS
         protected void ApplyGravity(float deltaSeconds)
@@ -178,6 +228,7 @@ namespace PuzzleBox
             {
                 Vector3 v = velocity;
                 v += Physics.gravity * gravityMultiplier * gravityModifier * deltaSeconds;
+
                 velocity.Set(v);
             }
         }
@@ -228,7 +279,7 @@ namespace PuzzleBox
             }
         }
 
-        private bool CastAllColliders(Vector3 direction, float distance, out RaycastHit hit, Vector3 offset)
+        public bool CastAllColliders(Vector3 direction, float distance, out RaycastHit hit, Vector3 offset)
         {
             // I tried using Rigidbody.SweepTestAll, but this method fails for large deltas,
             // when there are more than one colliders attached. Sometimes, a collider that
@@ -327,11 +378,44 @@ namespace PuzzleBox
             return GetClosestHit(raycastHits, collisionCount, out hit);
         }
 
-        protected Vector3 Slide(Vector3 position, Vector3 delta, int iterations = 0)
+        private Vector3 SlideAgainstGroundOrCeiling(Vector3 position, Vector3 motionRemaining, RaycastHit hit, bool isGround, int iterations)
         {
-            const int MAX_ITERATIONS = 2;
+            // Check the direction we're moving
+            float dot = Vector3.Dot(Physics.gravity, motionRemaining);
 
-            if (iterations > MAX_ITERATIONS)
+            if (isGround ? dot > 0 : dot < 0)
+            {
+                // We are moving in the direction of gravity.
+                // Only process the horizontal motion.
+                Vector3 upDirection = -Physics.gravity.normalized;
+                Vector3 horizontalMotionRemaining = Geometry.ProjectVectorOnPlane(motionRemaining, upDirection);
+                Vector3 projection = Geometry.ProjectVectorOnPlane(horizontalMotionRemaining, hit.normal);
+
+                float a = Vector3.Dot(projection, upDirection);
+
+                // We only slide if we are going down the slope.
+                if (a < 0.001f)
+                {
+                    return Slide(position, projection, iterations + 1);
+                }
+                else
+                {
+                    // Don't slide up, this is as far as we go.
+                    distanceTraveled = 0; // Set this to 0, so that we don't bounce off.
+                    return position;
+                }
+            }
+            else
+            {
+                // We are not falling, simply slide against the face
+                Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
+                return Slide(position, projection, iterations + 1);
+            }
+        }
+
+        public Vector3 Slide(Vector3 position, Vector3 delta, int iterations = 0)
+        {
+            if (iterations > maxIterations)
             {
                 return position;
             }
@@ -344,42 +428,48 @@ namespace PuzzleBox
                 Vector3 offset = position - rb.position;
 
                 RaycastHit hit;
-                if (CastAllColliders(direction, distance, out hit, offset))
+                if (CastAllColliders(direction, distance + margin, out hit, offset))
                 {
-                    // We actually hit something
-                    if (pushObjects && hit.rigidbody != null && !hit.rigidbody.isKinematic)
-                    {
-                        Vector3 deltav = velocity - hit.rigidbody.velocity;
-                        hit.rigidbody.AddForceAtPosition(deltav * rb.mass, hit.point, ForceMode.Impulse);
-                    }
-
                     float distanceToCollision = hit.distance - margin;
-                    Vector3 newPosition = position + direction * distanceToCollision;
-                    float distanceRemaining = distance - distanceToCollision;
 
-                    Vector3 groundPlaneNormal = -Physics.gravity.normalized;
-                    Vector3 d = direction * distanceRemaining;
-                    Vector3 groundPlaneProjection = Geometry.ProjectVectorOnPlane(d, groundPlaneNormal);
-
-                    // If we hit the ground, try to slide further, however we only do this if we 
-                    // are not grounded yet. This is to avoid sliding down slopes when we land.
-                    if (IsGroundNormal(hit.normal))
+                    if (distanceToCollision <= distance)
                     {
-                        Vector3 newDelta = Geometry.ProjectVectorOnPlane(groundPlaneProjection, hit.normal);
+                        // We actually hit something
+                        if (pushObjects && hit.rigidbody != null && !hit.rigidbody.isKinematic)
+                        {
+                            Vector3 deltav = velocity - hit.rigidbody.velocity;
+                            hit.rigidbody.AddForceAtPosition(deltav * rb.mass, hit.point, ForceMode.Impulse);
+                        }
 
-                        return Slide(newPosition, newDelta);
-                    }
-                    else
-                    {
-                        Vector3 horizontalComponent = d - groundPlaneProjection;
-                        Vector3 slidePosition = Slide(newPosition, horizontalComponent);
 
-                        return slidePosition;
+                        Vector3 newPosition = position + direction * distanceToCollision;
+                        float distanceRemaining = distance - distanceToCollision;
+                        Vector3 motionRemaining = direction * distanceRemaining;
+
+                        distanceTraveled += distanceToCollision;
+
+                        bool isGroundNormal = IsGroundNormal(hit.normal);
+
+                        // Check to see if we hit the ground or ceiling
+                        if (isGroundNormal || IsCeilingNormal(hit.normal))
+                        {
+                            return SlideAgainstGroundOrCeiling(newPosition, motionRemaining, hit, isGroundNormal, iterations);
+                        }
+                        else // Neither ground nor ceiling
+                        {
+                            // We hit a wall. We only slide in the horizontal direction.
+                            Vector3 upDirection = -Physics.gravity.normalized;
+                            Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
+                            Vector3 horizontalProjection = Geometry.ProjectVectorOnPlane(projection, upDirection);
+
+                            return Slide(newPosition, horizontalProjection, iterations + 1);
+                        }
                     }
                 }
             }
 
             // No hit, just update position
+            distanceTraveled = distance;
             return position + delta;
         }
 
@@ -388,8 +478,14 @@ namespace PuzzleBox
             Vector3 position = rb.position;
 
             Vector3 delta = velocity.Get() * deltaSeconds;
-            
-            return Slide(position, delta);
+
+            Vector3 horizontalDelta = Geometry.ProjectVectorOnPlane(delta, groundNormal);
+            Vector3 verticalDelta = delta - horizontalDelta;
+
+            position = Slide(position, verticalDelta);
+            position = Slide(position, horizontalDelta);
+
+            return position;
         }
 
         protected void LimitVelocity()
@@ -407,8 +503,22 @@ namespace PuzzleBox
 
         protected void MoveRigidbodyToPosition(Vector3 newPosition)
         {
-            //rb.position = newPosition;
             rb.MovePosition(newPosition);
+        }
+
+        protected bool IsFalling
+        {
+            get
+            {
+                if (!isGrounded)
+                {
+                    return Vector3.Dot(velocity, Physics.gravity) > 0;
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
 
         #endregion
