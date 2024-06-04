@@ -36,6 +36,15 @@ namespace PuzzleBox
         private void Start()
         {
             repetitions.Set(0);
+            switch(countDirection)
+            {
+                case CountDirection.Up:
+                    time.Set(0);
+                    break;
+                case CountDirection.Down:
+                    time.Set(duration);
+                    break;
+            }
             if (GetToggleState())
             {
                 Toggle(true);

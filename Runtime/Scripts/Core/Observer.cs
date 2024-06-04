@@ -79,7 +79,7 @@ using UnityEngine;
     }
 
     [System.Serializable]
-    public class ObservableInt : ObservableValue, IEquatable<int>
+    public class ObservableInt : ObservableValue, IEquatable<int>, IComparable<int>
     {
         [SerializeField]
         private int _value;
@@ -123,10 +123,15 @@ using UnityEngine;
         {
             return _value.Equals(other);
         }
+
+        public int CompareTo(int other)
+        {
+            return _value.CompareTo(other);
+        }
     }
 
     [System.Serializable]
-    public class ObservableFloat : ObservableValue, IEquatable<float>
+    public class ObservableFloat : ObservableValue, IEquatable<float>, IComparable<float>
     {
         [SerializeField]
         private float _value;
@@ -165,6 +170,11 @@ using UnityEngine;
         public bool Equals(float other)
         {
             return _value.Equals(other);
+        }
+
+        public int CompareTo(float other)
+        {
+            return _value.CompareTo(other);
         }
     }
 
@@ -212,7 +222,7 @@ using UnityEngine;
     }
 
     [System.Serializable]
-    public class ObservableString : ObservableValue, IEquatable<string>
+    public class ObservableString : ObservableValue, IEquatable<string>, IComparable<string>
     {
         [SerializeField]
         private string _value;
@@ -251,6 +261,11 @@ using UnityEngine;
         public bool Equals(string other)
         {
             return _value != null ? _value.Equals(other) : other == null;
+        }
+
+        public int CompareTo(string other)
+        {
+            return _value.CompareTo(other);
         }
     }
 
