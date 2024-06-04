@@ -59,6 +59,8 @@ namespace PuzzleBox
 
         public float timeInAir { get; private set; }
 
+        public Vector3 groundNormal = Vector3.up;
+
         #endregion
 
         #region COMPONENTS
@@ -84,7 +86,7 @@ namespace PuzzleBox
 
         protected RaycastHit[] raycastHits = new RaycastHit[MAX_COLLISIONS];
 
-        protected Vector3 groundNormal = Vector3.up;
+        
 
         #endregion
 
@@ -473,7 +475,7 @@ namespace PuzzleBox
             return position + delta;
         }
 
-        protected Vector3 CalculateNewPosition(float deltaSeconds)
+        public Vector3 CalculateNewPosition(float deltaSeconds)
         {
             Vector3 position = rb.position;
 
