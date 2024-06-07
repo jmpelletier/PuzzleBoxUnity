@@ -34,6 +34,18 @@ namespace PuzzleBox
             Save(value);
         }
 
+        protected override void SilentlyUpdateValue(object newValue)
+        {
+            if (newValue is int)
+            {
+                value = (int)newValue;
+            }
+            else if (newValue is float)
+            {
+                value = (float)newValue;
+            }
+        }
+
         public override string ToString()
         {
             return value.ToString();

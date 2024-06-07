@@ -26,6 +26,14 @@ namespace PuzzleBox
             OnValueChanged?.Invoke();
             Save(value);
         }
+
+        protected override void SilentlyUpdateValue(object newValue)
+        {
+            if (newValue is string)
+            {
+                value = (string)newValue;
+            }
+        }
         public override string ToString()
         {
             return value;

@@ -4,6 +4,7 @@ using UnityEngine;
 using System;
 using System.Linq;
 using System.Reflection;
+using JetBrains.Annotations;
 
 /*
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,6 +22,10 @@ namespace PuzzleBox
         protected Action OnValueChanged;
 
         private PuzzleBox.IObservable _target = null;
+
+        private static Dictionary<string, List<ValueBase>> _instances = new Dictionary<string, List<ValueBase>>();
+
+        protected abstract void SilentlyUpdateValue(object value);
 
         public void Subscribe(Action callback)
         {
@@ -44,6 +49,15 @@ namespace PuzzleBox
 
         protected void Save<T>(T val)
         {
+            foreach(ValueBase v in _instances[persistenceKey])
+            {
+                if (v != this && v != null)
+                {
+                    v.SilentlyUpdateValue(val);
+                    v.OnValueChanged?.Invoke();
+                }
+            }
+
             switch(persistence)
             {
                 case Persistence.None:
@@ -72,6 +86,15 @@ namespace PuzzleBox
 
         protected virtual void OnEnable()
         {
+            if (!_instances.ContainsKey(persistenceKey))
+            {
+                _instances.Add(persistenceKey, new List<ValueBase>(){ this });
+            }
+            else
+            {
+                _instances[persistenceKey].Add(this);
+            }
+
             if (_target == null)
             {
                 if (source.behaviour != null && !string.IsNullOrEmpty(source.propertyName))
@@ -97,6 +120,8 @@ namespace PuzzleBox
 
         protected virtual void OnDisable()
         {
+            _instances[persistenceKey].Remove(this);
+
             if (_target != null)
             {
                 _target.Unsubscribe(this);

@@ -27,6 +27,14 @@ namespace PuzzleBox
             Save(value);
         }
 
+        protected override void SilentlyUpdateValue(object newValue)
+        {
+            if (newValue is bool)
+            {
+                value = (bool)newValue;
+            }
+        }
+
         public override string ToString()
         {
             return value.ToString();
