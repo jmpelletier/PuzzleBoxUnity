@@ -5,6 +5,7 @@
  */
 
 using System.Linq;
+using Unity.VisualScripting.YamlDotNet.Serialization;
 using UnityEngine;
 
 
@@ -31,13 +32,16 @@ namespace PuzzleBox
         public bool pushObjects = true;
 
         [Min(0f)]
-        public float margin = 0.0000001f;
+        public float margin = 0.002f;
 
         [Min(0f)]
         public float maxGroundAngle = 45f;
 
         [Min(0f)]
         public float maxCeilingAngle = 45f;
+
+        [Min(0f)]
+        public float maxStepHeight = 0.1f;
 
         [Min(0)]
         public int maxIterations = 2;
@@ -382,40 +386,116 @@ namespace PuzzleBox
 
         private Vector3 SlideAgainstGroundOrCeiling(Vector3 position, Vector3 motionRemaining, RaycastHit hit, bool isGround, int iterations)
         {
-            // Check the direction we're moving
-            float dot = Vector3.Dot(Physics.gravity, motionRemaining);
-
-            if (isGround ? dot > 0 : dot < 0)
+            if (iterations < maxIterations)
             {
-                // We are moving in the direction of gravity.
-                // Only process the horizontal motion.
-                Vector3 upDirection = -Physics.gravity.normalized;
-                Vector3 horizontalMotionRemaining = Geometry.ProjectVectorOnPlane(motionRemaining, upDirection);
-                Vector3 projection = Geometry.ProjectVectorOnPlane(horizontalMotionRemaining, hit.normal);
+                // Check the direction we're moving
+                float dot = Vector3.Dot(Physics.gravity, motionRemaining);
 
-                float a = Vector3.Dot(projection, upDirection);
-
-                // We only slide if we are going down the slope.
-                if (a < 0.001f)
+                const float SMALL_VALUE_THRESHOLD = 0.0001f;
+                
+                // If ground and going down, or ceiling and going up
+                if (isGround ? dot > SMALL_VALUE_THRESHOLD : dot < -SMALL_VALUE_THRESHOLD)
                 {
-                    return Slide(position, projection, iterations + 1);
+                    // We are moving in the direction of gravity.
+                    // Only process the horizontal motion.
+                    Vector3 upDirection = -Physics.gravity.normalized;
+                    Vector3 horizontalMotionRemaining = Geometry.ProjectVectorOnPlane(motionRemaining, upDirection);
+                    Vector3 projection = Geometry.ProjectVectorOnPlane(horizontalMotionRemaining, hit.normal);
+                    
+                    float a = Vector3.Dot(projection, upDirection);
+
+                    // We only slide if we are going down the slope.
+                    if (a < SMALL_VALUE_THRESHOLD)
+                    {
+                        return Slide(position, horizontalMotionRemaining, iterations + 1);
+                    }
+                    else
+                    {
+                        // Don't slide up, this is as far as we go.
+                        distanceTraveled = 0; // Set this to 0, so that we don't bounce off.
+                        return position;
+                    }
                 }
                 else
                 {
-                    // Don't slide up, this is as far as we go.
-                    distanceTraveled = 0; // Set this to 0, so that we don't bounce off.
-                    return position;
+                    // We are not falling, simply slide against the face
+                    Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
+                    return Slide(position, projection, iterations + 1);
                 }
             }
             else
             {
-                // We are not falling, simply slide against the face
-                Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
-                return Slide(position, projection, iterations + 1);
+                return position;
             }
         }
 
+
+        private Vector3 AvoidSteps(Vector3 position, Vector3 motionRemaining, Vector3 upDirection, float stepHeight, int iterations)
+        {
+            if (iterations < maxIterations)
+            {
+                Vector3 offset = position - rb.position;
+                Vector3 newPosition = position;
+                float distance = stepHeight;
+
+                // Move up
+                RaycastHit hit;
+                if (CastAllColliders(upDirection, stepHeight + margin, out hit, offset))
+                {
+                    // We hit something, don't try to move further
+                    return position;
+                }
+
+                newPosition += upDirection * distance;
+                offset = newPosition - rb.position;
+
+                // Try to move.
+                // Here we could be tempted to slide into position. However, if we do so, this we cause
+                // use to climb up walls. Furthermore, to avoid stepping up a wall, we must cast far enough
+                // to make sure we do hit any slanted wall.
+                float castDistance = stepHeight * Mathf.Tan(maxGroundAngle * Mathf.Deg2Rad);
+                Vector3 horizontalMotion = PuzzleBox.Geometry.ProjectVectorOnPlane(motionRemaining, upDirection);
+                
+                float horizontalDistance = horizontalMotion.magnitude;
+                float d = Mathf.Max(castDistance, horizontalDistance);
+
+                if (d > 0 && CastAllColliders(horizontalMotion.normalized, castDistance, out hit, offset))
+                {
+                    // We hit something, don't try to move further
+                    return position;
+                }
+
+                Vector3 verticalMotion = motionRemaining - horizontalMotion;
+                float verticalDistance = verticalMotion.magnitude;
+                if (verticalDistance > 0 && CastAllColliders(verticalMotion.normalized, verticalDistance, out hit, offset))
+                {
+                    // We hit something, don't try to move further
+                    return position;
+                }
+
+                newPosition += motionRemaining;
+
+                // Move back down
+                offset = newPosition - rb.position;
+                distance = stepHeight;
+                if (CastAllColliders(-upDirection, distance, out hit, offset))
+                {
+                    distance = hit.distance;
+                }
+
+                return newPosition - upDirection * distance;
+                
+            }
+
+            return position;
+        }
+
         public Vector3 Slide(Vector3 position, Vector3 delta, int iterations = 0)
+        {
+            return Slide(position, delta, maxStepHeight, iterations);
+        }
+
+        public Vector3 Slide(Vector3 position, Vector3 delta, float stepHeight, int iterations = 0)
         {
             if (iterations > maxIterations)
             {
@@ -443,7 +523,6 @@ namespace PuzzleBox
                             hit.rigidbody.AddForceAtPosition(deltav * rb.mass, hit.point, ForceMode.Impulse);
                         }
 
-
                         Vector3 newPosition = position + direction * distanceToCollision;
                         float distanceRemaining = distance - distanceToCollision;
                         Vector3 motionRemaining = direction * distanceRemaining;
@@ -459,12 +538,21 @@ namespace PuzzleBox
                         }
                         else // Neither ground nor ceiling
                         {
-                            // We hit a wall. We only slide in the horizontal direction.
                             Vector3 upDirection = -Physics.gravity.normalized;
+                            offset = newPosition - rb.position;
+
+                            // We hit a wall. First, try avoiding steps
+                            if (stepHeight > 0)
+                            {
+                                newPosition = AvoidSteps(newPosition, motionRemaining, upDirection, stepHeight, iterations);
+                            }
+                            
+                            // We can't go further. Only slide in the horizontal direction.
                             Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
                             Vector3 horizontalProjection = Geometry.ProjectVectorOnPlane(projection, upDirection);
 
-                            return Slide(newPosition, horizontalProjection, iterations + 1);
+                            // We slide recursively. It's important here not to try to climb up steps.
+                            return Slide(newPosition, horizontalProjection, 0, iterations + 1);
                         }
                     }
                 }
@@ -480,12 +568,23 @@ namespace PuzzleBox
             Vector3 position = rb.position;
 
             Vector3 delta = velocity.Get() * deltaSeconds;
-
-            Vector3 horizontalDelta = Geometry.ProjectVectorOnPlane(delta, groundNormal);
+            Vector3 upDirection = -Physics.gravity.normalized;
+            Vector3 horizontalDelta = Geometry.ProjectVectorOnPlane(delta, upDirection);
             Vector3 verticalDelta = delta - horizontalDelta;
 
-            position = Slide(position, verticalDelta);
-            position = Slide(position, horizontalDelta);
+            float dot = Vector3.Dot(groundNormal, verticalDelta);
+
+            if (dot > 0)
+            {
+                // We are moving up. Process vertical motion first.
+                position = Slide(position, verticalDelta);
+                position = Slide(position, horizontalDelta);
+            }
+            else
+            {
+                position = Slide(position, horizontalDelta);
+                position = Slide(position, verticalDelta);
+            }
 
             return position;
         }
