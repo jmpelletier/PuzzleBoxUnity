@@ -342,7 +342,7 @@ namespace PuzzleBox
                 SphereCollider sphere = (SphereCollider)collider;
                 // This will not work if the scale isn't the same in all directions
                 Vector3 globalScale = sphere.transform.lossyScale;
-                float radius = sphere.radius * Mathf.Min(globalScale.x, Mathf.Min(globalScale.y, globalScale.z));
+                float radius = sphere.radius * Mathf.Max(globalScale.x, Mathf.Max(globalScale.y, globalScale.z));
                 collisionCount = Physics.SphereCastNonAlloc(sphere.bounds.center + offset, radius, direction , raycastHits, distance, collisionMask, QueryTriggerInteraction.Ignore);
             }
             else if (collider is CapsuleCollider)
