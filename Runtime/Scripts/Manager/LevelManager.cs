@@ -99,11 +99,7 @@ namespace PuzzleBox
                 player = GameObject.FindGameObjectWithTag("Player");
             }
 
-            if (player == null)
-            {
-                Debug.LogError("プレーヤーオブジェクトが見つかりません。シーンに「Player」タグが付いているゲームオブジェクトが必要です。");
-            }
-            else
+            if (player != null)
             {
                 SetupPlayer();
             }
@@ -119,10 +115,7 @@ namespace PuzzleBox
 
             if (player != null)
             {
-                if (player != null)
-                {
-                    player.SendMessage("SetUserInputEnabled", false);
-                }
+                player.SendMessage("SetUserInputEnabled", false);
             }
         }
 
