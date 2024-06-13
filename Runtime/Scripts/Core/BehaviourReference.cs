@@ -4,6 +4,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,10 +20,44 @@ namespace PuzzleBox
         public GameObject sampleObject;
 
         [HideInInspector]
-        public MonoScript behaviour;
+        public PuzzleBoxBehaviour puzzleBoxBehaviour = null;
 
         [HideInInspector]
-        public PuzzleBoxBehaviour puzzleBoxBehaviour = null;
+        public string typeName = string.Empty;
+
+        private System.Type type = null;
+
+#if UNITY_EDITOR
+        [HideInInspector]
+        public MonoScript behaviour;
+#endif
+
+        private void FindType()
+        {
+            if (type == null)
+            {
+                if (!string.IsNullOrEmpty(typeName))
+                {
+                    if (type == null)
+                    {
+                        Assembly assembly = Assembly.GetExecutingAssembly();
+                        type = assembly.GetType(typeName);
+                    }
+                }
+            }
+        }
+
+        private void FindBehaviour(GameObject obj)
+        {
+            FindType();
+            
+            puzzleBoxBehaviour = null;
+            if (type != null)
+            {
+                Component c = obj.GetComponentInChildren(type);
+                puzzleBoxBehaviour = c as PuzzleBoxBehaviour;
+            }
+        }
 
         public void SetOwner(GameObject owner)
         {
@@ -43,15 +78,6 @@ namespace PuzzleBox
             }
         }
 
-        private void FindBehaviour(GameObject obj)
-        {
-            puzzleBoxBehaviour = null;
-            if (behaviour != null)
-            {
-                Component c = obj.GetComponentInChildren(behaviour.GetClass());
-                puzzleBoxBehaviour = c as PuzzleBoxBehaviour;
-            }
-        }
 
         public override void Toggle(GameObject sender = null)
         {

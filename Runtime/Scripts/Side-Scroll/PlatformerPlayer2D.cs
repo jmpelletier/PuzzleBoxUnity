@@ -683,6 +683,8 @@ namespace PuzzleBox
             base.PerformUpdate(deltaSeconds);
         }
 
+
+#if UNITY_EDITOR
         GUIStyle guiStyle = new GUIStyle();
 
         // このメソッドを実装する事によって、Unityのシーンビューに独自の
@@ -726,8 +728,9 @@ namespace PuzzleBox
                 }
             }
         }
+#endif
 
-        #endregion
+#endregion
 
         #region Player Input
         void OnMove(object val)
