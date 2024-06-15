@@ -4,8 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using log4net;
-using System;
 using System.Collections.Generic;
 
 namespace PuzzleBox

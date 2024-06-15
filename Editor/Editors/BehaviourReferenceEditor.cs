@@ -15,11 +15,14 @@ namespace PuzzleBox
     {
         SerializedProperty sampleObject;
         SerializedProperty behaviour;
+        SerializedProperty typeName;
+
 
         private void OnEnable()
         {
             sampleObject = serializedObject.FindProperty("sampleObject");
             behaviour = serializedObject.FindProperty("behaviour");
+            typeName = serializedObject.FindProperty("typeName");
         }
 
         public override void OnInspectorGUI()
@@ -30,7 +33,6 @@ namespace PuzzleBox
 
             BehaviourReference behaviourReference = (BehaviourReference)target;
 
-            
 
             if (sampleObject != null && sampleObject.objectReferenceValue != null)
             {
@@ -67,6 +69,11 @@ namespace PuzzleBox
                     {
                         selectedIndex = 0;
                         behaviourReference.behaviour = MonoScript.FromMonoBehaviour(behaviours[selectedIndex]);
+                        System.Type type = behaviourReference.behaviour != null ? behaviourReference.behaviour.GetClass() : null;
+                        if (type != null)
+                        {
+                            typeName.stringValue = type.FullName;
+                        }
                     }
                 }
                 
@@ -74,6 +81,11 @@ namespace PuzzleBox
                 if (selectedIndex >= 0)
                 {
                     behaviourReference.behaviour = MonoScript.FromMonoBehaviour(behaviours[selectedIndex]);
+                    System.Type type = behaviourReference.behaviour != null ? behaviourReference.behaviour.GetClass() : null;
+                    if (type != null)
+                    {
+                        typeName.stringValue = type.FullName;
+                    }
                 }
             }
             else

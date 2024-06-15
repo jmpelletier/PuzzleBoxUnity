@@ -251,15 +251,6 @@ namespace PuzzleBox
             }
         }
 
-        GUIStyle guiStyle = new GUIStyle();
-
-        private void OnDrawGizmos()
-        {
-            Collider2D coll = GetComponent<Collider2D>();
-
-            EditorUtilities.DrawCollider(coll, strokeColor, fillColor);
-        }
-
         public override string GetIcon()
         {
             return "CollisionIcon";

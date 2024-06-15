@@ -14,144 +14,13 @@ namespace PuzzleBox
 {
     public static class EditorUtilities
     {
-        public static Color lightColor = new Color(1, 1, 1);
-        public static Color darkColor = new Color(0.4f, 0.4f, 0.4f);
-        public static Color redColor = new Color(1, 0.15f, 0f);
+        public static PuzzleBox.Asset<Texture> logo = new PuzzleBox.Asset<Texture>(LogosPath + "PuzzleBox_Logo_Small.png");
 
         private static Dictionary<string, Texture> _iconTextures = new Dictionary<string, Texture>();
 
-        public static PuzzleBox.Asset<Texture> logo = new PuzzleBox.Asset<Texture>(LogosPath + "PuzzleBox_Logo_Small.png");
-
-        private static string _puzzleBoxPath = string.Empty;
-        public static string PuzzleBoxPath
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(_puzzleBoxPath))
-                {
-
-                    System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-                    UnityEditor.PackageManager.PackageInfo packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(assembly);
-                    if (packageInfo != null)
-                    {
-                        _puzzleBoxPath = "Packages/" + packageInfo.name + "/";
-                    }
-                    else
-                    {
-                        string[] guids = AssetDatabase.FindAssets("package", new[] { "Assets" });
-                        foreach (string guid in guids)
-                        {
-                            string path = AssetDatabase.GUIDToAssetPath(guid);
-                            string name = Path.GetFileName(path);
-                            if (string.Equals(name, "package.json"))
-                            {
-                                string json = File.ReadAllText(path);
-                                if (!string.IsNullOrEmpty(json))
-                                {
-                                    if (json.IndexOf("\"name\": \"com.jmpelletier.puzzlebox\"") >= 0 || json.IndexOf("\"name\":\"com.jmpelletier.puzzlebox\"") >= 0)
-                                    {
-                                        _puzzleBoxPath = Path.GetDirectoryName(path) + "/";
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (string.IsNullOrEmpty(_puzzleBoxPath))
-                        {
-                            Debug.LogWarning("Could not find PuzzleBox package.json");
-
-                            // For now, there's probably a better way...
-                            _puzzleBoxPath = "Assets/com.jmpelletier.puzzlebox/";
-                        }
-                        
-                    }
-                }
-
-                return _puzzleBoxPath;
-            }
-        }
-
-        public static string IconsPath
-        {
-            get
-            {
-                return PuzzleBoxPath + "Runtime/Images/Icons/";
-            }
-        }
-
-        public static string LogosPath
-        {
-            get
-            {
-                return PuzzleBoxPath + "Runtime/Images/Logos/";
-            }
-        }
-
-        public static Texture GetIconTexture(string iconName)
-        {
-            if (_iconTextures.ContainsKey(iconName))
-            {
-                return _iconTextures[iconName];
-            }
-
-            Texture tex = AssetDatabase.LoadAssetAtPath<Texture>(IconsPath + iconName + ".png");
-            if (tex != null)
-            {
-                _iconTextures[iconName] = tex;
-            }
-
-            return tex;
-        }
-
-        public static bool IsInSelectedHierarchy(GameObject obj)
-        {
-            if (obj != null)
-            {
-                Transform t = obj.transform;
-                while (t != null)
-                {
-                    if (t.gameObject == Selection.activeGameObject)
-                    {
-                        return true;
-                    }
-                    t = t.parent;
-                }
-            }
-            return false;
-        }
-
-        public static void DrawIcon(string iconName, Rect rect)
-        {
-            Texture texture = GetIconTexture(iconName);
-            if (texture)
-            {
-                Gizmos.DrawGUITexture(rect, texture);
-            }
-        }
-
-        public static void DrawIcon(string iconName, Vector2 position)
-        {
-            Texture texture = GetIconTexture(iconName);
-            if (texture)
-            {
-                Handles.Label(position, texture);
-            }
-        }
-
-        private static Texture _puzzleBoxIconTexture = null;
-        public static Texture icon
-        {
-            get
-            {
-                if (_puzzleBoxIconTexture == null)
-                {
-                    _puzzleBoxIconTexture = AssetDatabase.LoadAssetAtPath<Texture>(IconsPath + "PuzzleBoxIconSmall.png");
-                }
-
-                return _puzzleBoxIconTexture;
-            }
-        }
+        public static Color lightColor = new Color(1, 1, 1);
+        public static Color darkColor = new Color(0.4f, 0.4f, 0.4f);
+        public static Color redColor = new Color(1, 0.15f, 0f);
 
         private static Vector3[] _trianglePoints = new Vector3[3];
         private static Vector3[] _rectanglePoints = new Vector3[4];
@@ -209,26 +78,135 @@ namespace PuzzleBox
             Handles.color = c;
         }
 
-        public static float CalculateViewportDistance(Vector3 worldPositionA, Vector3 worldPositionB)
+        private static string _puzzleBoxPath = string.Empty;
+        public static string PuzzleBoxPath
         {
-            Vector3 viewportPositionA = Camera.current.WorldToViewportPoint(worldPositionA);
-            Vector3 viewportPositionB = Camera.current.WorldToViewportPoint(worldPositionB);
-            return Vector3.Distance(viewportPositionA, viewportPositionB);
+            get
+            {
+                if (string.IsNullOrEmpty(_puzzleBoxPath))
+                {
+
+                    System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+                    UnityEditor.PackageManager.PackageInfo packageInfo = UnityEditor.PackageManager.PackageInfo.FindForAssembly(assembly);
+                    if (packageInfo != null)
+                    {
+                        _puzzleBoxPath = "Packages/" + packageInfo.name + "/";
+                    }
+                    else
+                    {
+                        string[] guids = AssetDatabase.FindAssets("package", new[] { "Assets" });
+                        foreach (string guid in guids)
+                        {
+                            string path = AssetDatabase.GUIDToAssetPath(guid);
+                            string name = Path.GetFileName(path);
+                            if (string.Equals(name, "package.json"))
+                            {
+                                string json = File.ReadAllText(path);
+                                if (!string.IsNullOrEmpty(json))
+                                {
+                                    if (json.IndexOf("\"name\": \"com.jmpelletier.puzzlebox\"") >= 0 || json.IndexOf("\"name\":\"com.jmpelletier.puzzlebox\"") >= 0)
+                                    {
+                                        _puzzleBoxPath = Path.GetDirectoryName(path) + "/";
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (string.IsNullOrEmpty(_puzzleBoxPath))
+                        {
+                            Debug.LogWarning("Could not find PuzzleBox package.json");
+
+                            // For now, there's probably a better way...
+                            _puzzleBoxPath = "Assets/com.jmpelletier.puzzlebox/";
+                        }
+
+                    }
+                }
+
+                return _puzzleBoxPath;
+            }
         }
 
-        public static float ScreenDistanceToWorldDistance(float distance, Vector3 worldPosition)
+        public static string IconsPath
         {
-            Vector3 screenPosition = Camera.current.WorldToScreenPoint(worldPosition);
-            screenPosition.x += distance;
-            Vector3 offsetWorldPosition = Camera.current.ScreenToWorldPoint(screenPosition);
-            return Vector3.Distance(offsetWorldPosition, worldPosition);
+            get
+            {
+                return PuzzleBoxPath + "Runtime/Images/Icons/";
+            }
         }
 
-        public static float WorldDistanceToScreenDistance(float distance, Vector3 worldPosition)
+        public static string LogosPath
         {
-            Vector3 screenPosition = Camera.current.WorldToScreenPoint(worldPosition);
-            Vector3 offsetScreenPosition = Camera.current.WorldToScreenPoint(worldPosition + Vector3.up * distance);
-            return Vector3.Distance(offsetScreenPosition, worldPosition);
+            get
+            {
+                return PuzzleBoxPath + "Runtime/Images/Logos/";
+            }
+        }
+
+        private static Texture _puzzleBoxIconTexture = null;
+        public static Texture icon
+        {
+            get
+            {
+                if (_puzzleBoxIconTexture == null)
+                {
+                    _puzzleBoxIconTexture = AssetDatabase.LoadAssetAtPath<Texture>(IconsPath + "PuzzleBoxIconSmall.png");
+                }
+
+                return _puzzleBoxIconTexture;
+            }
+        }
+
+        public static Texture GetIconTexture(string iconName)
+        {
+            if (_iconTextures.ContainsKey(iconName))
+            {
+                return _iconTextures[iconName];
+            }
+
+            Texture tex = AssetDatabase.LoadAssetAtPath<Texture>(IconsPath + iconName + ".png");
+            if (tex != null)
+            {
+                _iconTextures[iconName] = tex;
+            }
+
+            return tex;
+        }
+
+        public static bool IsInSelectedHierarchy(GameObject obj)
+        {
+            if (obj != null)
+            {
+                Transform t = obj.transform;
+                while (t != null)
+                {
+                    if (t.gameObject == Selection.activeGameObject)
+                    {
+                        return true;
+                    }
+                    t = t.parent;
+                }
+            }
+            return false;
+        }
+
+        public static void DrawIcon(string iconName, Rect rect)
+        {
+            Texture texture = GetIconTexture(iconName);
+            if (texture)
+            {
+                Gizmos.DrawGUITexture(rect, texture);
+            }
+        }
+
+        public static void DrawIcon(string iconName, Vector2 position)
+        {
+            Texture texture = GetIconTexture(iconName);
+            if (texture)
+            {
+                Handles.Label(position, texture);
+            }
         }
 
         public static void DrawScreenSpaceRectangle(Vector3 center, Vector2 size, float distance, Color color)
@@ -443,7 +421,7 @@ namespace PuzzleBox
 
                 Vector2 boxHalfSize = capsule.size * 0.5f;
                 Vector3 radius;
-                
+
                 if (capsule.direction == CapsuleDirection2D.Horizontal)
                 {
                     radius = capsule.transform.TransformVector(Vector2.up * capsule.size.y * 0.5f);
@@ -463,7 +441,7 @@ namespace PuzzleBox
 
                 radius.z = 0;
                 Vector3 offset = new Vector3(-radius.y, radius.x, 0);
-                
+
                 Vector3[] vertices = new Vector3[4] {
                     capsule.transform.TransformPoint(boxHalfSize + capsule.offset) - offset,
                     capsule.transform.TransformPoint(new Vector2(boxHalfSize.x, -boxHalfSize.y)  + capsule.offset) + offset,
@@ -511,6 +489,27 @@ namespace PuzzleBox
             }
             return false;
         }
+
+        public static float CalculateViewportDistance(Vector3 worldPositionA, Vector3 worldPositionB)
+        {
+            Vector3 viewportPositionA = Camera.current.WorldToViewportPoint(worldPositionA);
+            Vector3 viewportPositionB = Camera.current.WorldToViewportPoint(worldPositionB);
+            return Vector3.Distance(viewportPositionA, viewportPositionB);
+        }
+
+        public static float ScreenDistanceToWorldDistance(float distance, Vector3 worldPosition)
+        {
+            Vector3 screenPosition = Camera.current.WorldToScreenPoint(worldPosition);
+            screenPosition.x += distance;
+            Vector3 offsetWorldPosition = Camera.current.ScreenToWorldPoint(screenPosition);
+            return Vector3.Distance(offsetWorldPosition, worldPosition);
+        }
+
+        public static float WorldDistanceToScreenDistance(float distance, Vector3 worldPosition)
+        {
+            Vector3 screenPosition = Camera.current.WorldToScreenPoint(worldPosition);
+            Vector3 offsetScreenPosition = Camera.current.WorldToScreenPoint(worldPosition + Vector3.up * distance);
+            return Vector3.Distance(offsetScreenPosition, worldPosition);
+        }
     }
 }
-
