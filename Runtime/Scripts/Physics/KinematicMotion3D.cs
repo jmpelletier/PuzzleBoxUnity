@@ -47,14 +47,9 @@ namespace PuzzleBox
         public int maxIterations = 2;
 
         [Header("Speed")]
-        [Min(0)]
-        public float maxSpeedUp = 100f;
 
         [Min(0)]
-        public float maxSpeedDown = 100f;
-
-        [Min(0)]
-        public float maxSpeedSide = 100f;
+        public float smallDistanceThreshold = 0.00001f;
 
         public ObservableVector3 velocity = new ObservableVector3();
 
@@ -82,6 +77,13 @@ namespace PuzzleBox
 
         #region PROTECTED_PROPERTIES
 
+        protected enum SurfaceType
+        {
+            Ground,
+            Wall,
+            Ceiling
+        }
+
         protected const int MAX_COLLISIONS = 32;
         
         protected Collider[] collidedColliders = new Collider[MAX_COLLISIONS];
@@ -90,13 +92,22 @@ namespace PuzzleBox
 
         protected RaycastHit[] raycastHits = new RaycastHit[MAX_COLLISIONS];
 
-        
+        protected Vector3 upDirection = Vector3.up;
+        float groundThreshold = 0f;
+        float ceilingThreshold = 0f;
 
         #endregion
 
         #region PRIVATE_PROPERTIES
+
+        // Threshold to deal with precision issues
+        const float SMALL_VALUE_THRESHOLD = 0.0001f;
+
         // The distance traveled in a single frame.
         private float distanceTraveled = 0f;
+
+        // The last direction of movement (when sliding)
+        private Vector3 movementDirection = Vector3.forward;
 
         #endregion
 
@@ -117,20 +128,28 @@ namespace PuzzleBox
 
         protected override void PerformFixedUpdate(float deltaSeconds)
         {
+            // Update the up direction (we assume gravity can change).
+            upDirection = Physics.gravity.normalized * -1f;
+            groundThreshold = Mathf.Cos(maxGroundAngle * Mathf.Deg2Rad);
+            ceilingThreshold = -Mathf.Cos(maxCeilingAngle * Mathf.Deg2Rad);
+
             if (!simulatePhysics) return;
 
-            ResolveOverlaps();
+            ApplyForces(deltaSeconds);
+
+            //ResolveOverlaps();
             
-            ApplyGravity(deltaSeconds);
-            LimitVelocity();
+            //ApplyGravity(deltaSeconds);
+            //LimitVelocity();
 
-            distanceTraveled = 0f;
-            Vector3 newPosition = CalculateNewPosition(deltaSeconds);
-            Vector3 delta = newPosition - rb.position;
+            //Vector3 newPosition = CalculateNewPosition(deltaSeconds);
+            //Vector3 delta = newPosition - rb.position;
+
             //Vector3 actualVelocity = delta.normalized * distanceTraveled / deltaSeconds;
-            Vector3 actualVelocity = delta / deltaSeconds;
+            //Vector3 actualVelocity = delta / deltaSeconds;
+            //Vector3 actualVelocity = movementDirection * distanceTraveled / deltaSeconds;
 
-            MoveRigidbodyToPosition(newPosition);
+            //MoveRigidbodyToPosition(newPosition);
 
             UpdateGroundedState();
 
@@ -143,7 +162,7 @@ namespace PuzzleBox
                 timeInAir = 0f;
             }
 
-            velocity.Set(actualVelocity);
+            //velocity.Set(actualVelocity);
         }
 
         #endregion
@@ -213,21 +232,135 @@ namespace PuzzleBox
 
         bool IsGroundNormal(Vector3 normal)
         {
-            float dot = Vector3.Dot(normal, Physics.gravity.normalized);
-            float angle = Mathf.Abs(Mathf.Acos(-dot) * Mathf.Rad2Deg);
+            float dot = Vector3.Dot(normal, upDirection);
+            float angle = Mathf.Abs(Mathf.Acos(dot) * Mathf.Rad2Deg);
             return angle <= maxGroundAngle;
         }
 
         bool IsCeilingNormal(Vector3 normal)
         {
-            float dot = Vector3.Dot(normal, Physics.gravity.normalized);
-            float angle = Mathf.Abs(Mathf.Acos(dot) * Mathf.Rad2Deg);
+            float dot = Vector3.Dot(normal, upDirection);
+            float angle = Mathf.Abs(Mathf.Acos(-dot) * Mathf.Rad2Deg);
             return angle <= maxCeilingAngle;
         }
 
         #endregion
 
         #region PHYSICS
+
+        const int MaximumForceCount = 8;
+
+        public interface IForce
+        {
+            public Vector3 Update(float deltaSeconds);
+            public void SetFinalVelocity(Vector3 velocity);
+        }
+
+        private class GravityForce : IForce
+        {
+            Vector3 velocity;
+
+            public Vector3 Update(float deltaSeconds)
+            {
+                velocity += Physics.gravity * deltaSeconds;
+                return velocity;
+            }
+
+            public void SetFinalVelocity(Vector3 v)
+            {
+                // Gravity always points in the same direction
+                velocity = Physics.gravity.normalized * v.magnitude;
+            }
+
+            public bool Slide()
+            {
+                return false;
+            }
+
+            public bool Step()
+            {
+                return false;
+            }
+        }
+
+        private IForce[] _forces = new IForce[MaximumForceCount];
+        private GravityForce _gravity = new GravityForce();
+
+        private Vector3 ApplyForce(Vector3 position, IForce force, float deltaSeconds, float modifier, bool isGravity)
+        {
+            Vector3 v = force.Update(deltaSeconds) * modifier;
+            Vector3 delta = v * deltaSeconds;
+            Vector3 newPosition = Slide(position, delta, maxStepHeight, isGravity, 0);
+            delta = newPosition - position;
+            force.SetFinalVelocity(delta / deltaSeconds);
+            return newPosition;
+        }
+
+        private void ApplyForces(float deltaSeconds)
+        {
+            Vector3 position = rb.position;
+
+            // Apply gravity first
+            if (useGravity)
+            {
+                position = ApplyForce(position, _gravity, deltaSeconds, gravityModifier * gravityMultiplier, true);
+            }
+
+            // Apply the other forces
+            for (int i = 0; i < MaximumForceCount; i++)
+            {
+                if (_forces[i] != null)
+                {
+                    position = ApplyForce(position, _forces[i], deltaSeconds, 1, false);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            MoveRigidbodyToPosition(position);
+        }
+
+        public IForce AddForce(IForce force)
+        {
+            for (int i = 0; i < MaximumForceCount; i++)
+            {
+                if (_forces[i] == null)
+                {
+                    _forces[i] = force;
+                    return force;
+                }
+            }
+            return null;
+        }
+
+        public void RemoveForce(IForce force)
+        {
+            int i = 0;
+            for (; i < MaximumForceCount; i++)
+            {
+                if (_forces[i] == force)
+                {
+                    _forces[i] = null;
+
+                    while(i < MaximumForceCount - 2)
+                    {
+                        _forces[i] = _forces[i + 1];
+                        i++;
+                    }
+                }
+            }
+        }
+
+        protected SurfaceType GetSurfaceType(Vector3 normal)
+        {
+            float dot = Vector3.Dot(normal, upDirection);
+            if (dot > groundThreshold) return SurfaceType.Ground;
+            else if (dot < ceilingThreshold) return SurfaceType.Ceiling;
+            else return SurfaceType.Wall;
+        }
+
         protected void ApplyGravity(float deltaSeconds)
         {
             if (useGravity && gravityMultiplier > 0)
@@ -242,7 +375,7 @@ namespace PuzzleBox
         protected void UpdateGroundedState()
         {
             RaycastHit hit;
-            groundNormal = Physics.gravity.normalized * -1f;
+            groundNormal = upDirection;
 
             if (CastAllColliders(-groundNormal, maxGroundDistance, out hit, Vector3.zero))
             {
@@ -384,53 +517,7 @@ namespace PuzzleBox
             return GetClosestHit(raycastHits, collisionCount, out hit);
         }
 
-        private Vector3 SlideAgainstGroundOrCeiling(Vector3 position, Vector3 motionRemaining, RaycastHit hit, bool isGround, int iterations)
-        {
-            if (iterations < maxIterations)
-            {
-                // Check the direction we're moving
-                float dot = Vector3.Dot(Physics.gravity, motionRemaining);
-
-                const float SMALL_VALUE_THRESHOLD = 0.0001f;
-                
-                // If ground and going down, or ceiling and going up
-                if (isGround ? dot > SMALL_VALUE_THRESHOLD : dot < -SMALL_VALUE_THRESHOLD)
-                {
-                    // We are moving in the direction of gravity.
-                    // Only process the horizontal motion.
-                    Vector3 upDirection = -Physics.gravity.normalized;
-                    Vector3 horizontalMotionRemaining = Geometry.ProjectVectorOnPlane(motionRemaining, upDirection);
-                    Vector3 projection = Geometry.ProjectVectorOnPlane(horizontalMotionRemaining, hit.normal);
-                    
-                    float a = Vector3.Dot(projection, upDirection);
-
-                    // We only slide if we are going down the slope.
-                    if (a < SMALL_VALUE_THRESHOLD)
-                    {
-                        return Slide(position, horizontalMotionRemaining, iterations + 1);
-                    }
-                    else
-                    {
-                        // Don't slide up, this is as far as we go.
-                        distanceTraveled = 0; // Set this to 0, so that we don't bounce off.
-                        return position;
-                    }
-                }
-                else
-                {
-                    // We are not falling, simply slide against the face
-                    Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
-                    return Slide(position, projection, iterations + 1);
-                }
-            }
-            else
-            {
-                return position;
-            }
-        }
-
-
-        private Vector3 AvoidSteps(Vector3 position, Vector3 motionRemaining, Vector3 upDirection, float stepHeight, int iterations)
+        private bool AvoidSteps(ref Vector3 position, ref Vector3 motionRemaining, float stepHeight, int iterations)
         {
             if (iterations < maxIterations)
             {
@@ -443,7 +530,7 @@ namespace PuzzleBox
                 if (CastAllColliders(upDirection, stepHeight + margin, out hit, offset))
                 {
                     // We hit something, don't try to move further
-                    return position;
+                    return true;
                 }
 
                 newPosition += upDirection * distance;
@@ -451,7 +538,7 @@ namespace PuzzleBox
 
                 // Try to move.
                 // Here we could be tempted to slide into position. However, if we do so, this we cause
-                // use to climb up walls. Furthermore, to avoid stepping up a wall, we must cast far enough
+                // us to climb up walls. Furthermore, to avoid stepping up a wall, we must cast far enough
                 // to make sure we do hit any slanted wall.
                 float castDistance = stepHeight * Mathf.Tan(maxGroundAngle * Mathf.Deg2Rad);
                 Vector3 horizontalMotion = PuzzleBox.Geometry.ProjectVectorOnPlane(motionRemaining, upDirection);
@@ -462,7 +549,7 @@ namespace PuzzleBox
                 if (d > 0 && CastAllColliders(horizontalMotion.normalized, castDistance, out hit, offset))
                 {
                     // We hit something, don't try to move further
-                    return position;
+                    return true;
                 }
 
                 Vector3 verticalMotion = motionRemaining - horizontalMotion;
@@ -470,7 +557,7 @@ namespace PuzzleBox
                 if (verticalDistance > 0 && CastAllColliders(verticalMotion.normalized, verticalDistance, out hit, offset))
                 {
                     // We hit something, don't try to move further
-                    return position;
+                    return true;
                 }
 
                 newPosition += motionRemaining;
@@ -483,19 +570,15 @@ namespace PuzzleBox
                     distance = hit.distance;
                 }
 
-                return newPosition - upDirection * distance;
-                
+                position = newPosition - upDirection * distance;
+                motionRemaining = Vector3.zero;
             }
 
-            return position;
+            return false;
         }
 
-        public Vector3 Slide(Vector3 position, Vector3 delta, int iterations = 0)
-        {
-            return Slide(position, delta, maxStepHeight, iterations);
-        }
 
-        public Vector3 Slide(Vector3 position, Vector3 delta, float stepHeight, int iterations = 0)
+        public Vector3 Slide(Vector3 position, Vector3 delta, float stepHeight, bool isGravity, int iterations = 0)
         {
             if (iterations > maxIterations)
             {
@@ -504,7 +587,7 @@ namespace PuzzleBox
 
             float distance = delta.magnitude;
 
-            if (distance > 0)
+            if (distance > smallDistanceThreshold)
             {
                 Vector3 direction = delta.normalized;
                 Vector3 offset = position - rb.position;
@@ -519,40 +602,63 @@ namespace PuzzleBox
                         // We actually hit something
                         if (pushObjects && hit.rigidbody != null && !hit.rigidbody.isKinematic)
                         {
-                            Vector3 deltav = velocity - hit.rigidbody.velocity;
-                            hit.rigidbody.AddForceAtPosition(deltav * rb.mass, hit.point, ForceMode.Impulse);
+                            Vector3 velocityChange = velocity - hit.rigidbody.velocity;
+                            hit.rigidbody.AddForceAtPosition(velocityChange * rb.mass, hit.point, ForceMode.Impulse);
                         }
 
-                        Vector3 newPosition = position + direction * distanceToCollision;
+                        Vector3 collisionDelta = direction * distanceToCollision;
+                        Vector3 newPosition = position + collisionDelta;
                         float distanceRemaining = distance - distanceToCollision;
                         Vector3 motionRemaining = direction * distanceRemaining;
 
                         distanceTraveled += distanceToCollision;
 
-                        bool isGroundNormal = IsGroundNormal(hit.normal);
+                        SurfaceType surfaceType = GetSurfaceType(hit.normal);
 
-                        // Check to see if we hit the ground or ceiling
-                        if (isGroundNormal || IsCeilingNormal(hit.normal))
+                        if (surfaceType == SurfaceType.Ground)
                         {
-                            return SlideAgainstGroundOrCeiling(newPosition, motionRemaining, hit, isGroundNormal, iterations);
-                        }
-                        else // Neither ground nor ceiling
-                        {
-                            Vector3 upDirection = -Physics.gravity.normalized;
-                            offset = newPosition - rb.position;
-
-                            // We hit a wall. First, try avoiding steps
-                            if (stepHeight > 0)
+                            // If this is gravity, this is as far as we go
+                            if (isGravity)
                             {
-                                newPosition = AvoidSteps(newPosition, motionRemaining, upDirection, stepHeight, iterations);
+                                return newPosition;
                             }
-                            
-                            // We can't go further. Only slide in the horizontal direction.
-                            Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
-                            Vector3 horizontalProjection = Geometry.ProjectVectorOnPlane(projection, upDirection);
+                            else
+                            {
+                                return Slide(newPosition, motionRemaining, 0, false, iterations + 1);
+                            }
+                        }
+                        else if (surfaceType == SurfaceType.Ceiling)
+                        {
+                            return Slide(newPosition, motionRemaining, 0, false, iterations + 1);
+                        }
+                        else
+                        {
+                            // Try to step over
+                            if (AvoidSteps(ref newPosition, ref motionRemaining, maxStepHeight, iterations + 1))
+                            {
+                                // We hit something and couldn't over. Proceed with slide.
+                                // We only slide vertically downwards
+                                bool isDownwardMotion = Vector3.Dot(motionRemaining, upDirection) < -SMALL_VALUE_THRESHOLD;
 
-                            // We slide recursively. It's important here not to try to climb up steps.
-                            return Slide(newPosition, horizontalProjection, 0, iterations + 1);
+                                if (isDownwardMotion)
+                                {
+                                    // We slide normally
+                                    Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
+                                    return Slide(newPosition, projection, 0, isGravity, iterations + 1);
+                                }
+                                else
+                                {
+                                    // We don't move up the slope
+                                    Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
+                                    Vector3 horizontalMotion = Geometry.ProjectVectorOnPlane(projection, upDirection);
+                                    return Slide(newPosition, horizontalMotion, 0, isGravity, iterations + 1);
+                                }
+                            }
+                            else
+                            {
+                                // We avoided steps, just update position
+                                return newPosition;
+                            }
                         }
                     }
                 }
@@ -561,45 +667,6 @@ namespace PuzzleBox
             // No hit, just update position
             distanceTraveled = distance;
             return position + delta;
-        }
-
-        public Vector3 CalculateNewPosition(float deltaSeconds)
-        {
-            Vector3 position = rb.position;
-
-            Vector3 delta = velocity.Get() * deltaSeconds;
-            Vector3 upDirection = -Physics.gravity.normalized;
-            Vector3 horizontalDelta = Geometry.ProjectVectorOnPlane(delta, upDirection);
-            Vector3 verticalDelta = delta - horizontalDelta;
-
-            float dot = Vector3.Dot(groundNormal, verticalDelta);
-
-            if (dot > 0)
-            {
-                // We are moving up. Process vertical motion first.
-                position = Slide(position, verticalDelta);
-                position = Slide(position, horizontalDelta);
-            }
-            else
-            {
-                position = Slide(position, horizontalDelta);
-                position = Slide(position, verticalDelta);
-            }
-
-            return position;
-        }
-
-        protected void LimitVelocity()
-        {
-            Vector3 v = velocity;
-            float xSpeed = Mathf.Abs(v.x);
-            float zSpeed = Mathf.Abs(v.z);
-            if (xSpeed > maxSpeedSide) v.x = maxSpeedSide * Mathf.Sign(v.x);
-            if (zSpeed > maxSpeedSide) v.z = maxSpeedSide * Mathf.Sign(v.z);
-            if (v.y > maxSpeedUp) v.y = maxSpeedUp;
-            if (v.y < -maxSpeedDown) v.y = -maxSpeedDown;
-
-            velocity.Set(v);
         }
 
         protected void MoveRigidbodyToPosition(Vector3 newPosition)
@@ -613,7 +680,7 @@ namespace PuzzleBox
             {
                 if (!isGrounded)
                 {
-                    return Vector3.Dot(velocity, Physics.gravity) > 0;
+                    return Vector3.Dot(velocity, upDirection) < 0;
                 }
                 else
                 {
