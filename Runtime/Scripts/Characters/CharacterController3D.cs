@@ -278,6 +278,8 @@ namespace PuzzleBox
 
             Vector3 v = velocity.Get();
 
+            Debug.DrawRay(transform.position, v, Color.red);
+
             if (state == State.OnGround)
             {
                 // Check to see if there is motion input in this frame

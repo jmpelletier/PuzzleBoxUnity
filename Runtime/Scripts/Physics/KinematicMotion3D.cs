@@ -423,7 +423,6 @@ namespace PuzzleBox
 
         protected void UpdateGroundedState()
         {
-            RaycastHit hit;
             groundNormal = upDirection;
 
             // For usability, we need to make sure that we check for ground at least as 
@@ -431,14 +430,20 @@ namespace PuzzleBox
             // than margin, which could be confusing for users.
             groundDistance = margin + maxGroundDistance;
 
-            if (CastAllColliders(-upDirection, groundDistance, out hit, Vector3.zero))
+            Vector3 gravityDirection = -upDirection;
+
+            foreach (Collider collider in colliders)
             {
-                if (IsGroundNormal(hit.normal))
+                int hitCount = CastColliderAll(collider, gravityDirection, groundDistance, Vector3.zero);
+                for (int i = 0; i < hitCount; i++)
                 {
-                    isGrounded.Set(true);
-                    groundNormal = hit.normal;
-                    groundDistance = hit.distance;
-                    return;
+                    if (IsValidRaycastHit(raycastHits[i]) && IsGroundNormal(raycastHits[i].normal))
+                    {
+                        isGrounded.Set(true);
+                        groundNormal = raycastHits[i].normal;
+                        groundDistance = raycastHits[i].distance;
+                        return;
+                    }
                 }
             }
 
@@ -481,9 +486,6 @@ namespace PuzzleBox
             // and if there is a collision, we test individual colliders to find the actual point
             // of collision.
 
-            // First we try a box cast with the bounds.
-            //Bounds bounds = GetBounds();
-            //bounds.center += offset;
             float closest = Mathf.Infinity;
             RaycastHit h;
             hit = default;
@@ -503,7 +505,7 @@ namespace PuzzleBox
             return closest < distance;
         }
 
-        private bool CastCollider(Collider collider, Vector3 direction , float distance, out RaycastHit hit, Vector3 offset)
+        private int CastColliderAll(Collider collider, Vector3 direction, float distance, Vector3 offset)
         {
             int collisionCount;
 
@@ -518,14 +520,14 @@ namespace PuzzleBox
                 SphereCollider sphere = (SphereCollider)collider;
                 Vector3 globalScale = sphere.transform.lossyScale;
                 float radius = sphere.radius * Mathf.Max(globalScale.x, Mathf.Max(globalScale.y, globalScale.z));
-                collisionCount = Physics.SphereCastNonAlloc(sphere.bounds.center + offset, radius, direction , raycastHits, distance, collisionMask, QueryTriggerInteraction.Ignore);
+                collisionCount = Physics.SphereCastNonAlloc(sphere.bounds.center + offset, radius, direction, raycastHits, distance, collisionMask, QueryTriggerInteraction.Ignore);
             }
             else if (collider is CapsuleCollider)
             {
                 CapsuleCollider capsule = (CapsuleCollider)collider;
                 Vector3 globalScale = capsule.transform.lossyScale;
                 Vector3 p1, p2;
-                
+
                 float radius = capsule.radius;
                 float halfHeight = Mathf.Max(0, capsule.height - 2 * radius) * 0.5f;
 
@@ -549,13 +551,19 @@ namespace PuzzleBox
                 }
 
                 collisionCount = Physics.CapsuleCastNonAlloc(p1 + offset, p2 + offset, radius, direction, raycastHits, distance, collisionMask, QueryTriggerInteraction.Ignore);
-                
+
             }
             else
             {
                 collisionCount = Physics.BoxCastNonAlloc(collider.bounds.center + offset, collider.bounds.extents, direction, raycastHits, Quaternion.identity, distance, collisionMask, QueryTriggerInteraction.Ignore);
             }
 
+            return collisionCount;
+        }
+
+        private bool CastCollider(Collider collider, Vector3 direction , float distance, out RaycastHit hit, Vector3 offset)
+        {
+            int collisionCount = CastColliderAll(collider, direction, distance, offset);
             return GetClosestHit(raycastHits, collisionCount, out hit);
         }
 
@@ -615,9 +623,10 @@ namespace PuzzleBox
                 position = newPosition - upDirection * distance;
                 distanceTraveled += motionRemaining.magnitude;
                 motionRemaining = Vector3.zero;
+                return false;
             }
 
-            return false;
+            return true;
         }
 
 
