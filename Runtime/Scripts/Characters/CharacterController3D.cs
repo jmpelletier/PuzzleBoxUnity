@@ -339,7 +339,61 @@ namespace PuzzleBox
 
         void ApplyAirMotion()
         {
+            if (state == State.Jumping || state == State.Falling)
+            {
+                if (motionInput.magnitude > 0)
+                {
+                    Vector3 v = velocity.Get();
 
+                    // Project input vector on horizontal plane
+                    Vector3 input3d = new Vector3(motionInput.x, 0, motionInput.y);
+                    Vector3 inputProjection = Geometry.ProjectVectorOnPlane(input3d, upDirection);
+
+                    // Get the correct acceleration value
+                    float acceleration = airAcceleration;
+
+                    // Get the velocity relative to external forces such as moving ground or wind
+                    Vector3 relativeVelocity = v - externalVelocity;
+
+                    Vector3 horizontalVelocity = Geometry.ProjectVectorOnPlane(relativeVelocity, upDirection);
+                    Vector3 verticalVelocity = relativeVelocity - horizontalVelocity;
+
+                    // Figure out how fast we are going
+                    float speed = horizontalVelocity.magnitude;
+
+                    // Get the correct speed limit
+                    float maxSpeed = airSpeed;
+
+                    // Are we over the speed limit?
+                    bool overSpeedLimit = speed > maxSpeed;
+
+                    // Should we break? We only break if we are over the speed limit and 
+                    // trying to accelerate in the direction of velocity (which would make us go faster).
+                    bool shouldBreak = (overSpeedLimit && Vector3.Dot(inputProjection, horizontalVelocity) > 0);
+
+                    if (shouldBreak)
+                    {
+                        // Break towards the speed limit
+                        Vector3 targetVelocity = horizontalVelocity.normalized * maxSpeed + verticalVelocity;
+                        relativeVelocity = BreakTowardsVelocity(relativeVelocity, targetVelocity);
+                        v = relativeVelocity + externalVelocity;
+                    }
+                    else
+                    {
+                        // Accelerate, but only up to the speed limit
+                        Vector3 velocityChange = inputProjection * acceleration * Time.fixedDeltaTime;
+                        Vector3 targetHorizontalVelocity = horizontalVelocity + velocityChange;
+                        float targetSpeed = targetHorizontalVelocity.magnitude;
+                        if (targetSpeed > maxSpeed)
+                        {
+                            targetHorizontalVelocity = targetHorizontalVelocity.normalized * maxSpeed;
+                        }
+                        v = targetHorizontalVelocity + verticalVelocity + externalVelocity;
+                    }
+
+                    velocity.Set(v);
+                }
+            }
         }
 
         void UpdateFacingDirection()
