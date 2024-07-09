@@ -253,17 +253,13 @@ namespace PuzzleBox
             float velocityDifference = velocityDelta.magnitude;
             float increment = breakingForce * Time.fixedDeltaTime;
 
-            Debug.Log($"Break from {currentVelocity} ({currentVelocity.magnitude}) to {targetVelocity} ({targetVelocity.magnitude})");
-
             if (increment >= velocityDifference)
             {
-                Debug.Log($"(1) {targetVelocity}");
                 return targetVelocity;
             }
             else
             {
                 Vector3 breakDirection = Geometry.ProjectVectorOnPlane(velocityDelta.normalized, groundNormal);
-                Debug.Log($"(2) {currentVelocity + breakDirection * increment} = {currentVelocity} + {breakDirection} * {increment}");
                 return currentVelocity + breakDirection * increment;
             }
         }

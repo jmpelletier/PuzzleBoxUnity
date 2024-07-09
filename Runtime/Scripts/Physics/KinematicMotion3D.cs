@@ -311,45 +311,57 @@ namespace PuzzleBox
 
             Vector3 v = velocity;
 
+            // First, we separate the velocity into two components: base velocity and gravity
+            Vector3 baseVelocity = v - _gravity;
+
             // First, update gravity
             Vector3 gravityChange = useGravity ? Physics.gravity * deltaSeconds * gravityModifier * gravityMultiplier : Vector3.zero;
-            v += gravityChange;
+            _gravity += gravityChange;
+            //v += gravityChange;
 
             // Check to see if we are moving up or down
-            bool movingUp = Vector3.Dot(v, upDirection) > SMALL_VALUE_THRESHOLD;
+            bool movingUp = Vector3.Dot(baseVelocity + _gravity, upDirection) > SMALL_VALUE_THRESHOLD;
 
-            Vector3 finalDirection;
+            bool collided;
 
             if (movingUp || !useGravity)
             {
                 distanceTraveled = 0;
-                Vector3 newPosition = Slide(position, v * deltaSeconds, maxStepHeight, false, out finalDirection, 0);
-                Vector3 delta = newPosition - position;
-                v = finalDirection * distanceTraveled / deltaSeconds;
+                v = baseVelocity + _gravity;
+                Vector3 newPosition = Slide(position, v * deltaSeconds, maxStepHeight, false, out collided, 0);
+                //Vector3 delta = newPosition - position;
+                //v = finalDirection * distanceTraveled / deltaSeconds;
+                v = v.normalized * distanceTraveled / deltaSeconds;
                 _gravity = Vector3.zero;
                 position = newPosition;
             }
             else
             {
                 // If we are moving down, things are a little more complicated
-                _gravity += gravityChange;
-                Vector3 baseVelocity = v - _gravity;
-
+                
                 // First apply gravity
                 distanceTraveled = 0;
-                Vector3 newPosition = Slide(position, _gravity * deltaSeconds, maxStepHeight, true, out finalDirection, 0);
-                _gravity = -upDirection * distanceTraveled / deltaSeconds; // Gravity always points in the same direction
+                Vector3 newPosition = Slide(position, _gravity * deltaSeconds, maxStepHeight, true, out collided, 0);
+              
+                if (collided)
+                {
+                    _gravity = Vector3.zero;
+                }
+
                 position = newPosition;
 
                 // Then apply the rest of the motion
+                
                 if (baseVelocity != Vector3.zero)
                 {
                     distanceTraveled = 0;
-                    newPosition = Slide(position, baseVelocity * deltaSeconds, maxStepHeight, false, out finalDirection, 0);
-                    baseVelocity = finalDirection * distanceTraveled / deltaSeconds;
+                    newPosition = Slide(position, baseVelocity * deltaSeconds, maxStepHeight, false, out collided, 0);
+                    //baseVelocity = finalDirection * distanceTraveled / deltaSeconds;
+                    baseVelocity = baseVelocity.normalized * distanceTraveled / deltaSeconds;
                 }
                 
                 v = baseVelocity + _gravity;
+
                 position = newPosition;
             }
 
@@ -630,9 +642,10 @@ namespace PuzzleBox
         }
 
 
-        public Vector3 Slide(Vector3 position, Vector3 delta, float stepHeight, bool isGravity, out Vector3 finalDirection, int iterations = 0)
+        public Vector3 Slide(Vector3 position, Vector3 delta, float stepHeight, bool isGravity, out bool collided, int iterations = 0)
         {
-            finalDirection = delta.normalized;
+            collided = false;
+
             if (iterations > maxIterations)
             {
                 return position;
@@ -648,8 +661,11 @@ namespace PuzzleBox
                 RaycastHit hit;
                 if (CastAllColliders(direction, distance + margin, out hit, offset))
                 {
+                    collided = true;
 
-                    float distanceToCollision = Mathf.Max(0, hit.distance - margin);
+                    //float distanceToCollision = Mathf.Max(0, hit.distance - margin);
+                    float distanceToCollision = hit.distance - margin;
+                    
 
                     if (distanceToCollision <= distance)
                     {
@@ -680,12 +696,12 @@ namespace PuzzleBox
                             {
                                 // If this isn't gravity, then we slide along the surface
                                 Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
-                                return Slide(newPosition, projection, 0, false, out finalDirection, iterations + 1);
+                                return Slide(newPosition, projection, 0, false, out collided, iterations + 1);
                             }
                         }
                         else if (surfaceType == SurfaceType.Ceiling)
                         {
-                            return Slide(newPosition, motionRemaining, 0, false, out finalDirection, iterations + 1);
+                            return Slide(newPosition, motionRemaining, 0, false, out collided, iterations + 1);
                         }
                         else
                         {
@@ -694,7 +710,7 @@ namespace PuzzleBox
                             {
                                 // If this is the gravity pass, we should slide normally
                                 Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
-                                return Slide(newPosition, projection, 0, true, out finalDirection, iterations + 1);
+                                return Slide(newPosition, projection, 0, true, out collided, iterations + 1);
                             }
 
                             // Try to step over
@@ -708,7 +724,7 @@ namespace PuzzleBox
                                 {
                                     // We slide normally
                                     Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
-                                    return Slide(newPosition, projection, 0, isGravity, out finalDirection, iterations + 1);
+                                    return Slide(newPosition, projection, 0, isGravity, out collided, iterations + 1);
                                 }
                                 else
                                 {
@@ -716,7 +732,7 @@ namespace PuzzleBox
                                     Vector3 projection = Geometry.ProjectVectorOnPlane(motionRemaining, hit.normal);
                                     Vector3 horizontalMotion = Geometry.ProjectVectorOnPlane(projection, upDirection);
                                     
-                                    return Slide(newPosition, horizontalMotion, 0, isGravity, out finalDirection, iterations + 1);
+                                    return Slide(newPosition, horizontalMotion, 0, isGravity, out collided, iterations + 1);
                                 }
                             }
                             else
