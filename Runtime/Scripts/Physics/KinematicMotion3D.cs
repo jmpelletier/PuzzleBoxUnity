@@ -347,6 +347,10 @@ namespace PuzzleBox
                 {
                     _gravity = Vector3.zero;
                 }
+                else
+                {
+                    _gravity = -upDirection * distanceTraveled / deltaSeconds;
+                }
 
                 position = newPosition;
 
@@ -663,10 +667,8 @@ namespace PuzzleBox
                 {
                     collided = true;
 
-                    //float distanceToCollision = Mathf.Max(0, hit.distance - margin);
                     float distanceToCollision = hit.distance - margin;
                     
-
                     if (distanceToCollision <= distance)
                     {
                         // We actually hit something
