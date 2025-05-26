@@ -22,7 +22,7 @@ namespace PuzzleBox
             public Vector3 targetVelocity;
             public float acceleration;
 
-            public void SetVelocity(Vector3 v)
+            public void SetFinalVelocity(Vector3 v)
             {
                 velocity = v;
             }

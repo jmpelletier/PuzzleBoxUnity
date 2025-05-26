@@ -50,7 +50,7 @@ namespace PuzzleBox
                         Rigidbody2D rb = target.GetComponent<Rigidbody2D>();
                         if (rb != null)
                         {
-                            rb.velocity = Vector2.zero;
+                            rb.linearVelocity = Vector2.zero;
                             return;
                         }
                     }

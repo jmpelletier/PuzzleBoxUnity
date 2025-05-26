@@ -57,6 +57,7 @@ PolygonCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3392182180755066065}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -80,7 +81,8 @@ PolygonCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
@@ -112,7 +114,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hideGizmo: 0
-  uid: 3a1f5903-5af2-42fb-b400-1c5f94fe6e31
+  uid: 9185b61b-5922-4c4b-89d7-fd64fc2342ba
 --- !u!114 &4848435924729813497
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -130,11 +132,13 @@ MonoBehaviour:
   componentEnabled: 1
   deleted: 0
   persistence: 0
+  triggerMode: 0
   triggerEnterActions: []
   triggerExitActions: []
   collisionActions:
   - {fileID: 170062021815598659}
   targetTag: Player
+  ignoreTag: 
   layerMask:
     serializedVersion: 2
     m_Bits: 4294967295

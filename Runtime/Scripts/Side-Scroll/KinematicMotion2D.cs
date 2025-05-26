@@ -400,7 +400,7 @@ namespace PuzzleBox
             {
                 if (coll != null && !coll.isTrigger)
                 {
-                    int count = coll.OverlapCollider(contactFilter, overlapColliders);
+                    int count = coll.Overlap(contactFilter, overlapColliders);
                     for (int i = 0; i < count; i++)
                     {
                         overlaps[totalHits] = overlapColliders[i];
@@ -623,7 +623,7 @@ namespace PuzzleBox
                         Rigidbody2D rb2d = hits[i].collider.gameObject.GetComponent<Rigidbody2D>();
                         if (rb2d != null)
                         {
-                            contacts[ndx].relativeVelocity = velocity - rb2d.velocity;
+                            contacts[ndx].relativeVelocity = velocity - rb2d.linearVelocity;
                         }
                         else
                         {

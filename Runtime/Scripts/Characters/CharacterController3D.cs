@@ -270,67 +270,40 @@ namespace PuzzleBox
             airJumps = 0;
 
             // 重力の加減は通常に戻します。
-            gravityModifier = normalGravityMultiplier;
+            gravityMultiplier = normalGravityMultiplier;
 
             Vector3 v = velocity.Get();
 
-            Debug.DrawRay(transform.position, v, Color.red);
-
             if (state == State.OnGround)
             {
-                // Check to see if there is motion input in this frame
                 if (motionInput.magnitude > 0)
                 {
-                    // Project input vector on ground plane
-                    Vector3 input3d = new Vector3(motionInput.x, 0, motionInput.y);
-                    Vector3 inputGroundProjection = Geometry.ProjectVectorOnPlane(input3d, groundNormal);
-
-                    // Get the correct acceleration value
+                    // We are moving
                     float acceleration = isRunning ? runAcceleration : walkAcceleration;
 
-                    // Get the velocity relative to external forces such as moving ground or wind
-                    Vector3 relativeVelocity = v - externalVelocity;
-
-                    // Since we are on the ground, project the velocity vector on the ground plane
-                    Vector3 groundVelocity = Geometry.ProjectVectorOnPlane(relativeVelocity, groundNormal);
-
-                    // Figure out how fast we are going
-                    float speed = groundVelocity.magnitude;
-
-                    // Get the correct speed limit
-                    float maxSpeed = isRunning ? runSpeed : walkSpeed;
-
-                    // Are we over the speed limit?
-                    bool overSpeedLimit = speed > maxSpeed;
-
-                    // Should we break? We only break if we are over the speed limit and 
-                    // trying to accelerate in the direction of velocity (which would make us go faster).
-                    bool shouldBreak = (overSpeedLimit && Vector3.Dot(inputGroundProjection, groundVelocity) > 0);
-
-                    if (shouldBreak)
-                    {
-                        // Break towards the speed limit
-                        Vector3 targetVelocity = groundVelocity.normalized * maxSpeed;
-                        relativeVelocity = BreakTowardsVelocity(relativeVelocity, targetVelocity);
-                        v = relativeVelocity + externalVelocity;
-                    }
-                    else
-                    {
-                        // Accelerate, but only up to the speed limit
-                        Vector3 velocityChange = inputGroundProjection * acceleration * Time.fixedDeltaTime;
-                        Vector3 targetVelocity = groundVelocity + velocityChange;
-                        float targetSpeed = targetVelocity.magnitude;
-                        if (targetSpeed > maxSpeed)
-                        {
-                            targetVelocity = targetVelocity.normalized * maxSpeed;
-                        }
-                        v = targetVelocity + externalVelocity;
-                    }
+                    // Project input vector on ground plane
+                    Vector3 input3d = new Vector3(motionInput.x, 0, motionInput.y);
+                    Vector3 projection = Geometry.ProjectVectorOnPlane(input3d, groundNormal);
+                    Vector3 velocityChange = projection * acceleration * Time.fixedDeltaTime;
+                    v += velocityChange;
                 }
                 else
                 {
                     // No motion input, break
                     v = BreakTowardsVelocity(v, externalVelocity);
+                }
+
+                Vector3 relativeVelocity = v - externalVelocity;
+                Vector3 groundVelocity = Geometry.ProjectVectorOnPlane(relativeVelocity, groundNormal);
+                float speed = groundVelocity.magnitude;
+
+                float maxSpeed = isRunning ? runSpeed : walkSpeed;
+
+                if (speed > maxSpeed)
+                {
+                    Vector3 targetVelocity = groundVelocity.normalized * maxSpeed;
+                    relativeVelocity = BreakTowardsVelocity(relativeVelocity, targetVelocity);
+                    v = relativeVelocity + externalVelocity;
                 }
             }
 
@@ -339,61 +312,7 @@ namespace PuzzleBox
 
         void ApplyAirMotion()
         {
-            if (state == State.Jumping || state == State.Falling)
-            {
-                if (motionInput.magnitude > 0)
-                {
-                    Vector3 v = velocity.Get();
 
-                    // Project input vector on horizontal plane
-                    Vector3 input3d = new Vector3(motionInput.x, 0, motionInput.y);
-                    Vector3 inputProjection = Geometry.ProjectVectorOnPlane(input3d, upDirection);
-
-                    // Get the correct acceleration value
-                    float acceleration = airAcceleration;
-
-                    // Get the velocity relative to external forces such as moving ground or wind
-                    Vector3 relativeVelocity = v - externalVelocity;
-
-                    Vector3 horizontalVelocity = Geometry.ProjectVectorOnPlane(relativeVelocity, upDirection);
-                    Vector3 verticalVelocity = relativeVelocity - horizontalVelocity;
-
-                    // Figure out how fast we are going
-                    float speed = horizontalVelocity.magnitude;
-
-                    // Get the correct speed limit
-                    float maxSpeed = airSpeed;
-
-                    // Are we over the speed limit?
-                    bool overSpeedLimit = speed > maxSpeed;
-
-                    // Should we break? We only break if we are over the speed limit and 
-                    // trying to accelerate in the direction of velocity (which would make us go faster).
-                    bool shouldBreak = (overSpeedLimit && Vector3.Dot(inputProjection, horizontalVelocity) > 0);
-
-                    if (shouldBreak)
-                    {
-                        // Break towards the speed limit
-                        Vector3 targetVelocity = horizontalVelocity.normalized * maxSpeed + verticalVelocity;
-                        relativeVelocity = BreakTowardsVelocity(relativeVelocity, targetVelocity);
-                        v = relativeVelocity + externalVelocity;
-                    }
-                    else
-                    {
-                        // Accelerate, but only up to the speed limit
-                        Vector3 velocityChange = inputProjection * acceleration * Time.fixedDeltaTime;
-                        Vector3 targetHorizontalVelocity = horizontalVelocity + velocityChange;
-                        float targetSpeed = targetHorizontalVelocity.magnitude;
-                        if (targetSpeed > maxSpeed)
-                        {
-                            targetHorizontalVelocity = targetHorizontalVelocity.normalized * maxSpeed;
-                        }
-                        v = targetHorizontalVelocity + verticalVelocity + externalVelocity;
-                    }
-
-                    velocity.Set(v);
-                }
-            }
         }
 
         void UpdateFacingDirection()
@@ -426,13 +345,14 @@ namespace PuzzleBox
                  case State.OnGround: 
                     return true;
                 case State.Jumping:
+                    break;
                 case State.Falling:
                     if (timeInAir <= fallJumpTimeLimit)
                     {
                         // 地面から離れた直後
                         return true;
                     }
-                    else if (maxAirJumps > 0 && airJumps < maxAirJumps)
+                    else if (maxAirJumps > 0 && airJumps <= maxAirJumps)
                     {
                         // 空中ジャンプの上限に達していないのでジャンプできます。
                         isAirJump = true;
@@ -475,7 +395,7 @@ namespace PuzzleBox
                         adjustedMaxJumpHeight *= airJumpHeightRatio;
                     }
 
-                    float gravityMagnitude = Physics.gravity.magnitude * gravityMultiplier;
+                    float gravityMagnitude = Physics.gravity.magnitude;
 
                     if (mode == JumpMode.Fast)
                     {
@@ -497,18 +417,16 @@ namespace PuzzleBox
                     // 速度が下がってしまいます。１フレーム目の重力の影響をなくすために、ジャンプ速度を上げます。
                     jumpSpeed += gravityMagnitude * jumpGravityMultiplier * Time.fixedDeltaTime;
 
-                    // Calculate the jump impulse
-                    Vector3 jumpImpulse = CalculateJumpVector(jumpSpeed);
-
-                    Vector3 horizontalVel = Geometry.ProjectVectorOnPlane(velocity, upDirection);
-
-                    velocity.Set(jumpImpulse + horizontalVel);
-
+                    Vector3 v = CalculateJumpVector(jumpSpeed);
+                    velocity.Set(v + horizontalVelocity);
 
                     state = State.Jumping;
 
+                    // 地面が動いていれば、その速度を自身の速度に足します。
+                    velocity.Set(velocity + externalVelocity);
+
                     // 重力調整を適用します。
-                    gravityModifier = jumpGravityMultiplier;
+                    gravityMultiplier = jumpGravityMultiplier;
 
                     airJumps++; // ジャンプの回数を増やします。
                     isJumping = true; // ジャンプしている事を記憶します。Dash
@@ -520,6 +438,7 @@ namespace PuzzleBox
                         animationController?.SetTrigger("Jump");
                     }
                     
+
                     SendMessage("DidJump", SendMessageOptions.DontRequireReceiver);
 
                     // 地面に立っているかどうかの判定を強制的にし直します。
@@ -535,7 +454,7 @@ namespace PuzzleBox
             else // ジャンプ終了
             {
                 // ジャンプが終わったので、重力の加減を変えます。
-                gravityModifier = breakGravityMultiplier;
+                gravityMultiplier = breakGravityMultiplier;
                 isJumping = false;
             }
         }
