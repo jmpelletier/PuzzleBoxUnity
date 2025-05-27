@@ -71,9 +71,9 @@ namespace PuzzleBox
 
             // Cinemachine also adds a texture to the hierarchy. There might be other components
             // that also do, but this is the one that is most likely to cause issues.
-            if (gameObject.TryGetComponent(out Cinemachine.CinemachineBrain brain)) {
-                offset += 20;
-            };
+            //if (gameObject.TryGetComponent(out Cinemachine.CinemachineBrain brain)) {
+            //    offset += 20;
+            //};
 
             // We don't display the PuzzleBox icon if there is only a HierarchyCustomizer.
             bool hasPuzzleBoxComponent = false;
