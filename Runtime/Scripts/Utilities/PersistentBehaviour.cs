@@ -174,11 +174,8 @@ namespace PuzzleBox
 
         protected virtual void WasDestroyed()
         {
-            if (persistence != Persistence.None)
-            {
-                deleted = true;
-                SaveState();
-            }
+            deleted = true;
+            SaveState();
         }
     }
 }
