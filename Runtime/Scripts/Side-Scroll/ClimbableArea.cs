@@ -5,8 +5,6 @@
  */
 
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace PuzzleBox
@@ -29,7 +27,6 @@ namespace PuzzleBox
         public bool snapPositionX = true;
         public bool snapPositionY = false;
 
-
         [Space]
         [Min(0)]
         public float ejectForceUp = 0f;
@@ -39,6 +36,7 @@ namespace PuzzleBox
         public float ejectForceSides = 0f;
 
         BoxCollider2D boxCollider;
+
 
         private void Start()
         {
