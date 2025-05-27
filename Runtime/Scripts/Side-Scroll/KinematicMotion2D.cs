@@ -312,6 +312,8 @@ namespace PuzzleBox
             {
                 float contactDistance = hit.distance; // 衝突した位置までの距離
 
+                float dot = Vector2.Dot(hit.normal, delta);
+
                 if (contactDistance <= 0 && Vector2.Dot(hit.normal, delta) < 0)
                 {
                     return;
@@ -400,7 +402,7 @@ namespace PuzzleBox
             {
                 if (coll != null && !coll.isTrigger)
                 {
-                    int count = coll.OverlapCollider(contactFilter, overlapColliders);
+                    int count = coll.Overlap(contactFilter, overlapColliders);
                     for (int i = 0; i < count; i++)
                     {
                         overlaps[totalHits] = overlapColliders[i];
@@ -623,7 +625,7 @@ namespace PuzzleBox
                         Rigidbody2D rb2d = hits[i].collider.gameObject.GetComponent<Rigidbody2D>();
                         if (rb2d != null)
                         {
-                            contacts[ndx].relativeVelocity = velocity - rb2d.velocity;
+                            contacts[ndx].relativeVelocity = velocity - rb2d.linearVelocity;
                         }
                         else
                         {
@@ -819,31 +821,20 @@ namespace PuzzleBox
             }
         }
 
-        private static void Separate(KinematicMotion2D objectToMove, Bounds boundsToExit)
+        private static void Separate(KinematicMotion2D objectToMove, Collider2D otherCollider)
         {
-            Bounds selfBounds = objectToMove.bounds;
-            float speed = objectToMove.velocity.magnitude;
-            Vector2 direction;
-
-            if (speed < 0.001f)
+            foreach(Collider2D coll in objectToMove.colliders)
             {
-                Vector2 delta = objectToMove.position - (Vector2)boundsToExit.center;
-                if (delta.magnitude > 0.1f)
+                if (coll != null && !coll.isTrigger)
                 {
-                    direction = delta.normalized;
-                }
-                else
-                {
-                    direction = Vector2.up;
+                   ColliderDistance2D colliderDistance2D = coll.Distance(otherCollider);
+                    if (colliderDistance2D.isOverlapped)
+                    {
+                        Vector2 delta = colliderDistance2D.normal * colliderDistance2D.distance;
+                        objectToMove.MoveRigidbody(delta);
+                    }
                 }
             }
-            else
-            {
-                direction = objectToMove.velocity.normalized * -1f;
-            }
-
-            Bounds newBounds = Geometry.Separate(selfBounds, boundsToExit, direction, objectToMove.margin);
-            objectToMove.MoveRigidbody(newBounds.center - selfBounds.center);
         }
 
         protected void ProcessOverlaps(int iterations = 0)
@@ -866,11 +857,11 @@ namespace PuzzleBox
                 {
                     if (otherMotion.pushPriority < pushPriority)
                     {
-                        Separate(otherMotion, bounds);
+                        Separate(otherMotion, overlaps[i]);
                     }
                     else
                     {
-                        Separate(this, otherMotion.bounds);
+                        Separate(this, overlaps[i]);
                         ProcessOverlaps(iterations + 1);
                         break;
                     }
@@ -881,7 +872,7 @@ namespace PuzzleBox
                     TilemapCollider2D tilemapCollider = overlaps[i].GetComponent<TilemapCollider2D>();
                     if (tilemapCollider == null)
                     {
-                        Separate(this, overlaps[i].bounds);
+                        Separate(this, overlaps[i]);
                         ProcessOverlaps(iterations + 1);
                         break;
                     }
