@@ -792,7 +792,7 @@ namespace PuzzleBox
                     contactFilter.useLayerMask = true;
                     contactFilter.useTriggers = false;
 
-                    int count = coll.OverlapCollider(contactFilter, wallHits);
+                    int count = coll.Overlap(contactFilter, wallHits);
                     if (count > 0)
                     {
                         for (int i = 0; i < count; i++)
