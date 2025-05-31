@@ -60,6 +60,9 @@ namespace PuzzleBox
         // 助走によるジャンプ高さの調整
         public float jumpHeightSpeedBoost = 2f;
 
+        [Header("演出")]
+        public float deathAnimationTimeoutSeconds = 2f;
+
 
 
         // enumを定義するとインスペクターでドロップダウンメニューを表示させる事ができます。
@@ -1434,6 +1437,7 @@ namespace PuzzleBox
         }
 
         private bool isKilled = false;
+        private Coroutine waitForDeathCoroutine = null;
 
         [PuzzleBox.Action]
         public void Kill()
@@ -1445,6 +1449,8 @@ namespace PuzzleBox
                 if (animationController != null)
                 {
                     animationController.SetTrigger("Die");
+
+                    waitForDeathCoroutine = StartCoroutine(WaitForDeath());
                 }
                 else
                 {
@@ -1456,8 +1462,20 @@ namespace PuzzleBox
             
         }
 
+        IEnumerator WaitForDeath()
+        {
+            yield return new WaitForSeconds(deathAnimationTimeoutSeconds);
+            DestroySelf();
+        }
+
         public void DestroySelf()
         {
+            if (waitForDeathCoroutine != null)
+            {
+                StopCoroutine(waitForDeathCoroutine);
+                waitForDeathCoroutine = null;
+            }
+
             SendMessage("WasDestroyed", SendMessageOptions.DontRequireReceiver);
             OnDestroyed?.Invoke();
             Destroy(gameObject);
