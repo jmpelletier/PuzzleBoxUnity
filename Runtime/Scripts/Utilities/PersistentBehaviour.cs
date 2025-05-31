@@ -64,6 +64,12 @@ namespace PuzzleBox
         {
             uid = GetComponent<UniqueID>().uid;
 
+            // Don't forget to initialize these values. It is possible that their serialized values do not match
+            // the current state of the game object or component. Make sure the two are identical before running our
+            // custom state loading code.
+            gameObjectActive = gameObject.activeSelf;
+            componentEnabled = enabled;
+
             LoadState();
         }
 
